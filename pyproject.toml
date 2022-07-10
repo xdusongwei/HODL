@@ -1,0 +1,49 @@
+[project]
+name = "hodl"
+version = "0.0.1"
+description = ""
+authors = [
+    {name = "xdusongwei", email = "github@songwei.io"},
+]
+dependencies = [
+    "python-telegram-bot>=13.11",
+    "PySocks>=1.7.1",
+    "pytz>=2021.1",
+    "concurrent-log-handler>=0.9.20",
+    "json-log-formatter>=0.5.1",
+    "coverage>=6.3.2",
+    "pytest>=7.1.0",
+    "toml>=0.10.2",
+    "textual>=0.1.17",
+    "httpx>=0.22.0",
+    "h2>=4.1.0",
+    "pygame>=2.1.2",
+    "requests>=2.27.1",
+    "expiringdict>=1.2.1",
+    "binance-connector>=1.13.0",
+    "tigeropen>=2.1.3",
+    "currency-symbols>=2.0.2",
+]
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+[project.urls]
+homepage = "https://github.com/xdusongwei/HODL"
+
+[tool]
+[tool.pdm]
+
+[build-system]
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
+
+[tool.pdm.scripts]
+bot = {cmd = "pdm run python -m hodl.cli.trade_bot"}
+tui = {cmd = "pdm run python -m hodl.cli.tui"}
+test = {cmd = "pdm run coverage run --source=./hodl -m pytest --disable-pytest-warnings tests"}
+html = {cmd = "pdm run coverage html"}
+report = {cmd = "pdm run coverage report"}
+xml = {cmd = "pdm run coverage xml"}
+shootoff = {cmd = "pdm run python -m hodl.cli.shoot_off"}
+orderlink = {cmd = "pdm run python -m hodl.cli.order_link"}
+refreshcsv = {cmd = "pdm run python -m hodl.cli.refresh_csv"}

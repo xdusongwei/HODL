@@ -1,0 +1,17 @@
+#
+#   gitlab 专用配置
+#
+db_path = ":memory:"
+
+[store.TIGR]
+broker = 'tiger'
+symbol = 'TIGR'
+trade_type = 'stock'
+enable = true
+max_shares = 100_000
+log_root = ''
+state_file_path = ''
+state_archive_folder = ''
+prudent = true
+base_price_last_buy = true
+

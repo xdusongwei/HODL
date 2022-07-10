@@ -1,0 +1,46 @@
+stages:
+  - test
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+test:
+  stage: test
+  tags:
+    - python
+  image: python:3.10.4
+  only:
+    - branches
+  variables:
+    PROJECT: 'hodl'
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  cache:
+    paths:
+      - .cache/pip
+  before_script:
+    - mkdir -p ~/.pip
+    - mkdir -p ~/logs/hodl
+    - mkdir -p ~/data/hodl
+    - cp ci/pip.conf ~/.pip/
+    - cp ci/gitlab-ci.toml config.toml
+    - pip install -U pip setuptools wheel
+    - pip install pdm
+    - export PATH="$HOME/.local/bin:$PATH"
+    - pdm install --prod --no-lock --no-editable
+  script:
+    - pdm run test
+    - pdm run report
+    - pdm run xml
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    paths:
+      - coverage.xml
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+

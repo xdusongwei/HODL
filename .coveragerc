@@ -1,0 +1,13 @@
+[run]
+relative_files = True
+omit =
+    hodl/bot/*
+    hodl/bot_conversation/*
+    hodl/broker/*
+    hodl/simulation/*
+    hodl/cli/*
+    hodl/storage.py
+    hodl/broker_proxy.py
+    hodl/manager.py
+    hodl/tui.py
+    hodl/unit_test.py
