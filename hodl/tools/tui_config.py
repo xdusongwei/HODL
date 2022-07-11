@@ -29,5 +29,9 @@ class TuiConfig(dict):
     def profit_width(self):
         return self.get('profit_width', None)
 
+    @property
+    def display_process_time(self):
+        return self.get('display_process_time', False)
+
 
 __all__ = ['TuiConfig', ]

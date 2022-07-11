@@ -18,6 +18,7 @@ class StoreBase:
     ENABLE_LOG_ALIVE = True
     ENABLE_BROKER = True
     ENABLE_STATE_FILE = True
+    ENABLE_PROCESS_TIME = True
 
     SESSION = requests.Session()
 
@@ -32,6 +33,7 @@ class StoreBase:
         self.broker_proxy: BrokerProxy = None
         self.risk_control: RiskControl | None = None
         self.exception: Exception | None = None
+        self.process_time: int = None
         self.db = db
         self.lock = threading.Lock()
 
@@ -115,10 +117,16 @@ class StoreBase:
 
     def before_loop(self):
         self.load_state()
+        if self.ENABLE_PROCESS_TIME:
+            setattr(self, '_begin_time', TimeTools.us_time_now())
         return True
 
     def after_loop(self):
         self.save_state()
+        if self.ENABLE_PROCESS_TIME:
+            now = TimeTools.us_time_now()
+            begin_time = getattr(self, '_begin_time', now)
+            self.process_time = (now - begin_time).total_seconds()
 
     @classmethod
     def build_table(cls, store_config: StoreConfig, plan: Plan):

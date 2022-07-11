@@ -45,11 +45,11 @@ class PlaceholderBase(Placeholder, ConfigMixin, DataMixin):
 
 class StatusWidget(PlaceholderBase):
     def render(self):
-        config = self.config()
-        border_style = config.border_style
-        store_items = self.STORE_ITEMS[id(config)]
-        config_items = self.CONFIG_ITEMS[id(config)]
-        thread_items = self.THREAD_ITEMS[id(config)]
+        tui_config = self.config()
+        border_style = tui_config.border_style
+        store_items = self.STORE_ITEMS[id(tui_config)]
+        config_items = self.CONFIG_ITEMS[id(tui_config)]
+        thread_items = self.THREAD_ITEMS[id(tui_config)]
         cst_time = TimeTools.us_time_now(tz='Asia/Shanghai')
         if 9 <= cst_time.hour <= 15:
             tz_name = 'CST'
@@ -74,15 +74,20 @@ class StatusWidget(PlaceholderBase):
             e = store_dict.get('exception')
             state = State(state)
             config = StoreConfig(config_dict)
-            broker = config.broker
             symbol = config.symbol
             region = config.region
+            process_time_text = ''
+            process_time = store_dict.get('processTime')
+            if process_time:
+                process_time = '{:.2f}'.format(process_time)
+            if tui_config.display_process_time:
+                process_time_text = f' 📶{process_time}s'
 
             default_style = 'white' if state.market_status == 'TRADING' else 'grey50'
 
             plan: Plan = state.plan
             name = f' {state.name}' if state.name else ''
-            title = f'[{region}]{symbol}{name}\n'
+            title = f'[{region}]{symbol}{name}{process_time_text}\n'
             text = Text(style=default_style)
             tags = list()
             prudent = '惜售' if plan.prudent else '超卖'

@@ -28,18 +28,27 @@ class QuoteMixin(StoreBase, ABC):
             self.broker_proxy.pull_market_status()
         return self.broker_proxy.query_market_status()
 
-    def current_quote(self, time_diff=True) -> Quote:
+    def current_quote(self) -> Quote:
         state = self.state
         quote = self.broker_proxy.query_quote()
         if state.quote_time:
             if TimeTools.from_timestamp(state.quote_time) > quote.time:
                 raise QuoteOutdatedError(f'系统存储的行情({TimeTools.from_timestamp(state.quote_time)})'
                                          f'比请求的行情({quote.time})新')
-            if time_diff and abs(quote.time.timestamp() - TimeTools.us_time_now().timestamp()) > 30:
-                raise QuoteOutdatedError(f'请求的行情时间{quote.time}差距明显'
-                                         f'({abs(int((quote.time - TimeTools.us_time_now()).total_seconds()))}秒), '
-                                         f'本机时间{TimeTools.us_time_now()}')
+
         return quote
+
+    def assert_quote_time_diff(self):
+        state = self.state
+        quote_time = state.quote_time
+        now = TimeTools.us_time_now()
+        if abs(quote_time - now.timestamp()) > 30:
+            time = TimeTools.from_timestamp(quote_time)
+            raise QuoteOutdatedError(
+                f'请求的行情时间{time}差距明显'
+                f'({abs(int((time - now).total_seconds()))}秒), '
+                f'本机时间{now}'
+            )
 
 
 __all__ = ['QuoteMixin', ]

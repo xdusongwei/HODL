@@ -106,6 +106,17 @@ class TigerApi(BrokerApiBase):
     ORDER_BUCKET = LeakyBucket(120)
     ASSET_BUCKET = LeakyBucket(60)
 
+    def __str__(self):
+        return f'<' \
+               f'{type(self).__name__} ' \
+               f'symbol:{self.symbol} ' \
+               f'name:{self.name} ' \
+               f'mktStatus:{self.MARKET_STATUS_BUCKET.available_tokens} ' \
+               f'quote:{self.QUOTE_BUCKET.available_tokens} ' \
+               f'order:{self.ORDER_BUCKET.available_tokens} ' \
+               f'asset:{self.ASSET_BUCKET.available_tokens} ' \
+               f'>'
+
     def _grab_quote(self):
         with TigerApi.GRAB_LOCK:
             if TigerApi.HAS_GRAB:

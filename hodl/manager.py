@@ -46,6 +46,7 @@ class Manager:
                         'exception': str(store.exception or ''),
                         'hasDb': bool(store.db),
                         'hasAlertBot': store.bot.is_alive,
+                        'processTime': store.process_time,
                     },
                     'config': {
                         'name': store.store_config.name,

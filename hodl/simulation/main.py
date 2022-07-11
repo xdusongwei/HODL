@@ -24,6 +24,7 @@ class SimulationStore(Store):
     ENABLE_LOG_ALIVE = False
     ENABLE_BROKER = False
     ENABLE_STATE_FILE = False
+    ENABLE_PROCESS_TIME = False
     PLAN = None
 
     def cancel_fake_order(self, order: Order):
@@ -66,7 +67,7 @@ class SimulationStore(Store):
     def now_mock(self):
         return datetime.utcfromtimestamp(self.FAKE_QUOTE.time.timestamp())
 
-    def quote_mock(self, time_diff=True):
+    def quote_mock(self):
         return Quote(
             symbol=self.store_config.symbol,
             open=self.FAKE_QUOTE.open,

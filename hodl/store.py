@@ -59,9 +59,9 @@ class Store(QuoteMixin, TradeMixin):
                 return 'CLOSING'
         state.market_status = market_status
 
-    def prepare_quote(self, time_diff=True):
+    def prepare_quote(self):
         state = self.state
-        quote = self.current_quote(time_diff=time_diff)
+        quote = self.current_quote()
         if not quote.open or quote.open <= 0:
             raise QuoteFieldError(f'{self.store_config.symbol}开盘价不正确: {quote.open}')
         if not quote.pre_close or quote.pre_close <= 0:
@@ -275,7 +275,7 @@ class Store(QuoteMixin, TradeMixin):
 
         try:
             if state.market_status == 'TRADING':
-                self.prepare_quote()
+                self.assert_quote_time_diff()
 
                 self.try_get_off()
                 if state.is_today_get_off:
@@ -327,19 +327,20 @@ class Store(QuoteMixin, TradeMixin):
             return
 
         while True:
-            with self.lock:
-                try:
-                    if self.store_config.booting_check and not is_checked:
-                        try:
-                            self.booting_check()
-                        except Exception as e:
-                            self.logger.exception('对接失败')
-                            self.exception = e
-                            return
-                        finally:
-                            is_checked = True
+            try:
+                if self.store_config.booting_check and not is_checked:
+                    try:
+                        self.booting_check()
+                    except Exception as e:
+                        self.logger.exception('对接失败')
+                        self.exception = e
+                        return
+                    finally:
+                        is_checked = True
 
-                    TimeTools.sleep(self.runtime_state.sleep_secs)
+                TimeTools.sleep(self.runtime_state.sleep_secs)
+
+                with self.lock:
                     if not self.before_loop():
                         logger.warning(f'循环开始前的检查要求退出')
                         break
@@ -363,10 +364,7 @@ class Store(QuoteMixin, TradeMixin):
                         ]:
                             self.refresh_orders()
                             order_checked = True
-                        # 不忽略时间差距检查会出现一种场景
-                        # 收盘后很长时间没有活动时再运行到此处，收盘时间的行情时间差距检查引起异常，
-                        # 下面刷新系统状态的逻辑会跳过，无法进入被抑制态
-                        self.prepare_quote(time_diff=False)
+                        self.prepare_quote()
                     except PrepareError as e:
                         if self.ENABLE_LOG_ALIVE:
                             self.alive_logger.exception(e)
@@ -416,31 +414,31 @@ class Store(QuoteMixin, TradeMixin):
                         quote_status = self.state.quote_status
                         logger.info(f'状态: 当前日期{now}, 市场状态:{market_status}, 标的状态:{quote_status}')
                         self.current_changed(current=current, new_current=new_current)
-
+    
                     self.on_current(current=new_current)
 
                     if self.ENABLE_LOG_ALIVE:
                         self.alive_logger.debug(f'循环执行结束')
-                except RiskControlError as e:
-                    self.logger.error(f'触发风控异常: {e}')
-                    self.state.risk_control_break = True
-                    self.state.risk_control_detail = str(e)
+            except RiskControlError as e:
+                self.logger.error(f'触发风控异常: {e}')
+                self.state.risk_control_break = True
+                self.state.risk_control_detail = str(e)
+                self.exception = e
+                break
+            except BotError as e:
+                if e.thread_killer:
+                    self.logger.exception(f'特定异常终止了执行: {e}')
                     self.exception = e
                     break
-                except BotError as e:
-                    if e.thread_killer:
-                        self.logger.exception(f'特定异常终止了执行: {e}')
-                        self.exception = e
-                        break
-                    else:
-                        self.logger.warning(f'流程异常: {e}')
-                except Exception as e:
-                    self.logger.exception(f'异常终止了执行: {e}')
-                    self.exception = e
-                    break
-                finally:
-                    self.risk_control = None
-                    self.after_loop()
+                else:
+                    self.logger.warning(f'流程异常: {e}')
+            except Exception as e:
+                self.logger.exception(f'异常终止了执行: {e}')
+                self.exception = e
+                break
+            finally:
+                self.risk_control = None
+                self.after_loop()
         self.logger.info('退出处理循环，程序结束')
 
 
