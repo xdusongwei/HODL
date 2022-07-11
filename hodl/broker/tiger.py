@@ -202,6 +202,7 @@ class TigerApi(BrokerApiBase):
     def query_chips(self):
         symbol = self.symbol
         with self.ASSET_BUCKET:
+            # 传入symbol参数返回空列表，不设置symbol参数则返回数据没问题
             positions: list[Position] = self.trade_client.get_positions()
         if positions:
             for p in positions:

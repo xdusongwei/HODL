@@ -128,6 +128,8 @@ class PlanCalc:
 
     @property
     def table_size(self) -> int:
+        assert len(self.weight) == len(self.sell_rate)
+        assert len(self.weight) == len(self.buy_rate)
         return len(self.weight)
 
     def profit_rows(
