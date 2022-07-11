@@ -202,10 +202,11 @@ class TigerApi(BrokerApiBase):
     def query_chips(self):
         symbol = self.symbol
         with self.ASSET_BUCKET:
-            positions: list[Position] = self.trade_client.get_positions(symbol=symbol)
+            positions: list[Position] = self.trade_client.get_positions()
         if positions:
             for p in positions:
-                return p.quantity
+                if p.contract.symbol == symbol:
+                    return p.quantity
         return 0
 
     def place_order(self, order: Order):
