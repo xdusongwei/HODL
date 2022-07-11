@@ -172,7 +172,7 @@ class Store(QuoteMixin, TradeMixin):
                 line = f'"{day_now}","{symbol}",{earning},"{region}"\n'
                 f.write(line)
             for region, earning in total_list:
-                line = f'"{TimeTools.date_to_ymd(last_sunday_utc)}","历史累计",{earning},"{region}"\n'
+                line = f'"{TimeTools.date_to_ymd(last_sunday_utc)}","历史",{earning},"{region}"\n'
                 f.write(line)
 
     def set_up_earning(self):

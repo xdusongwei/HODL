@@ -205,8 +205,8 @@ class OrderWidget(PlaceholderBase):
 
         table.add_column(f'{len(orders)}', justify="right", style="grey66", no_wrap=True, width=2)
         table.add_column("时间", justify="right", style="grey66", no_wrap=True)
-        table.add_column("标的", justify="right")
-        table.add_column("方向", justify="right", style="grey66")
+        table.add_column("标的", justify="left")
+        table.add_column("方向", justify="left", style="grey66")
         table.add_column("订单价", justify="right", style="green")
         table.add_column("订单量", justify="right", style="grey66")
         table.add_column("成交价", justify="right", style="green")
@@ -246,7 +246,7 @@ class OrderWidget(PlaceholderBase):
                 Text(text=f'{icon}'),
                 Text(text=f'{time.strftime("%y-%m-%d")}\n{time.strftime("%H:%M:%S")}', style=style),
                 Text(text=f'[{order.region}]{symbol}', style=style),
-                Text(text=f'{order.direction}[{order.level}]', style=style),
+                Text(text=f'{order.direction}.{order.level}', style=style),
                 Text(text=FMT.pretty_usd(order.limit_price, currency=order.currency, region=order.region)),
                 Text(text=FMT.pretty_number(order.qty), style=style),
                 Text(text=FMT.pretty_usd(order.avg_price, currency=order.currency, region=order.region)),
