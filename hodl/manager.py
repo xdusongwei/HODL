@@ -142,19 +142,19 @@ class Manager:
         if var.async_market_status:
             print(f'开启异步线程拉取市场状态')
             store = stores[0]
-            store.pull_market_status()
+            proxy = store.broker_proxy
+            proxy.pull_market_status()
             print(f'预拉取市场状态结束')
 
-            def _loop(s: Store, sleep_limit):
+            def _loop(s: Store):
                 while True:
-                    s.pull_market_status()
-                    TimeTools.sleep(sleep_limit)
+                    s.broker_proxy.pull_market_status()
 
             Manager.MARKET_STATUS_THREAD = Thread(
                 name='marketStatusPuller',
                 target=_loop,
                 daemon=True,
-                args=(store, var.sleep_limit, )
+                args=(store, )
             )
             Manager.MARKET_STATUS_THREAD.start()
             print(f'异步线程已启动')

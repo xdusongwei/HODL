@@ -18,7 +18,7 @@ class QuoteMixin(StoreBase, ABC):
         assert 0 <= ttl
         QuoteMixin.CACHE_TTL = ttl
 
-    def pull_market_status(self):
+    def _pull_market_status(self):
         if QuoteMixin.CACHE_MARKET_STATUS:
             with QuoteMixin.CACHE_LOCK:
                 if TimeTools.us_time_now().timestamp() - QuoteMixin.LAST_TIMESTAMP > QuoteMixin.CACHE_TTL:
@@ -29,7 +29,7 @@ class QuoteMixin(StoreBase, ABC):
 
     def current_market_status(self) -> str:
         if not self.runtime_state.variable.async_market_status:
-            self.pull_market_status()
+            self._pull_market_status()
         return self.broker_proxy.query_market_status()
 
     def current_quote(self) -> Quote:
