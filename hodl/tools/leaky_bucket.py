@@ -47,7 +47,7 @@ class LeakyBucket:
                     break
                 last_time = self._last_time
             now = TimeTools.utc_now().timestamp()
-            secs = last_time + self._leak_rate / 60.0 - now
+            secs = last_time + 60.0 / self._leak_rate - now
             TimeTools.sleep(secs=secs)
 
     def consume(self):

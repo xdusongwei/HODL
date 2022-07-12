@@ -46,6 +46,13 @@ class StoreBase:
             db=self.db,
         )
 
+        try:
+            self.init_trade_service()
+        except Exception as e:
+            self.logger.exception(e)
+            self.exception = e
+            raise e
+
     def load_state(self):
         if not self.ENABLE_STATE_FILE:
             return
@@ -140,6 +147,15 @@ class StoreBase:
             shares_per_unit=store_config.shares_per_unit,
         )
         return profit_table
+
+    def init_trade_service(self):
+        if not self.ENABLE_BROKER:
+            return
+        self.broker_proxy = BrokerProxy(
+            store_config=self.store_config,
+            runtime_state=self.runtime_state,
+        )
+        self.broker_proxy.on_init()
 
 
 __all__ = ['StoreBase', ]

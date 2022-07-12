@@ -304,27 +304,11 @@ class Store(QuoteMixin, TradeMixin):
             case self.STATE_TRADE:
                 self.try_fire_orders()
 
-    def init_trade_service(self):
-        if not self.ENABLE_BROKER:
-            return
-        self.broker_proxy = BrokerProxy(
-            store_config=self.store_config,
-            runtime_state=self.runtime_state,
-        )
-        self.broker_proxy.on_init()
-
     def idle(self):
         is_checked = False
         logger = self.logger
         logger.info(f'启动程序')
         TimeTools.thread_register(region=self.store_config.region)
-
-        try:
-            self.init_trade_service()
-        except Exception as e:
-            self.logger.exception(e)
-            self.exception = e
-            return
 
         while True:
             try:

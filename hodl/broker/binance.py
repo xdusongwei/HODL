@@ -5,7 +5,7 @@ https://binance-docs.github.io/apidocs/spot/cn/
 from binance.spot import Spot
 from hodl.broker.base import *
 from hodl.quote import Quote
-from hodl.tools import TimeTools
+from hodl.tools import *
 
 
 class BinanceApi(BrokerApiBase):
@@ -20,6 +20,8 @@ class BinanceApi(BrokerApiBase):
             trade_regions={'US', },
         ),
     ]
+    MARKET_STATUS_BUCKET = LeakyBucket(12)
+    QUOTE_BUCKET = LeakyBucket(600)
 
     def __post_init__(self):
         config_dict = self.broker_config
@@ -44,7 +46,8 @@ class BinanceApi(BrokerApiBase):
         )
 
     def fetch_market_status(self) -> dict:
-        resp: dict = self.custom_client.system_status()
+        with self.MARKET_STATUS_BUCKET:
+            resp: dict = self.custom_client.system_status()
         status = resp.get('status', -1)
         if status == 0:
             market_status = 'TRADING'
@@ -58,13 +61,14 @@ class BinanceApi(BrokerApiBase):
 
     def fetch_quote(self) -> Quote:
         symbol = self.symbol
-        resp: dict = self.custom_client.exchange_info()
-        server_timestamp = resp.get('serverTime') / 1000
-        lines = self.custom_client.klines(symbol=symbol, interval='1d', limit=1)
-        line: list = lines[0]
-        open_price = float(line[1])
-        latest_price = float(line[4])
-        us_date = TimeTools.from_timestamp(timestamp=server_timestamp, tz='US/Eastern')
+        with self.QUOTE_BUCKET:
+            resp: dict = self.custom_client.exchange_info()
+            server_timestamp = resp.get('serverTime') / 1000
+            lines = self.custom_client.klines(symbol=symbol, interval='1d', limit=1)
+            line: list = lines[0]
+            open_price = float(line[1])
+            latest_price = float(line[4])
+            us_date = TimeTools.from_timestamp(timestamp=server_timestamp, tz='US/Eastern')
         return Quote(
             symbol=symbol,
             open=open_price,

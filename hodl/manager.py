@@ -1,7 +1,6 @@
 import os
 import json
 import time
-from dataclasses import dataclass, field
 from threading import Thread
 from hodl.bot import AlertBot, ConversationBot
 from hodl.storage import LocalDb
@@ -11,15 +10,9 @@ from hodl.broker_proxy import *
 from hodl.tools import *
 
 
-@dataclass
-class ThreadDetail:
-    symbol: str = field()
-    thread: Thread = field()
-    store: Store = field(default=None)
-
-
 class Manager:
     CONVERSATION_BOT = None
+    MARKET_STATUS_THREAD: Thread = None
 
     @classmethod
     def write_system_state(cls, items: list[tuple[str, Store, Thread]], sleep_secs):
@@ -33,6 +26,11 @@ class Manager:
             'time': TimeTools.us_time_now().timestamp(),
             'storeSleepSecs': sleep_secs,
             'marketStatus': ms,
+            'marketStatusThread': {
+                'name': Manager.MARKET_STATUS_THREAD.name,
+                'id': Manager.MARKET_STATUS_THREAD.native_id,
+                'dead': not Manager.MARKET_STATUS_THREAD.is_alive(),
+            } if Manager.MARKET_STATUS_THREAD else {},
             'items': [
                 {
                     'symbol': symbol,
@@ -134,20 +132,32 @@ class Manager:
             threads = [Thread(name=f'Store({store.store_config.symbol})', target=store.idle, daemon=True)
                        for store in stores]
             items = list(zip(symbols, stores, threads))
-            store_threads = [
-                ThreadDetail(
-                    symbol=symbol,
-                    thread=thread,
-                    store=store,
-                )
-                for symbol, store, thread in items
-            ]
             for thread in threads:
                 thread.start()
         except Exception as e:
             if db:
                 db.conn.close()
             raise e
+
+        if var.async_market_status:
+            print(f'开启异步线程拉取市场状态')
+            store = stores[0]
+            store.pull_market_status()
+            print(f'预拉取市场状态结束')
+
+            def _loop(s: Store, sleep_limit):
+                while True:
+                    s.pull_market_status()
+                    TimeTools.sleep(sleep_limit)
+
+            Manager.MARKET_STATUS_THREAD = Thread(
+                name='marketStatusPuller',
+                target=_loop,
+                daemon=True,
+                args=(store, var.sleep_limit, )
+            )
+            Manager.MARKET_STATUS_THREAD.start()
+            print(f'异步线程已启动')
 
         while True:
             try:

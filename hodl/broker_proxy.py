@@ -65,7 +65,7 @@ class BrokerProxy:
 
     def _pull_market_status(self):
         if not self.market_status_brokers:
-            return
+            return None
 
         def _work(b: BrokerApiBase) -> tuple[Type[BrokerApiBase], dict[str, dict[str, str]]]:
             try:

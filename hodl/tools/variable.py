@@ -70,7 +70,7 @@ class VariableTools:
     @property
     def telegram_chat_id(self) -> int:
         """
-        Telegram群组id
+        Telegram群组id,通知消息
         """
         telegram: dict = self._config.get('telegram', dict())
         chat_id = telegram.get('chat_id')
@@ -138,6 +138,13 @@ class VariableTools:
         limit = self._config.get('sleep_limit', 6)
         assert limit >= 1
         return limit
+
+    @property
+    def async_market_status(self) -> bool:
+        """
+        是否启用异步线程更新市场状态，这样尽量不去阻塞到持仓线程
+        """
+        return self._config.get('async_market_status', False)
 
     @property
     def store_configs(self) -> dict[str, StoreConfig]:

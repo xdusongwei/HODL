@@ -80,6 +80,8 @@ class StatusWidget(PlaceholderBase):
             process_time = store_dict.get('processTime')
             if process_time:
                 process_time = '{:.2f}'.format(process_time)
+            else:
+                process_time = '--'
             if tui_config.display_process_time:
                 process_time_text = f' 📶{process_time}s'
 
