@@ -53,9 +53,13 @@ class VariableTools:
         telegram: dict = self._config.get('telegram', dict())
         token = telegram.get('token')
         proxy_url = telegram.get('proxy_url')
+        base_url = telegram.get('base_url')
+        base_file_url = telegram.get('base_file_url')
         if not token:
             return None
         return Updater(
+            base_url=base_url,
+            base_file_url=base_file_url,
             token=token,
             use_context=True,
             request_kwargs={
