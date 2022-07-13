@@ -85,6 +85,7 @@ class BrokerProxy:
         return all_status
 
     def _query_market_status(self):
+        market_status_dict = self.MARKET_STATUS.copy()
         store_config = self.store_config
         for broker in self.market_status_brokers:
             for meta in broker.META:
@@ -94,7 +95,7 @@ class BrokerProxy:
                     continue
                 if store_config.region not in meta.market_status_regions:
                     continue
-                ms = self.MARKET_STATUS \
+                ms = market_status_dict \
                     .get(type(broker), dict()) \
                     .get(store_config.trade_type, dict()) \
                     .get(store_config.region, None)

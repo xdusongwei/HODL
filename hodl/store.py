@@ -1,5 +1,4 @@
 from hodl.bot import *
-from hodl.broker_proxy import *
 from hodl.tools import *
 from hodl.state import *
 from hodl.risk_control import *
@@ -118,6 +117,7 @@ class Store(QuoteMixin, TradeMixin):
         self.try_cancel_orders()
         self.try_buy_remain()
         self.set_up_earning()
+        self.set_up_rework()
 
     def try_cancel_orders(self):
         self.logger.info(f'进入清盘环节')
@@ -175,7 +175,7 @@ class Store(QuoteMixin, TradeMixin):
                 line = f'"{TimeTools.date_to_ymd(last_sunday_utc)}","历史",{earning},"{region}"\n'
                 f.write(line)
 
-    def set_up_earning(self):
+    def set_up_earning(self) -> float:
         store_config = self.store_config
         plan = self.state.plan
         earning = plan.calc_earning()
@@ -188,6 +188,7 @@ class Store(QuoteMixin, TradeMixin):
         assert earning >= 0
         latest_order = plan.latest_today_buy_order()
         buyback_price = latest_order.avg_price
+        plan.buy_back_price = buyback_price
         if db := self.db:
             earning_item = EarningRow(
                 day=int(TimeTools.date_to_ymd(now, join=False)),
@@ -213,11 +214,22 @@ class Store(QuoteMixin, TradeMixin):
             self.logger.warning(f'聊天消息发送失败: {error}')
         else:
             self.logger.info(f'聊天消息发送成功')
+        return buyback_price
+
+    def set_up_rework(self):
+        store_config = self.store_config
+        plan = self.state.plan
+        buyback_price = plan.buy_back_price
         if level := store_config.rework_level:
+            self.logger.info(f'设定清除持仓状态的价格等级为{level}')
             try:
                 row = self.build_table(store_config=store_config, plan=plan).row_by_level(level=level)
                 if row.sell_at > buyback_price:
-                    plan.rework_price = row.sell_at
+                    price = row.sell_at
+                    plan.rework_price = price
+                    self.logger.info(f'设定清除持仓状态的价格为{FMT.pretty_price(price, config=store_config)}')
+                else:
+                    self.logger.info(f'该等级价格低于买入价，不设定清除持仓状态功能')
             except Exception as e:
                 self.logger.warning(f'设置reworkPrice出现错误: {e}')
 

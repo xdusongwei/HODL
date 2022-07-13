@@ -83,7 +83,7 @@ class StatusWidget(PlaceholderBase):
             else:
                 process_time = '--'
             if tui_config.display_process_time:
-                process_time_text = f' 📶{process_time}s'
+                process_time_text = f' 📶{process_time}'
 
             default_style = 'white' if state.market_status == 'TRADING' else 'grey50'
 

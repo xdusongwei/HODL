@@ -67,6 +67,14 @@ class Plan(DictWrapper):
         self.d['earning'] = v
 
     @property
+    def buy_back_price(self):
+        return self.d.get('buyBackPrice')
+
+    @buy_back_price.setter
+    def buy_back_price(self, v: float):
+        self.d['buyBackPrice'] = v
+
+    @property
     def weight(self) -> list[float]:
         return self.d.get('weight')
 

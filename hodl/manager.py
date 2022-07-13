@@ -6,7 +6,7 @@ from hodl.bot import AlertBot, ConversationBot
 from hodl.storage import LocalDb
 from hodl.store import Store
 from hodl.quote_mixin import QuoteMixin
-from hodl.broker_proxy import *
+from hodl.broker.broker_proxy import *
 from hodl.tools import *
 
 

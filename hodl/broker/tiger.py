@@ -101,10 +101,11 @@ class TigerApi(BrokerApiBase):
 
     HAS_GRAB = False
     GRAB_LOCK = threading.Lock()
-    MARKET_STATUS_BUCKET = LeakyBucket(10)
-    QUOTE_BUCKET = LeakyBucket(120)
-    ORDER_BUCKET = LeakyBucket(120)
-    ASSET_BUCKET = LeakyBucket(60)
+    # 老虎证券提供的文档限制频率，使用漏桶可能会触发超频，所以设定比其文档频率低一次
+    MARKET_STATUS_BUCKET = LeakyBucket(9)
+    QUOTE_BUCKET = LeakyBucket(119)
+    ORDER_BUCKET = LeakyBucket(119)
+    ASSET_BUCKET = LeakyBucket(59)
 
     def __str__(self):
         return f'<' \

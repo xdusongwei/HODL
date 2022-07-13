@@ -6,7 +6,7 @@ from hodl.risk_control import RiskControl
 from hodl.tools import *
 from hodl.storage import LocalDb, StateRow
 from hodl.bot import AlertBot
-from hodl.broker_proxy import BrokerProxy
+from hodl.broker.broker_proxy import BrokerProxy
 from hodl.state import *
 
 
