@@ -1,6 +1,8 @@
+from os import environ
 import asyncio
 from collections import defaultdict
 import httpx
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 from pygame import mixer
 from rich import box
 from rich.panel import Panel
@@ -73,9 +75,31 @@ class StatusWidget(PlaceholderBase):
             state = store_dict.get('state')
             e = store_dict.get('exception')
             state = State(state)
+            plan: Plan = state.plan
             config = StoreConfig(config_dict)
             symbol = config.symbol
             region = config.region
+
+            lock_position = ''
+            if config.get('lockPosition'):
+                lock_position = '🔒'
+
+            rework_set = ''
+            if state.plan.rework_price:
+                rework_set = '🔁'
+
+            battery = '🔋'
+            chips = plan.total_chips
+            diff = plan.total_volume_not_active(assert_zero=False)
+            if chips and (chips - diff) >= 0:
+                remain = chips - diff
+                percent = int(remain / chips * 100)
+                battery += f'{percent}'
+            else:
+                battery += f'--'
+            if not tui_config.display_chip_rate:
+                battery = ''
+
             process_time_text = ''
             process_time = store_dict.get('processTime')
             if process_time:
@@ -83,13 +107,12 @@ class StatusWidget(PlaceholderBase):
             else:
                 process_time = '--'
             if tui_config.display_process_time:
-                process_time_text = f' 📶{process_time}'
+                process_time_text = f'📶{process_time}'
 
             default_style = 'white' if state.market_status == 'TRADING' else 'grey50'
 
-            plan: Plan = state.plan
             name = f' {state.name}' if state.name else ''
-            title = f'[{region}]{symbol}{name}{process_time_text}\n'
+            title = f'[{region}]{symbol}{name}{rework_set}{lock_position}{battery}{process_time_text}'
             text = Text(style=default_style)
             tags = list()
             prudent = '惜售' if plan.prudent else '超卖'
@@ -126,7 +149,7 @@ class StatusWidget(PlaceholderBase):
                 text.append(Text(f'风控异常: {state.risk_control_detail}\n', style='red'))
             if e and e != state.risk_control_detail:
                 text.append(Text(f'执行异常: {e}\n', style='red'))
-            container.append(Rule(title=Text(title, style=default_style), align='left', characters=' '))
+            container.append(Text(title, style=default_style))
             container.append(text)
 
         return Panel(
@@ -179,7 +202,7 @@ class QuoteWidget(PlaceholderBase):
             text.append(
                 f'昨收: {FMT.pretty_price(state.quote_pre_close, config=config)}\n',
             )
-            container.append(Rule(title=Text(title, style=default_style), align='left', characters=' '))
+            container.append(Text(title, style=default_style))
             container.append(text)
         return Panel(
             Align.left(Group(*container)),

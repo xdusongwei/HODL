@@ -1,12 +1,27 @@
+image: python:3.10.4
 stages:
   - test
+  - build
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
     - .cache/pip
 variables:
+  PROJECT: 'hodl'
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+before_script:
+  - mkdir -p ~/.pip
+  - mkdir -p ~/logs/hodl
+  - mkdir -p ~/data/hodl
+  - cp ci/pip.conf ~/.pip/
+  - cp ci/gitlab-ci.toml config.toml
+  - pip install -U pip setuptools wheel build twine
+  - pip install pdm
+  - export PATH="$HOME/.local/bin:$PATH"
+  - pdm config pypi.url "https://mirrors.cloud.tencent.com/pypi/simple"
+  - pdm install --prod --no-lock --no-editable
 
 test:
   stage: test
@@ -15,22 +30,7 @@ test:
   image: python:3.10.4
   only:
     - branches
-  variables:
-    PROJECT: 'hodl'
-    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  cache:
-    paths:
-      - .cache/pip
-  before_script:
-    - mkdir -p ~/.pip
-    - mkdir -p ~/logs/hodl
-    - mkdir -p ~/data/hodl
-    - cp ci/pip.conf ~/.pip/
-    - cp ci/gitlab-ci.toml config.toml
-    - pip install -U pip setuptools wheel
-    - pip install pdm
-    - export PATH="$HOME/.local/bin:$PATH"
-    - pdm install --prod --no-lock --no-editable
+    - tags
   script:
     - pdm run test
     - pdm run report
@@ -44,3 +44,15 @@ test:
         coverage_format: cobertura
         path: coverage.xml
 
+build:
+  stage: build
+  tags:
+    - python
+  only:
+    - tags
+  script:
+    - pdm build
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
+  artifacts:
+    paths:
+      - dist/*.whl

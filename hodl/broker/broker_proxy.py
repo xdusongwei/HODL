@@ -17,7 +17,6 @@ class BrokerProxy:
     特定持仓需要市场状态时，根据broker顺序列表从 MARKET_STATUS 尝试取特定交易品种特定region的状态
     """
     THREAD_POOL = multiprocessing.pool.ThreadPool()
-    MARKET_STATUS_BROKERS: list[BrokerApiBase] = None
     MARKET_STATUS: dict[Type[BrokerApiBase], dict[str, dict[str, str]]] = dict()
 
     @classmethod

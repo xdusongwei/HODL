@@ -1,6 +1,6 @@
 [project]
 name = "hodl"
-version = "0.0.1"
+dynamic = ["version"]
 description = ""
 authors = [
     {name = "xdusongwei", email = "github@songwei.io"},
@@ -32,6 +32,7 @@ homepage = "https://github.com/xdusongwei/HODL"
 
 [tool]
 [tool.pdm]
+version = { source = "file", path = "hodl/__version__.py" }
 
 [build-system]
 requires = ["pdm-pep517"]

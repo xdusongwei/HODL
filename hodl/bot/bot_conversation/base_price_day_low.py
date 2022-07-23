@@ -13,8 +13,8 @@ class BasePriceDayLow(TelegramBotBase):
         lines = self._symbol_lines()
         idx_list = self._symbol_choice()
         update.message.reply_text(
-            f'你正在尝试设置修改[基准价格日低](basePriceDayLow)的设定，指定持仓未有任何买卖单时会有效执行。 '
-            f'[开启]时，[基准价格]可以是[临时基准价], [昨收价]和[当日最低价]中最小的; [关闭]时，[基准价格]只能是[昨收价]。'
+            f'你正在尝试设置修改[基准价格-日低](basePriceDayLow)的设定，指定持仓未有任何买卖单时会有效执行。 '
+            f'[开启]时，[基准价格]可以参考[当日最低价]取最小的; [关闭]时，[基准价格]不考虑[当日最低价]。'
             f'选择需要操作的标的序号\n'
             f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
             reply_markup=ReplyKeyboardMarkup(
@@ -29,7 +29,7 @@ class BasePriceDayLow(TelegramBotBase):
         user_id = update.message.from_user.id
         self._create_session(user_id=user_id, position=position)
         update.message.reply_text(
-            f'选择了 {position.display} 操作[基准价格日低]项目的修改。'
+            f'选择了 {position.display} 操作[基准价格-日低]项目的修改。'
             f'当前状态为 {"[开启]" if position.config.base_price_day_low else "[关闭]"}。你可以选择命令 /on 或者 /off 修改状态',
             reply_markup=ReplyKeyboardRemove(),
         )
@@ -53,7 +53,7 @@ class BasePriceDayLow(TelegramBotBase):
         session.value = value
         new_icon = "[开启]" if value else "[关闭]"
         update.message.reply_text(
-            f'确认针对{session.position.display}的[基准价格日低]改动为{new_icon}? 使用命令 /confirm 来确认',
+            f'确认针对{session.position.display}的[基准价格-日低]改动为{new_icon}? 使用命令 /confirm 来确认',
             reply_markup=ReplyKeyboardRemove(),
         )
         return self.K_BPDL_CONFIRM
@@ -65,7 +65,7 @@ class BasePriceDayLow(TelegramBotBase):
         match text:
             case '/confirm':
                 update.message.reply_text(
-                    f'已经确认改动{session.position.display}的[基准价格日低]',
+                    f'已经确认改动{session.position.display}的[基准价格-日低]',
                     reply_markup=ReplyKeyboardRemove(),
                 )
                 try:

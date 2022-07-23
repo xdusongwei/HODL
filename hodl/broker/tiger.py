@@ -13,6 +13,7 @@ from tigeropen.quote.quote_client import QuoteClient
 from tigeropen.tiger_open_config import get_client_config
 from tigeropen.trade.domain.position import Position
 from tigeropen.trade.trade_client import TradeClient
+from tigeropen.push.push_client import PushClient
 from tigeropen.common.consts import Market
 from tigeropen.quote.domain.market_status import MarketStatus
 from tigeropen.trade.domain.prime_account import PortfolioAccount, Segment
@@ -107,6 +108,10 @@ class TigerApi(BrokerApiBase):
     ORDER_BUCKET = LeakyBucket(119)
     ASSET_BUCKET = LeakyBucket(59)
 
+    QUOTE_CLIENT: SpeedupQuoteClient = None
+    TRADE_CLIENT: SpeedupTradeClient = None
+    PUSH_CLIENT: PushClient = None
+
     def __str__(self):
         return f'<' \
                f'{type(self).__name__} ' \
@@ -139,8 +144,17 @@ class TigerApi(BrokerApiBase):
         )
         self.custom_client = client_config
         _SpeedupMixin.SESSION = self.http_session
-        self.trade_client = SpeedupTradeClient(client_config)
-        self.quote_client = SpeedupQuoteClient(client_config, is_grab_permission=False)
+
+        if TigerApi.QUOTE_CLIENT is None:
+            TigerApi.QUOTE_CLIENT = SpeedupTradeClient(client_config)
+        self.trade_client = TigerApi.QUOTE_CLIENT
+        if TigerApi.TRADE_CLIENT is None:
+            TigerApi.TRADE_CLIENT = SpeedupQuoteClient(client_config, is_grab_permission=False)
+        self.quote_client = TigerApi.TRADE_CLIENT
+        if TigerApi.PUSH_CLIENT is None:
+            protocol, host, port = client_config.socket_host_port
+            TigerApi.PUSH_CLIENT = PushClient(host, port, use_ssl=(protocol == 'ssl'))
+        self.push_client = TigerApi.PUSH_CLIENT
 
     @classmethod
     def current_quote(cls, client: QuoteClient, symbol: str) -> Quote:

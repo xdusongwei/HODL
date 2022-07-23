@@ -37,7 +37,18 @@ class VariableTools:
         else:
             return None
 
+    @property
+    def store_configs(self) -> dict[str, StoreConfig]:
+        """
+        所有持仓配置的字典结构
+        """
+        store_config_list = [StoreConfig(d) for d in self._config.get('store', dict()).values()]
+        return {store_config.symbol: store_config for store_config in store_config_list}
+
     def broker_config_dict(self, name):
+        """
+        指定broker的配置字典结构
+        """
         broker: dict = self._config.get('broker')
         if not broker:
             return None
@@ -145,11 +156,6 @@ class VariableTools:
         是否启用异步线程更新市场状态，这样尽量不去阻塞到持仓线程
         """
         return self._config.get('async_market_status', False)
-
-    @property
-    def store_configs(self) -> dict[str, StoreConfig]:
-        store_config_list = [StoreConfig(d) for d in self._config.get('store', dict()).values()]
-        return {store_config.symbol: store_config for store_config in store_config_list}
 
 
 __all__ = ['VariableTools', ]

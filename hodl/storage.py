@@ -135,11 +135,11 @@ class OrderRow:
         filled_price = FormatTool.pretty_usd(order.avg_price, region=order.region)
         filled_qty = FormatTool.pretty_number(order.filled_qty)
         if order.is_filled:
-            filled_detail = '成交'
+            filled_detail = f'成交:{filled_price}@{filled_qty}'
         elif order.filled_qty:
             filled_detail = f'部成:{filled_price}@{filled_qty}'
         else:
-            filled_detail = '0成交'
+            filled_detail = '--'
         return f'{time_str}: {order.symbol} {order.direction}[{level}] {order_price}@{total_qty} {filled_detail}\n'
 
 

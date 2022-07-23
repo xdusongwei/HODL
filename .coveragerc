@@ -5,6 +5,7 @@ omit =
     hodl/broker/*
     hodl/simulation/*
     hodl/cli/*
+    hodl/tools/*
     hodl/storage.py
-    hodl/manager.py
     hodl/unit_test.py
+    hodl/__version__.py
