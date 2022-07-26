@@ -177,7 +177,7 @@ class Store(QuoteMixin, TradeMixin):
 
     def set_up_earning(self) -> float:
         store_config = self.store_config
-        symbol=store_config.symbol
+        symbol = store_config.symbol
         plan = self.state.plan
         earning = plan.calc_earning()
         plan.earning = earning
@@ -186,8 +186,13 @@ class Store(QuoteMixin, TradeMixin):
         cash = FMT.pretty_price(earning, config=store_config, only_int=True)
         latest_order = plan.latest_today_buy_order()
         buyback_price = latest_order.avg_price
-
-        earning_text = f'💰{symbol}在{day_now}收益{cash}, 买回价:{FMT.pretty_price(buyback_price, store_config)}'
+        start_date = plan.orders[0].create_timestamp
+        start_date = TimeTools.from_timestamp(start_date)
+        days = abs((now.date() - start_date.date()).days) + 1
+        speed = earning / days
+        speed = FMT.pretty_price(speed, config=store_config, only_int=True)
+        buyback_text = FMT.pretty_price(buyback_price, store_config)
+        earning_text = f'💰{symbol}在{day_now}收益{cash}, 买回价:{buyback_text}, 持续{days}天，平均日收益{speed}'
         self.logger.info(earning_text)
         assert earning >= 0
 
@@ -196,6 +201,8 @@ class Store(QuoteMixin, TradeMixin):
             earning_item = EarningRow(
                 day=int(TimeTools.date_to_ymd(now, join=False)),
                 symbol=symbol,
+                currency=store_config.currency,
+                days=days,
                 amount=earning,
                 unit=FMT.region_to_unit(region=store_config.region),
                 region=store_config.region,

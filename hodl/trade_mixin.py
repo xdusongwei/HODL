@@ -330,7 +330,7 @@ class TradeMixin(StoreBase, ABC):
         state = self.state
         plan = state.plan
         profit_table = fire_state.profit_table
-        self.logger.info(f'准备下买单')
+        self.logger.info(f'准备下level{fire_state.new_buy_level}买单')
         assert 0 < fire_state.new_buy_level <= profit_table.size
         latest_order = plan.latest_today_buy_order()
         if latest_order and latest_order.is_waiting_filling:

@@ -41,7 +41,7 @@ class TuiConfig(dict):
     @property
     def display_process_time(self):
         """
-        展示持仓的处理耗时在名称后面，单位是秒
+        展示持仓的处理耗时在名称后面，单位是毫秒
         """
         return self.get('display_process_time', False)
 

@@ -27,7 +27,6 @@ test:
   stage: test
   tags:
     - python
-  image: python:3.10.4
   only:
     - branches
     - tags
@@ -50,6 +49,7 @@ build:
     - python
   only:
     - tags
+  when: manual
   script:
     - pdm build
     - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
