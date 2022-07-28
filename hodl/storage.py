@@ -10,6 +10,8 @@ from hodl.tools import FormatTool, TimeTools
 class EarningRow:
     day: int
     symbol: str
+    currency: str
+    days: int
     amount: int
     unit: str
     region: str
@@ -21,11 +23,14 @@ class EarningRow:
     def save(self, con: sqlite3.Connection):
         with con:
             con.execute(
-                "INSERT INTO `earning`(`day`, `symbol`, `amount`, `unit`, `region`, `broker`, `buyback_price`, `create_time`) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+                "INSERT INTO `earning`"
+                "(`day`, `symbol`, `currency`, `days`, `amount`, `unit`, `region`, `broker`, `buyback_price`, `create_time`) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
                 (
                     self.day,
                     self.symbol,
+                    self.currency,
+                    self.days,
                     self.amount,
                     self.unit,
                     self.region,
@@ -256,6 +261,8 @@ class LocalDb:
         id INTEGER PRIMARY KEY, 
         `day` INTEGER NOT NULL,
         `symbol` TEXT NOT NULL,
+        `currency` TEXT NOT NULL,
+        `days` INTEGER,
         `amount` INTEGER NOT NULL,
         `unit` TEXT NOT NULL,
         `region` TEXT NOT NULL,

@@ -2,11 +2,11 @@ import os
 import json
 import threading
 import requests
-from hodl.risk_control import RiskControl
+from hodl.risk_control import *
 from hodl.tools import *
-from hodl.storage import LocalDb, StateRow
-from hodl.bot import AlertBot
-from hodl.broker.broker_proxy import BrokerProxy
+from hodl.storage import *
+from hodl.bot import *
+from hodl.broker.broker_proxy import *
 from hodl.state import *
 
 
@@ -27,13 +27,12 @@ class StoreBase:
             store_config: StoreConfig,
             db: LocalDb = None,
     ):
-        self.runtime_state: StoreState = StoreState(store_config=store_config, http_session=self.SESSION)
+        self.runtime_state: StoreState = StoreState(
+            store_config=store_config,
+            http_session=self.SESSION,
+        )
         self.thread_context = self.runtime_state
         self.state: State = State()
-        self.broker_proxy: BrokerProxy = None
-        self.risk_control: RiskControl | None = None
-        self.exception: Exception | None = None
-        self.process_time: int = None
         self.db = db
         self.lock = threading.Lock()
 
@@ -43,7 +42,7 @@ class StoreBase:
             symbol=store_config.symbol,
             chat_id=variable.telegram_chat_id,
             updater=variable.telegram_updater(),
-            db=self.db,
+            db=db,
         )
 
         try:
@@ -52,6 +51,38 @@ class StoreBase:
             self.logger.exception(e)
             self.exception = e
             raise e
+
+    @property
+    def broker_proxy(self) -> BrokerProxy:
+        return getattr(self, '_broker_proxy', None)
+
+    @broker_proxy.setter
+    def broker_proxy(self, v: BrokerProxy):
+        setattr(self, '_broker_proxy', v)
+
+    @property
+    def risk_control(self) -> RiskControl:
+        return getattr(self, '_risk_control', None)
+
+    @risk_control.setter
+    def risk_control(self, v: RiskControl):
+        setattr(self, '_risk_control', v)
+
+    @property
+    def process_time(self) -> int | None:
+        return getattr(self, '_process_time', None)
+
+    @process_time.setter
+    def process_time(self, v: int):
+        setattr(self, '_process_time', v)
+
+    @property
+    def exception(self) -> Exception | None:
+        return getattr(self, '_exception', None)
+
+    @exception.setter
+    def exception(self, v: Exception):
+        setattr(self, '_exception', v)
 
     def load_state(self):
         if not self.ENABLE_STATE_FILE:

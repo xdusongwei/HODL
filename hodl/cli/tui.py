@@ -1,15 +1,13 @@
-from os import environ
+import sys
 import asyncio
 from collections import defaultdict
 import httpx
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 from pygame import mixer
 from rich import box
 from rich.panel import Panel
 from rich.text import Text
 from rich.align import Align
 from rich.console import Group
-from rich.rule import Rule
 from rich.emoji import Emoji
 from rich.columns import Columns
 from rich.table import Table
@@ -62,7 +60,7 @@ class StatusWidget(PlaceholderBase):
         time = time.isoformat(timespec='milliseconds')
         time = time[2:-10]
         container = list()
-        dt = Text(f"状态(")
+        dt = Text(f"持仓(")
         dt.append(Text(f'{tz_name}: {time}', style="green"))
         dt.append(')')
         cross_mark = Emoji('cross_mark')
@@ -80,39 +78,10 @@ class StatusWidget(PlaceholderBase):
             symbol = config.symbol
             region = config.region
 
-            lock_position = ''
-            if config.get('lockPosition'):
-                lock_position = '🔒'
-
-            rework_set = ''
-            if state.plan.rework_price:
-                rework_set = '🔁'
-
-            battery = '🔋'
-            chips = plan.total_chips
-            diff = plan.total_volume_not_active(assert_zero=False)
-            if chips and (chips - diff) >= 0:
-                remain = chips - diff
-                percent = int(remain / chips * 100)
-                battery += f'{percent}'
-            else:
-                battery += f'--'
-            if not tui_config.display_chip_rate:
-                battery = ''
-
-            process_time_text = ''
-            process_time = store_dict.get('processTime')
-            if process_time:
-                process_time = '{:.2f}'.format(process_time)
-            else:
-                process_time = '--'
-            if tui_config.display_process_time:
-                process_time_text = f'📶{process_time}'
-
             default_style = 'white' if state.market_status == 'TRADING' else 'grey50'
 
             name = f' {state.name}' if state.name else ''
-            title = f'[{region}]{symbol}{name}{rework_set}{lock_position}{battery}{process_time_text}'
+            title = f'[{region}]{symbol}{name}'
             text = Text(style=default_style)
             tags = list()
             prudent = '惜售' if plan.prudent else '超卖'
@@ -171,6 +140,7 @@ class QuoteWidget(PlaceholderBase):
             return 'green' if current >= base else 'red'
 
     def render(self):
+        tui_config = self.config()
         self.FLASH = TimeTools.us_time_now().second % 4
         config = self.config()
         border_style = config.border_style
@@ -180,10 +150,40 @@ class QuoteWidget(PlaceholderBase):
         for store_dict, config_dict in zip(store_items, config_items):
             state = store_dict.get('state')
             state = State(state)
+            plan: Plan = state.plan
             config = StoreConfig(config_dict)
             symbol = config.symbol
             latest_price = state.quote_latest_price
             region = config.region
+
+            lock_position = ''
+            if config.get('lockPosition'):
+                lock_position = '🔒'
+
+            rework_set = ''
+            if state.plan.rework_price:
+                rework_set = '🔁'
+
+            battery = '🔋'
+            chips = plan.total_chips
+            diff = plan.total_volume_not_active(assert_zero=False)
+            if chips and (chips - diff) >= 0:
+                remain = chips - diff
+                percent = int(remain / chips * 100)
+                battery += f'{percent}%'
+            else:
+                battery += f'--'
+            if not tui_config.display_chip_rate:
+                battery = ''
+
+            process_time_text = ''
+            process_time = store_dict.get('processTime')
+            if process_time:
+                process_time = f'{int(process_time * 1000)}'
+            else:
+                process_time = '--'
+            if tui_config.display_process_time:
+                process_time_text = f'📶{process_time}ms'
 
             default_style = 'white' if state.market_status == 'TRADING' else 'grey50'
 
@@ -200,13 +200,13 @@ class QuoteWidget(PlaceholderBase):
                 style=self._color(latest_price, state.quote_pre_close),
             )
             text.append(
-                f'昨收: {FMT.pretty_price(state.quote_pre_close, config=config)}\n',
+                f'状态: {rework_set}{lock_position}{battery}{process_time_text}\n',
             )
             container.append(Text(title, style=default_style))
             container.append(text)
         return Panel(
             Align.left(Group(*container)),
-            title=f'行情({len(store_items)})',
+            title=f'状态({len(store_items)})',
             border_style=border_style,
             box=box.ROUNDED,
             style=self.style,
@@ -324,6 +324,8 @@ class GridApp(App, ConfigMixin, DataMixin):
     SESSION: httpx.AsyncClient = None
     MARKET_STATUS = 'UNKNOWN'
     ENABLE_AUDIO = False
+    ORDER_FILLED = dict()
+    TOASTER = None
 
     @classmethod
     def _init_bgm(cls):
@@ -346,6 +348,24 @@ class GridApp(App, ConfigMixin, DataMixin):
             mixer.music.unload()
 
     @classmethod
+    def _set_up_notification(
+            cls,
+            title: str,
+            msg: str,
+            duration: int = 4 * 60 * 60,
+    ):
+        if sys.platform == 'win32' and not GridApp.TOASTER:
+            from win10toast import ToastNotifier
+            GridApp.TOASTER = ToastNotifier()
+        if GridApp.TOASTER:
+            GridApp.TOASTER.show_toast(
+                title=title,
+                msg=msg,
+                duration=duration,
+                threaded=False,
+            )
+
+    @classmethod
     async def request_manager_api(cls, config: TuiConfig):
         try:
             url = config.manager_url
@@ -357,6 +377,27 @@ class GridApp(App, ConfigMixin, DataMixin):
             cls.CONFIG_ITEMS[id(config)] = [item.get('config', dict()) for item in resp_items]
             cls.THREAD_ITEMS[id(config)] = [item.get('thread', dict()) for item in resp_items]
             status_list = [State(item.get('state', dict())) for item in store_items]
+            for store_status in status_list:
+                plan = store_status.plan
+                orders = plan.orders
+                for order in orders:
+                    unique_id = order.unique_id
+                    if unique_id not in GridApp.ORDER_FILLED:
+                        GridApp[unique_id] = order.is_filled
+                    if order.is_filled and not GridApp.ORDER_FILLED.get(unique_id):
+                        GridApp.ORDER_FILLED[unique_id] = order.is_filled
+                        if config.order_filled_notification:
+                            region = order.region
+                            symbol = order.symbol
+                            name = store_status.name
+                            direction = order.direction
+                            price = FMT.pretty_usd(order.avg_price, currency=order.currency)
+                            qty = FMT.pretty_number(order.filled_qty)
+                            msg = f'[{region}]{symbol} {name} {direction} {price}@{qty}'
+                            cls._set_up_notification(
+                                title=f'订单成交',
+                                msg=msg,
+                            )
             if any(1 for state in status_list
                    if state.market_status == 'TRADING' and state.current != StoreBase.STATE_GET_OFF):
                 new_market_status = 'CASINO'
