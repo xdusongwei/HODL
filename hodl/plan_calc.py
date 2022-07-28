@@ -71,8 +71,14 @@ class PlanCalc:
 
     @classmethod
     def _build_argument(cls, prudent=True, price_rate=1.0) -> _Argument:
+        """
+        构建默认的买卖价位的因子列表。
+        大多数情形下，持仓套利主要集中在3%~10%以内的波动区间。
+        但是考虑到股价存在大幅波动的可能，绝大部分持仓需要分段在更高的价位上卖出。
+        列表项是一个三元组，分别代表了买入价位比例因子，卖出价位比例因子，卖出的仓位权重。
+        """
         if prudent:
-            # 22
+            # 惜售策略，可控最高涨幅100%。合计权重：22；10%以内波动，策略换手率14.5%。
             factors = [
                 (01.0, 1.030, 1.000,),
                 (01.0, 1.055, 1.015,),
@@ -94,7 +100,7 @@ class PlanCalc:
             sell_rate = [factor[1] for factor in factors]
             buy_rate = [factor[2] for factor in factors]
         else:
-            # 24
+            # 超卖策略，可控最高涨幅50%。合计权重：24；10%以内波动，策略换手率12.5%。
             factors = [
                 (01.0, 1.030, 1.000,),
                 (01.0, 1.050, 1.015,),
