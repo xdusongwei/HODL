@@ -293,7 +293,7 @@ class ProfitWidget(PlaceholderBase):
         }
         lines = list()
         for item in items:
-            day, symbol, earning, region = item
+            day, name, earning, currency = item
             earning = int(earning)
             if earning >= 8000:
                 icon = icons['super']
@@ -304,7 +304,7 @@ class ProfitWidget(PlaceholderBase):
             else:
                 icon = icons['little']
             text = Text(
-                f'{icon} {day[2:]} {FMT.pretty_usd(earning, only_int=True, region=region)}@{symbol}',
+                f'{icon}{day[2:]}:{FMT.pretty_usd(earning, only_int=True, currency=currency)}@{name}',
                 style='green',
             )
             lines.append(text)
@@ -418,18 +418,16 @@ class GridApp(App, ConfigMixin, DataMixin):
         try:
             url = config.profit_url
             response = await cls.SESSION.get(url)
-            text = response.text
-            lines = text.split('\n')
-            for line in lines:
-                if not line:
+            d = response.json()
+            for item in d.get('recentEarnings', list()):
+                item: dict = item
+                if not item:
                     continue
-                parts = line.split(',')
-                day, symbol, earning, region = parts
-                day: str = day.strip('" ')
-                symbol: str = symbol.strip('" ')
-                earning: str = earning.strip('" ')
-                region: str = region.strip('" ')
-                profit.append((day, symbol, int(earning), region))
+                day: str = item.get('day')
+                name: str = item.get('name')
+                earning: str = item.get('earning')
+                currency: str = item.get('currency')
+                profit.append((day, name, earning, currency))
             cls.PROFIT[id(config)] = profit
         except Exception:
             pass

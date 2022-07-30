@@ -7,9 +7,9 @@ var = VariableTools()
 
 
 db = LocalDb(var.db_path)
-Store.rewrite_earning_csv(
+Store.rewrite_earning_json(
     db=db,
-    earning_csv_path=var.earning_csv_path,
+    earning_json_path=var.earning_json_path,
     now=TimeTools.us_time_now(),
 )
 

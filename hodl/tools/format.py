@@ -48,6 +48,10 @@ class FormatTool:
         return unit
 
     @classmethod
+    def currency_to_unit(cls, currency: str) -> str:
+        return CurrencySymbols.get_symbol(currency)
+
+    @classmethod
     def pretty_usd(cls, v: None | int | float, currency=None, unit='$', region=None, only_int=False) -> str:
         if currency:
             match currency:
@@ -56,7 +60,7 @@ class FormatTool:
                 case 'USDC':
                     unit = 'USDC'
                 case _:
-                    unit = CurrencySymbols.get_symbol(currency)
+                    unit = cls.currency_to_unit(currency)
         elif region:
             unit = cls.region_to_unit(region=region)
         if v is None:

@@ -15,7 +15,7 @@ class TuiConfig(dict):
     @property
     def profit_url(self):
         """
-        profit CSV文件的url地址，这是tui命令必要的
+        profit json文件的url地址，这是tui命令必要的
         """
         return self.get('profit_url')
 

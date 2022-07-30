@@ -1,3 +1,5 @@
+import json
+
 from hodl.bot import *
 from hodl.tools import *
 from hodl.state import *
@@ -156,24 +158,43 @@ class Store(QuoteMixin, TradeMixin):
         self.logger.info(f'清盘订单全部成功完成')
 
     @classmethod
-    def rewrite_earning_csv(cls, db: LocalDb, earning_csv_path: str, now, weeks=2):
+    def rewrite_earning_json(cls, db: LocalDb, earning_json_path: str, now, weeks=2):
         last_sunday_utc = TimeTools.last_sunday_utc(now, weeks=-weeks)
         create_time = int(last_sunday_utc.timestamp())
         items = EarningRow.items_after_time(con=db.conn, create_time=create_time)
-        total_list = [(region, EarningRow.total_amount_before_time(db.conn, create_time, FMT.region_to_unit(region)))
-                      for region in ('US', 'CN',)]
-        with open(earning_csv_path, mode='w', encoding='utf8') as f:
-            for item in items:
-                day = str(item.day)
-                day_now = f'{day[:4]}-{day[4:6]}-{day[6:]}'
-                symbol = item.symbol
-                earning = item.amount
-                region = item.region
-                line = f'"{day_now}","{symbol}",{earning},"{region}"\n'
-                f.write(line)
-            for region, earning in total_list:
-                line = f'"{TimeTools.date_to_ymd(last_sunday_utc)}","历史",{earning},"{region}"\n'
-                f.write(line)
+        total_list = [(currency, EarningRow.total_amount_before_time(db.conn, create_time, currency))
+                      for currency in ('USD', 'CNY',)]
+        recent_earnings = list()
+        for item in items:
+            day = str(item.day)
+            day_now = f'{day[:4]}-{day[4:6]}-{day[6:]}'
+            recent_earnings.append({
+                'type': 'earningItem',
+                'day': day_now,
+                'name': item.symbol,
+                'broker': item.broker,
+                'region': item.region,
+                'symbol': item.symbol,
+                'earning': item.amount,
+                'currency': item.currency,
+            })
+        for currency, earning in total_list:
+            recent_earnings.append({
+                'type': 'earningHistory',
+                'day': TimeTools.date_to_ymd(last_sunday_utc),
+                'name': '历史',
+                'broker': None,
+                'region': None,
+                'symbol': None,
+                'earning': earning,
+                'currency': currency,
+            })
+        file_dict = {
+            'type': 'earningReport',
+            'recentEarnings': recent_earnings,
+        }
+        with open(earning_json_path, mode='w', encoding='utf8') as f:
+            f.write(json.dumps(file_dict, indent=2, sort_keys=True))
 
     def set_up_earning(self) -> float:
         store_config = self.store_config
@@ -204,18 +225,18 @@ class Store(QuoteMixin, TradeMixin):
                 currency=store_config.currency,
                 days=days,
                 amount=earning,
-                unit=FMT.region_to_unit(region=store_config.region),
+                unit=FMT.currency_to_unit(store_config.currency),
                 region=store_config.region,
                 broker=store_config.broker,
                 buyback_price=buyback_price,
-                create_time=int(TimeTools.us_time_now().timestamp())
+                create_time=int(TimeTools.us_time_now().timestamp()),
             )
             earning_item.save(con=db.conn)
             variable = self.runtime_state.variable
-            if path := variable.earning_csv_path:
-                self.rewrite_earning_csv(
+            if path := variable.earning_json_path:
+                self.rewrite_earning_json(
                     db=self.db,
-                    earning_csv_path=path,
+                    earning_json_path=path,
                     now=now,
                     weeks=variable.earning_csv_weeks,
                 )

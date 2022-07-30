@@ -22,6 +22,7 @@ class Manager:
         ms = BrokerProxy.MARKET_STATUS or dict()
         ms = {broker_type.BROKER_NAME: detail for broker_type, detail in ms.items()}
         d = {
+            'type': 'manager',
             'pid': os.getpid(),
             'time': TimeTools.us_time_now().timestamp(),
             'storeSleepSecs': sleep_secs,

@@ -48,9 +48,9 @@ class EarningRow:
         return items
 
     @classmethod
-    def total_amount_before_time(cls, con: sqlite3.Connection, create_time: int, unit: str) -> int:
+    def total_amount_before_time(cls, con: sqlite3.Connection, create_time: int, currency: str) -> int:
         cur = con.cursor()
-        cur.execute("SELECT SUM(`amount`) FROM `earning` WHERE create_time < ? AND `unit` = ?;", (create_time, unit, ))
+        cur.execute("SELECT SUM(`amount`) FROM `earning` WHERE create_time < ? AND `currency` = ?;", (create_time, currency, ))
         item = cur.fetchone()[0]
         return item or 0
 

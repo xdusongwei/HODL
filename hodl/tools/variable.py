@@ -100,11 +100,11 @@ class VariableTools:
         return self._config.get('manager_state_path')
 
     @property
-    def earning_csv_path(self) -> str:
+    def earning_json_path(self) -> str:
         """
-        收益csv文件写入的路径
+        收益json文件写入的路径
         """
-        return self._config.get('earning_csv_path')
+        return self._config.get('earning_json_path')
 
     @property
     def earning_csv_weeks(self) -> int:
