@@ -69,18 +69,18 @@ class EarningRow:
         @dataclass
         class _MonthlyEarning:
             month: int
-            region: str
+            currency: str
             total: int
 
         begin_date = TimeTools.utc_now() + timedelta(days=-30 * month)
         begin_month = int(begin_date.strftime('%Y%m'))
         cur = con.cursor()
         cur.execute(
-            "SELECT substr( `day`, 1, 6) AS `month`, `region`, sum(`amount`) AS `total` "
+            "SELECT substr( `day`, 1, 6) AS `month`, `currency`, sum(`amount`) AS `total` "
             "FROM `earning` "
             "WHERE `day` >= ? "
-            "GROUP BY substr( `day`, 1, 6), `region` "
-            "ORDER BY substr( `day`, 1, 6) DESC, `region`;", (begin_month,))
+            "GROUP BY substr( `day`, 1, 6), `currency` "
+            "ORDER BY substr( `day`, 1, 6) DESC, `currency`;", (begin_month,))
         items = cur.fetchall()
         items = list(map(lambda item: _MonthlyEarning(**item), items))
         return items
@@ -135,9 +135,9 @@ class OrderRow:
             with_year=False,
         )[:-10]
         level = order.level
-        order_price = FormatTool.pretty_usd(order.limit_price, region=order.region)
+        order_price = FormatTool.pretty_usd(order.limit_price, currency=order.currency)
         total_qty = FormatTool.pretty_number(order.qty)
-        filled_price = FormatTool.pretty_usd(order.avg_price, region=order.region)
+        filled_price = FormatTool.pretty_usd(order.avg_price, currency=order.currency)
         filled_qty = FormatTool.pretty_number(order.filled_qty)
         if order.is_filled:
             filled_detail = f'成交:{filled_price}@{filled_qty}'

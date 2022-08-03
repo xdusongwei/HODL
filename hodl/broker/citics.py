@@ -27,6 +27,7 @@ class CiticsRestApi(BrokerApiBase):
             json=None,
             timeout=30,
             session: requests.Session = None,
+            token: str = '',
     ):
         args = dict(
             method=method,
@@ -35,6 +36,7 @@ class CiticsRestApi(BrokerApiBase):
             json=json,
             headers={
                 'User-Agent': 'tradebot',
+                'Citics-Token': token,
             },
         )
         if session:
@@ -48,6 +50,7 @@ class CiticsRestApi(BrokerApiBase):
     def _citics_fetch(self, uri: str) -> dict:
         base_site = self.broker_config.get('url')
         timeout = self.broker_config.get('timeout', 20)
+        token = self.broker_config.get('token', '')
         url = urljoin(base_site, uri)
         try:
             session = self.http_session
@@ -56,6 +59,7 @@ class CiticsRestApi(BrokerApiBase):
                 url=url,
                 timeout=timeout,
                 session=session,
+                token=token,
             )
             citics_state = d.get('state', dict())
             citics_current = citics_state.get('current')
@@ -67,6 +71,7 @@ class CiticsRestApi(BrokerApiBase):
     def _citics_action(self, uri: str, d: dict) -> dict:
         base_site = self.broker_config.get('url')
         timeout = self.broker_config.get('timeout', 20)
+        token = self.broker_config.get('token', '')
         url = urljoin(base_site, uri)
         session = self.http_session
         d = CiticsRestApi.http_request(
@@ -75,6 +80,7 @@ class CiticsRestApi(BrokerApiBase):
             json=d,
             timeout=timeout,
             session=session,
+            token=token,
         )
         return d
 

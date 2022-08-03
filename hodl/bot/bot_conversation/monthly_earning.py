@@ -13,16 +13,16 @@ class MonthlyEarning(TelegramBotBase):
             items.sort(key=lambda i: (i.region, i.month, ), reverse=True)
             for item in items:
                 month = f'{str(item.month)[:-2]}-{str(item.month)[-2:]}'
-                amount = FormatTool.pretty_usd(item.total, region=item.region, only_int=True)
-                result += f'[{item.region}]{month}: {amount}\n'
+                amount = FormatTool.pretty_usd(item.total, currency=item.currency, only_int=True)
+                result += f'[{item.currency}]{month}: {amount}\n'
             result += '------------------\n'
-            for region in set([item.region for item in items]):
-                region_items = [item for item in items if item.region == region]
-                month_count = len(region_items)
-                total = sum([item.total for item in region_items])
+            for currency in set([item.currency for item in items]):
+                currency_items = [item for item in items if item.currency == currency]
+                month_count = len(currency_items)
+                total = sum([item.total for item in currency_items])
                 forcast = int(total / month_count * 12) // 1000 * 1000
-                amount = FormatTool.pretty_usd(forcast, region=region, only_int=True)
-                result += f'[{region}]预测12个月总收入{amount}\n'
+                amount = FormatTool.pretty_usd(forcast, currency=currency, only_int=True)
+                result += f'[{currency}]预测12个月总收入{amount}\n'
         update.message.reply_text(result)
 
     @classmethod

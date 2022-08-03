@@ -189,12 +189,22 @@ class Store(QuoteMixin, TradeMixin):
                 'earning': earning,
                 'currency': currency,
             })
+        monthly_list = list()
+        monthly_rows = EarningRow.total_earning_group_by_month(con=db.conn)
+        for row in monthly_rows:
+            monthly_list.append({
+                'month': row.month,
+                'currency': row.currency,
+                'total': row.total,
+            })
         file_dict = {
             'type': 'earningReport',
             'recentEarnings': recent_earnings,
+            'monthlyEarnings': monthly_list,
         }
+        file_body = json.dumps(file_dict, indent=2, sort_keys=True)
         with open(earning_json_path, mode='w', encoding='utf8') as f:
-            f.write(json.dumps(file_dict, indent=2, sort_keys=True))
+            f.write(file_body)
 
     def set_up_earning(self) -> float:
         store_config = self.store_config
@@ -238,7 +248,7 @@ class Store(QuoteMixin, TradeMixin):
                     db=self.db,
                     earning_json_path=path,
                     now=now,
-                    weeks=variable.earning_csv_weeks,
+                    weeks=variable.earning_recent_weeks,
                 )
         error = self.bot.send_text(earning_text)
         if error:

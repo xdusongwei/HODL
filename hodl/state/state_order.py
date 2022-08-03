@@ -265,9 +265,9 @@ class Order(DictWrapper):
         if self.DISPLAY_SHOW_LEVEL:
             level = f'Level{self.level} '
         return f'<Order {self.order_id} {symbol}{flags}({level}' \
-               f'{FMT.pretty_usd(self.limit_price, region=self.region)}@{self.order_day}) ' \
+               f'{FMT.pretty_usd(self.limit_price, currency=self.currency)}@{self.order_day}) ' \
                f'{self.direction} ' \
-               f'avg{FMT.pretty_usd(self.avg_price, region=self.region)}@{self.filled_qty:,}(maxQty:{self.qty:,})>'
+               f'avg{FMT.pretty_usd(self.avg_price, currency=self.currency)}@{self.filled_qty:,}(maxQty:{self.qty:,})>'
 
     def __repr__(self):
         return self.__str__()

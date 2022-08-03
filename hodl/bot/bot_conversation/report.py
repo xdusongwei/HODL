@@ -62,7 +62,11 @@ class Report(TelegramBotBase):
                     level = idx + 1
                     table_row: ProfitRow = table_row
                     earning_forcast = base_value * (table_row.total_rate - 1)
-                    earning_forcast = FormatTool.pretty_usd(earning_forcast, only_int=True, region=store_config.region)
+                    earning_forcast = FormatTool.pretty_usd(
+                        earning_forcast,
+                        only_int=True,
+                        currency=store_config.currency,
+                    )
                     buy_at = FormatTool.pretty_price(table_row.buy_at, config=store_config)
                     rate = -round(table_row.total_rate * 100 - 100, 2)
                     hit = '[当前]' if max_level == level else ''

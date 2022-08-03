@@ -141,7 +141,7 @@ dependencies = [
 
 [[package]]
 name = "currency-symbols"
-version = "2.0.2"
+version = "2.0.3"
 summary = "Get currency symbol by currency code"
 
 [[package]]
@@ -854,9 +854,9 @@ content_hash = "sha256:de79ec014e491d8bc24362316605b2988cf70d133c7c9da55312b0722
     {url = "https://mirrors.cloud.tencent.com/pypi/packages/e2/f6/042a89d61b11fdf6858361574b0c5e647a02438794c1b379509efdc7365c/cryptography-37.0.2-pp37-pypy37_pp73-manylinux_2_24_x86_64.whl", hash = "sha256:a7d5137e556cc0ea418dca6186deabe9129cee318618eb1ffecbd35bee55ddc1"},
     {url = "https://mirrors.cloud.tencent.com/pypi/packages/f6/51/640fe2a25b774aefcd49b101c850f36e8e4ac164dc5c281b3dfa50c01da7/cryptography-37.0.2-cp36-abi3-win_amd64.whl", hash = "sha256:471e0d70201c069f74c837983189949aa0d24bb2d751b57e26e3761f2f782b8d"},
 ]
-"currency-symbols 2.0.2" = [
-    {url = "https://mirrors.cloud.tencent.com/pypi/packages/4b/2e/7065b17c16d0461bacc3259c3ecf3d9c7c7ff716d16630d6bb6ddfec5a47/currency-symbols-2.0.2.tar.gz", hash = "sha256:24ced16e7de2c9c2a69a815cd769d1119c870d04c82f583a272cd9cbc12c6902"},
-    {url = "https://mirrors.cloud.tencent.com/pypi/packages/bd/c7/22783c7108fe2733d89e89bc8582e9a1837416ef860ea68be05cf527597f/currency_symbols-2.0.2-py3-none-any.whl", hash = "sha256:59e03bff4ecd8d87744b1cecb18051ad8e73a6eb14a26e5e37da8dc1e3937315"},
+"currency-symbols 2.0.3" = [
+    {url = "https://mirrors.cloud.tencent.com/pypi/packages/20/42/70e58c51f5c519fcfe8a633702562a9dda4e54b7d5dcdbee511cd6250d57/currency_symbols-2.0.3-py3-none-any.whl", hash = "sha256:e71c82320f1b410ab15614f5df6ea3645b204752081689bae30b6331006357f0"},
+    {url = "https://mirrors.cloud.tencent.com/pypi/packages/35/09/aaafc15ae4412897085addcd3445411d82a2dc069cc17e3c393295fe9aa2/currency-symbols-2.0.3.tar.gz", hash = "sha256:f6101415319e06674c63d05ed9988b131dd8004cc437e77f7e83e734e5d2eb2f"},
 ]
 "delorean 1.0.0" = [
     {url = "https://mirrors.cloud.tencent.com/pypi/packages/76/40/5e8d179a0311236b2e83aa1c80b0b363700035ad6639858c75ef5be975e6/Delorean-1.0.0.tar.gz", hash = "sha256:fe67786e12338523848bec5588a658c4d425e12d53eb51cfef870bec8f576134"},

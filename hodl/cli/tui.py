@@ -272,9 +272,9 @@ class OrderWidget(PlaceholderBase):
                 Text(text=f'{time.strftime("%y-%m-%d")}\n{time.strftime("%H:%M:%S")}', style=style),
                 Text(text=f'[{order.region}]{symbol}', style=style),
                 Text(text=f'{order.direction}.{order.level}', style=style),
-                Text(text=FMT.pretty_usd(order.limit_price, currency=order.currency, region=order.region)),
+                Text(text=FMT.pretty_usd(order.limit_price, currency=order.currency)),
                 Text(text=FMT.pretty_number(order.qty), style=style),
-                Text(text=FMT.pretty_usd(order.avg_price, currency=order.currency, region=order.region)),
+                Text(text=FMT.pretty_usd(order.avg_price, currency=order.currency)),
                 Text(text=FMT.pretty_number(order.filled_qty), style=style),
                 Text(text=flags),
             )
@@ -308,8 +308,16 @@ class ProfitWidget(PlaceholderBase):
                 style='green',
             )
             lines.append(text)
-        total_earning_usd = FMT.pretty_usd(sum(item[2] for item in items if item[3] == 'US'), only_int=True, unit='$')
-        total_earning_cny = FMT.pretty_usd(sum(item[2] for item in items if item[3] == 'CN'), only_int=True, unit='¥')
+        total_earning_usd = FMT.pretty_usd(
+            sum(item[2] for item in items if item[3] == 'USD'),
+            only_int=True,
+            currency='USD',
+        )
+        total_earning_cny = FMT.pretty_usd(
+            sum(item[2] for item in items if item[3] == 'CNY'),
+            only_int=True,
+            currency='CNY',
+        )
         return Panel(
             Columns(lines, column_first=False, width=config.profit_width, padding=(0, 0, 0, 3, )),
             title=f'{config.name}({total_earning_usd}, {total_earning_cny})',

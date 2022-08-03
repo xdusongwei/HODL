@@ -11,6 +11,7 @@ Store.rewrite_earning_json(
     db=db,
     earning_json_path=var.earning_json_path,
     now=TimeTools.us_time_now(),
+    weeks=var.earning_recent_weeks,
 )
 
 print('done')

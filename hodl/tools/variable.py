@@ -107,9 +107,9 @@ class VariableTools:
         return self._config.get('earning_json_path')
 
     @property
-    def earning_csv_weeks(self) -> int:
+    def earning_recent_weeks(self) -> int:
         """
-        收益csv文件近期可展示的范围
+        收益文件近期可展示的时间范围
         """
         return self._config.get('earning_csv_weeks', 4)
 

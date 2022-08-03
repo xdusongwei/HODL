@@ -29,7 +29,10 @@ class ProfitRow:
     shares: int
 
     def __str__(self):
-        return f'<Level{self.level} sell@{FMT.pretty_usd(self.sell_at)} buy@{FMT.pretty_usd(self.buy_at)} ' \
+        return f'<' \
+               f'Level{self.level} ' \
+               f'sell@{FMT.pretty_usd(self.sell_at, unit="")} ' \
+               f'buy@{FMT.pretty_usd(self.buy_at, unit="")} ' \
                f'shares:{self.shares:,}>'
 
     def __repr__(self):

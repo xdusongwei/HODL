@@ -37,22 +37,12 @@ class FormatTool:
         return iso_format
 
     @classmethod
-    def region_to_unit(cls, region: str) -> str:
-        match region:
-            case 'US':
-                unit = '$'
-            case 'CN':
-                unit = '¥'
-            case _:
-                unit = '$'
+    def currency_to_unit(cls, currency: str) -> str:
+        unit = CurrencySymbols.get_symbol(currency) or '$'
         return unit
 
     @classmethod
-    def currency_to_unit(cls, currency: str) -> str:
-        return CurrencySymbols.get_symbol(currency)
-
-    @classmethod
-    def pretty_usd(cls, v: None | int | float, currency=None, unit='$', region=None, only_int=False) -> str:
+    def pretty_usd(cls, v: None | int | float, currency=None, unit='$', only_int=False) -> str:
         if currency:
             match currency:
                 case 'USDT':
@@ -61,8 +51,6 @@ class FormatTool:
                     unit = 'USDC'
                 case _:
                     unit = cls.currency_to_unit(currency)
-        elif region:
-            unit = cls.region_to_unit(region=region)
         if v is None:
             return f'{unit}--'
         if only_int:
@@ -76,7 +64,6 @@ class FormatTool:
         return cls.pretty_usd(
             v=v,
             currency=config.currency,
-            region=config.region,
             only_int=only_int,
         )
 
