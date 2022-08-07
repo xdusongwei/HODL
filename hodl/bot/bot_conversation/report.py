@@ -35,7 +35,6 @@ class Report(TelegramBotBase):
         idx = int(update.message.text) - 1
         position = self._symbol_list()[idx]
         store_config = position.config
-        region = store_config.region
 
         row = StateRow.query_by_symbol_latest(con=self.DB.conn, symbol=position.symbol)
         if row and row.content:

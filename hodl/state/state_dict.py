@@ -4,6 +4,20 @@ from hodl.state.state_plan import Plan
 
 
 class State(dict):
+    @classmethod
+    def new(cls, d: dict = None):
+        if d:
+            s: State = State(d)
+        else:
+            s: State = State()
+        if not s.version:
+            s.version = FormatTool.base58_hash(
+                salt=str(id(s)),
+                data=str(TimeTools.utc_now().timestamp()),
+                prefix=TimeTools.us_time_now().strftime('%y%m%d%H%M%S'),
+            )
+        return s
+
     @property
     def has_plan(self):
         return bool(self.get('plan'))
@@ -11,6 +25,13 @@ class State(dict):
     @property
     def plan(self):
         return Plan(self.get('plan'))
+
+    @property
+    def template_plan(self):
+        """
+        Jinja内置函数优先识别plan键，而不是plan属性, 这是一个jinja专用字段
+        """
+        return self.plan
 
     @plan.setter
     def plan(self, v: Plan):
@@ -26,6 +47,14 @@ class State(dict):
     @name.setter
     def name(self, v: str):
         self['name'] = v
+
+    @property
+    def version(self) -> str:
+        return self.get('version')
+
+    @version.setter
+    def version(self, v: str):
+        self['version'] = v
 
     def _get_snapshot(self, snapshot: str, key: str):
         snapshot_d = self.get(snapshot, dict())
@@ -227,6 +256,15 @@ class State(dict):
     @is_plug_in.setter
     def is_plug_in(self, v: bool):
         self['isPlugIn'] = v
+
+    @property
+    def quote_rate(self):
+        pre_close = self.quote_pre_close
+        latest = self.quote_latest_price
+        rate = 0.00
+        if pre_close and latest:
+            rate = round(latest / pre_close * 100 - 100, 2)
+        return rate
 
 
 __all__ = [

@@ -1,6 +1,7 @@
 import os
 import toml
 from telegram.ext import Updater
+from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.locate import LocateTools
 from hodl.tools.store_config import StoreConfig
 from hodl.tools.tui_config import TuiConfig
@@ -18,8 +19,9 @@ class VariableTools:
             config_file = LocateTools.locate_file('config.toml')
         return config_file
 
-    def __init__(self):
-        config_file = VariableTools._get_config_path()
+    def __init__(self, config_file: str = None):
+        if not config_file:
+            config_file = VariableTools._get_config_path()
         with open(config_file, 'r', encoding='utf8') as f:
             self._config: dict = toml.loads(f.read())
 
@@ -36,6 +38,14 @@ class VariableTools:
             return d
         else:
             return None
+
+    @property
+    def jinja_env(self):
+        env = Environment(
+            loader=PackageLoader("hodl"),
+            autoescape=select_autoescape(),
+        )
+        return env
 
     @property
     def store_configs(self) -> dict[str, StoreConfig]:
@@ -156,6 +166,13 @@ class VariableTools:
         是否启用异步线程更新市场状态，这样尽量不去阻塞到持仓线程
         """
         return self._config.get('async_market_status', False)
+
+    @property
+    def html_file_path(self) -> str:
+        """
+        将运行状态保存为网页文件
+        """
+        return self._config.get('html_file_path', None)
 
 
 __all__ = ['VariableTools', ]

@@ -1,9 +1,11 @@
+import datetime
 import os
 import json
 import time
+import dataclasses
 from threading import Thread
 from hodl.bot import AlertBot, ConversationBot
-from hodl.storage import LocalDb
+from hodl.storage import *
 from hodl.store import Store
 from hodl.quote_mixin import QuoteMixin
 from hodl.broker.broker_proxy import *
@@ -13,6 +15,8 @@ from hodl.tools import *
 class Manager:
     CONVERSATION_BOT = None
     MARKET_STATUS_THREAD: Thread = None
+    HTML_THREAD: Thread = None
+    RECENT_EARNINGS: list[EarningRow] = None
 
     @classmethod
     def write_system_state(cls, items: list[tuple[str, Store, Thread]], sleep_secs):
@@ -32,6 +36,11 @@ class Manager:
                 'id': Manager.MARKET_STATUS_THREAD.native_id,
                 'dead': not Manager.MARKET_STATUS_THREAD.is_alive(),
             } if Manager.MARKET_STATUS_THREAD else {},
+            'htmlWriterThread': {
+                'name': Manager.HTML_THREAD.name,
+                'id': Manager.HTML_THREAD.native_id,
+                'dead': not Manager.HTML_THREAD.is_alive(),
+            } if Manager.HTML_THREAD else {},
             'items': [
                 {
                     'symbol': symbol,
@@ -84,6 +93,35 @@ class Manager:
             if e := store.exception:
                 text += f'异常原因:{e}\n'
             store.bot.set_alarm(AlertBot.K_THREAD_DEAD, text=text)
+
+    @classmethod
+    def write_html(cls, db: LocalDb, html_file_path, template, items: list[tuple[str, Store, Thread]]):
+        try:
+            store_list: list[Store] = [item[1] for item in items]
+            if db:
+                create_time = (TimeTools.us_time_now(tz='Asia/Shanghai') - datetime.timedelta(days=365)).timestamp()
+                create_time = int(create_time)
+                Manager.RECENT_EARNINGS = list(EarningRow.items_after_time(con=db.conn, create_time=create_time))
+            else:
+                Manager.RECENT_EARNINGS = list()
+
+            class _EnhancedJSONEncoder(json.JSONEncoder):
+                def default(self, o):
+                    if dataclasses.is_dataclass(o):
+                        return dataclasses.asdict(o)
+                    return super().default(o)
+
+            html = template.render(
+                store_list=store_list,
+                FMT=FormatTool,
+                earning_list=Manager.RECENT_EARNINGS[:50],
+                earning_json=json.dumps(Manager.RECENT_EARNINGS, indent=2, cls=_EnhancedJSONEncoder),
+            )
+
+            with open(html_file_path, "w", encoding='utf8') as f:
+                f.write(html)
+        except Exception as e:
+            print(e)
 
     @classmethod
     def rework_store(cls, items: list[tuple[str, Store, Thread]]):
@@ -160,6 +198,26 @@ class Manager:
             )
             Manager.MARKET_STATUS_THREAD.start()
             print(f'异步线程已启动')
+
+        print(f'开启HTML刷新线程')
+
+        def _loop(local_db, html_file_path, template, items: list[tuple[str, Store, Thread]]):
+            while True:
+                time.sleep(24)
+                if not variable.html_file_path:
+                    continue
+                cls.write_html(db=local_db, html_file_path=html_file_path, template=template, items=items)
+
+        env = var.jinja_env
+        template = env.get_template("index.html")
+        Manager.HTML_THREAD = Thread(
+            name='htmlWriter',
+            target=_loop,
+            daemon=True,
+            args=(db, var.html_file_path, template, items, )
+        )
+        Manager.HTML_THREAD.start()
+        print(f'HTML刷新线程已启动')
 
         while True:
             try:

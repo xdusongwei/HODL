@@ -239,6 +239,8 @@ class Store(QuoteMixin, TradeMixin):
                 region=store_config.region,
                 broker=store_config.broker,
                 buyback_price=buyback_price,
+                max_level=plan.current_sell_level_filled(),
+                state_version=self.state.version,
                 create_time=int(TimeTools.us_time_now().timestamp()),
             )
             earning_item.save(con=db.conn)

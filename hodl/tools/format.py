@@ -1,3 +1,6 @@
+import hashlib
+import base58
+import xxhash
 from decimal import Decimal
 from datetime import datetime
 from currency_symbols import CurrencySymbols
@@ -74,6 +77,23 @@ class FormatTool:
             unit='',
             only_int=True,
         )
+
+    @classmethod
+    def base58_hash(
+            cls,
+            data: str,
+            length: int = 16,
+            prefix='',
+            salt: str = '',
+            cipher=xxhash.xxh3_64,
+    ) -> str:
+        binary = (salt + str(data)).encode("utf8") if salt else data.encode("utf8")
+        hash_key = cipher(binary).digest()
+        slice_key = base58.b58encode(hash_key)[:length]
+        if type(slice_key) is bytes:
+            slice_key = slice_key.decode("utf8")
+        key = "{}{}".format(prefix, slice_key)
+        return key
 
 
 __all__ = ['FormatTool', ]

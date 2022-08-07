@@ -32,7 +32,7 @@ class StoreBase:
             http_session=self.SESSION,
         )
         self.thread_context = self.runtime_state
-        self.state: State = State()
+        self.state: State = State.new()
         self.db = db
         self.lock = threading.Lock()
 
@@ -96,7 +96,7 @@ class StoreBase:
                 text = f.read()
                 runtime_state.state_compare = TimeTools.us_day_now(), text
             state = json.loads(text)
-        self.state = State(state)
+        self.state = State.new(state)
         self.state.name = self.store_config.name
 
     def save_state(self):
@@ -116,6 +116,7 @@ class StoreBase:
                     f.write(text)
             if db := self.db:
                 row = StateRow(
+                    version=self.state.version,
                     day=int(TimeTools.date_to_ymd(day, join=False)),
                     symbol=self.store_config.symbol,
                     content=text,
@@ -187,6 +188,68 @@ class StoreBase:
             runtime_state=self.runtime_state,
         )
         self.broker_proxy.on_init()
+
+    @classmethod
+    def state_bar(cls, thread_alive: bool, config: StoreConfig, state: State) -> list[str]:
+        cross_mark = '❌'
+        skull = '💀'
+        money_bag = '💰'
+        plug = '🔌'
+        check = '✅'
+        no_entry = '⛔'
+        if config.enable:
+            if not thread_alive:
+                system_status = skull
+            elif state.current == StoreBase.STATE_GET_OFF:
+                system_status = money_bag
+            elif not state.is_plug_in:
+                system_status = plug
+            elif state.current == StoreBase.STATE_TRADE:
+                system_status = check
+            else:
+                system_status = cross_mark
+        else:
+            system_status = no_entry
+        market_status = check if state.market_status == 'TRADING' else cross_mark
+        return [
+            f'{system_status}系统',
+            f'{market_status}市场',
+            f'{check if state.quote_enable_trade else cross_mark}标的',
+            f'{cross_mark if state.risk_control_break else check}风控',
+        ]
+
+    @classmethod
+    def buff_bar(cls, config: StoreConfig, state: State, process_time: int = None) -> list[str]:
+        bar = list()
+        plan = state.plan
+
+        if config.get('lockPosition') or config.lock_position:
+            lock_position = '🔒'
+            bar.append(lock_position)
+
+        if state.plan.rework_price:
+            rework_set = '🔁'
+            bar.append(rework_set)
+
+        battery = '🔋'
+        chips = plan.total_chips
+        diff = plan.total_volume_not_active(assert_zero=False)
+        if chips and (chips - diff) >= 0:
+            remain = chips - diff
+            percent = int(remain / chips * 100)
+            battery += f'{percent}%'
+        else:
+            battery += f'--'
+        bar.append(battery)
+
+        if process_time is not None:
+            process_time = f'{int(process_time * 1000)}'
+        else:
+            process_time = '--'
+        process_time_text = f'📶{process_time}ms'
+        bar.append(process_time_text)
+
+        return bar
 
 
 __all__ = ['StoreBase', ]

@@ -39,20 +39,6 @@ class TuiConfig(dict):
         return self.get('profit_width', None)
 
     @property
-    def display_process_time(self):
-        """
-        展示持仓的处理耗时在名称后面，单位是毫秒
-        """
-        return self.get('display_process_time', False)
-
-    @property
-    def display_chip_rate(self):
-        """
-        展示持仓剩余股票的比例在名称后面，单位是百分比
-        """
-        return self.get('display_chip_rate', False)
-
-    @property
     def order_filled_notification(self):
         """
         订单成交提醒，仅windows10+系统

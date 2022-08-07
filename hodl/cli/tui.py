@@ -63,12 +63,6 @@ class StatusWidget(PlaceholderBase):
         dt = Text(f"持仓(")
         dt.append(Text(f'{tz_name}: {time}', style="green"))
         dt.append(')')
-        cross_mark = Emoji('cross_mark')
-        check = Emoji('white_heavy_check_mark')
-        no_entry = Emoji('no_entry')
-        skull = Emoji('skull')
-        plug = Emoji('electric_plug')
-        money_bag = Emoji('money_bag')
         for store_dict, config_dict, thread_dict in zip(store_items, config_items, thread_items):
             state = store_dict.get('state')
             e = store_dict.get('exception')
@@ -94,26 +88,12 @@ class StatusWidget(PlaceholderBase):
             if config.get('basePriceDayLow'):
                 tags.append('日低')
             text.append(Text(f'策略: {"|".join(tags)}\n'))
-            if config.enable:
-                if thread_dict.get('dead'):
-                    system_status = skull
-                elif state.current == StoreBase.STATE_GET_OFF:
-                    system_status = money_bag
-                elif not state.is_plug_in:
-                    system_status = plug
-                elif state.current == StoreBase.STATE_TRADE:
-                    system_status = check
-                else:
-                    system_status = cross_mark
-            else:
-                system_status = no_entry
-            market_status = check if state.market_status == 'TRADING' else cross_mark
-            text.append(Text(
-                f'{system_status}系统  '
-                f'{market_status}市场  '
-                f'{check if state.quote_enable_trade else cross_mark}标的  '
-                f'{cross_mark if state.risk_control_break else check}风控'
-                f'\n'))
+            state_bar = StoreBase.state_bar(
+                thread_alive=not thread_dict.get('dead'),
+                config=config,
+                state=state,
+            )
+            text.append(Text('  '.join(state_bar) + '\n'))
             if state.risk_control_break:
                 text.append(Text(f'风控异常: {state.risk_control_detail}\n', style='red'))
             if e and e != state.risk_control_detail:
@@ -140,7 +120,6 @@ class QuoteWidget(PlaceholderBase):
             return 'green' if current >= base else 'red'
 
     def render(self):
-        tui_config = self.config()
         self.FLASH = TimeTools.us_time_now().second % 4
         config = self.config()
         border_style = config.border_style
@@ -150,47 +129,15 @@ class QuoteWidget(PlaceholderBase):
         for store_dict, config_dict in zip(store_items, config_items):
             state = store_dict.get('state')
             state = State(state)
-            plan: Plan = state.plan
             config = StoreConfig(config_dict)
             symbol = config.symbol
             latest_price = state.quote_latest_price
             region = config.region
 
-            lock_position = ''
-            if config.get('lockPosition'):
-                lock_position = '🔒'
-
-            rework_set = ''
-            if state.plan.rework_price:
-                rework_set = '🔁'
-
-            battery = '🔋'
-            chips = plan.total_chips
-            diff = plan.total_volume_not_active(assert_zero=False)
-            if chips and (chips - diff) >= 0:
-                remain = chips - diff
-                percent = int(remain / chips * 100)
-                battery += f'{percent}%'
-            else:
-                battery += f'--'
-            if not tui_config.display_chip_rate:
-                battery = ''
-
-            process_time_text = ''
-            process_time = store_dict.get('processTime')
-            if process_time:
-                process_time = f'{int(process_time * 1000)}'
-            else:
-                process_time = '--'
-            if tui_config.display_process_time:
-                process_time_text = f'📶{process_time}ms'
-
             default_style = 'white' if state.market_status == 'TRADING' else 'grey50'
 
             title = f'[{region}]{symbol} {FMT.pretty_dt(state.quote_time, region=region, with_year=False)[:-10]}'
-            rate = 0.0
-            if state.quote_pre_close and latest_price:
-                rate = round(latest_price / state.quote_pre_close * 100 - 100, 2)
+            rate = state.quote_rate
             text = Text(style=default_style)
             text.append(
                 '最新: '
@@ -200,7 +147,7 @@ class QuoteWidget(PlaceholderBase):
                 style=self._color(latest_price, state.quote_pre_close),
             )
             text.append(
-                f'状态: {rework_set}{lock_position}{battery}{process_time_text}\n',
+                f'状态: {"".join(StoreBase.buff_bar(config=config, state=state, process_time=store_dict.get("processTime")))}\n',
             )
             container.append(Text(title, style=default_style))
             container.append(text)
@@ -238,16 +185,7 @@ class OrderWidget(PlaceholderBase):
         table.add_column("成交量", justify="right", style="grey66")
         table.add_column("标志", justify="right", style="red")
 
-        waiting = Emoji('hourglass_not_done')
-        error = Emoji('cross_mark')
-        check = Emoji('white_heavy_check_mark')
-        saved = Emoji('floppy_disk')
-
         for order in orders:
-            flags = '{}{}'.format(
-                '止' if order.has_error else '',
-                '撤' if order.is_canceled else '',
-            )
             tz = TimeTools.region_to_tz(region=order.region)
             date = TimeTools.us_time_now(tz=tz)
             day = date.strftime('%Y-%m-%d')
@@ -255,20 +193,11 @@ class OrderWidget(PlaceholderBase):
             is_today = day == order.order_day
             style = 'grey66'
             if not is_today:
-                icon = saved
                 style = 'grey50'
-            elif order.is_filled:
-                icon = check
-            elif order.is_waiting_filling:
-                icon = waiting
-            elif flags:
-                icon = error
-            else:
-                icon = check
 
             symbol = order.symbol
             table.add_row(
-                Text(text=f'{icon}'),
+                Text(text=f'{order.order_emoji}'),
                 Text(text=f'{time.strftime("%y-%m-%d")}\n{time.strftime("%H:%M:%S")}', style=style),
                 Text(text=f'[{order.region}]{symbol}', style=style),
                 Text(text=f'{order.direction}.{order.level}', style=style),
@@ -276,7 +205,7 @@ class OrderWidget(PlaceholderBase):
                 Text(text=FMT.pretty_number(order.qty), style=style),
                 Text(text=FMT.pretty_usd(order.avg_price, currency=order.currency)),
                 Text(text=FMT.pretty_number(order.filled_qty), style=style),
-                Text(text=flags),
+                Text(text=''.join(order.order_flags)),
             )
         return table
 

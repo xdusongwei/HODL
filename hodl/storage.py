@@ -17,6 +17,8 @@ class EarningRow:
     region: str
     broker: str
     buyback_price: float
+    max_level: int
+    state_version: str
     create_time: int
     id: int = None
 
@@ -24,8 +26,8 @@ class EarningRow:
         with con:
             con.execute(
                 "INSERT INTO `earning`"
-                "(`day`, `symbol`, `currency`, `days`, `amount`, `unit`, `region`, `broker`, `buyback_price`, `create_time`) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+                "(`day`, `symbol`, `currency`, `days`, `amount`, `unit`, `region`, `broker`, `buyback_price`, `max_level`, `state_version`, `create_time`) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
                 (
                     self.day,
                     self.symbol,
@@ -36,6 +38,8 @@ class EarningRow:
                     self.region,
                     self.broker,
                     self.buyback_price,
+                    self.max_level,
+                    self.state_version,
                     self.create_time,
                 ))
 
@@ -150,6 +154,7 @@ class OrderRow:
 
 @dataclass
 class StateRow:
+    version: str
     day: int
     symbol: str
     content: str
@@ -159,9 +164,10 @@ class StateRow:
     def save(self, con: sqlite3.Connection):
         with con:
             con.execute(
-                "REPLACE INTO `state_archive`(`day`, `symbol`, `content`, `update_time`) "
-                "VALUES (?, ?, ?, ?);",
+                "REPLACE INTO `state_archive`(`version`, `day`, `symbol`, `content`, `update_time`) "
+                "VALUES (?, ?, ?, ?, ?);",
                 (
+                    self.version,
                     self.day,
                     self.symbol,
                     self.content,
@@ -172,7 +178,7 @@ class StateRow:
     def query_by_symbol_latest(cls, con: sqlite3.Connection, symbol: str):
         cur = con.cursor()
         cur.execute(
-            "SELECT * FROM `state_archive` WHERE `symbol` = ? ORDER BY `day` DESC LIMIT 1;",
+            "SELECT * FROM `state_archive` WHERE `symbol` = ? ORDER BY `version` DESC LIMIT 1;",
             (symbol, )
         )
         row = cur.fetchone()
@@ -268,6 +274,8 @@ class LocalDb:
         `region` TEXT NOT NULL,
         `broker` TEXT NOT NULL,
         `buyback_price` REAL,
+        `max_level` INTEGER,
+        `state_version` TEXT,
         `create_time` INTEGER NOT NULL
         );''')
         cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_create_time_symbol ON `earning` (`create_time`, `symbol`);')
@@ -275,12 +283,14 @@ class LocalDb:
 
         cur.execute('''CREATE TABLE IF NOT EXISTS `state_archive` (
                 id INTEGER PRIMARY KEY, 
+                `version` TEXT NOT NULL,
                 `day` INTEGER NOT NULL,
                 `symbol` TEXT NOT NULL,
                 `content` BLOB NOT NULL,
                 `update_time` INTEGER NOT NULL
                 );''')
-        cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_state_archive_main ON `state_archive` (`symbol`, `day`);')
+        cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_state_archive_main ON `state_archive` (`version`);')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_state_archive_symbol_version ON `state_archive` (`symbol`, `version`);')
 
         cur.execute('''CREATE TABLE IF NOT EXISTS `orders` (
                         id INTEGER PRIMARY KEY, 

@@ -256,6 +256,33 @@ class Order(DictWrapper):
         """
         return self.is_today and not self.has_error and not self.is_canceled and not self.is_filled
 
+    @property
+    def order_flags(self) -> list[str]:
+        flags = list()
+        if self.has_error:
+            flags.append('止')
+        if self.is_canceled:
+            flags.append('撤')
+        return flags
+
+    @property
+    def order_emoji(self):
+        tz = TimeTools.region_to_tz(region=self.region)
+        date = TimeTools.us_time_now(tz=tz)
+        day = date.strftime('%Y-%m-%d')
+        is_today = day == self.order_day
+        if not is_today:
+            icon = '💾'
+        elif self.is_filled:
+            icon = '✅'
+        elif self.is_waiting_filling:
+            icon = '⏳'
+        elif self.order_flags:
+            icon = '❌'
+        else:
+            icon = '✅'
+        return icon
+
     def __str__(self):
         flags = '{}{}'.format('[E]' if self.has_error else '', '[C]' if self.is_canceled else '')
         symbol = ''

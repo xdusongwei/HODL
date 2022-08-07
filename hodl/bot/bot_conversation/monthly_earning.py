@@ -10,7 +10,7 @@ class MonthlyEarning(TelegramBotBase):
         if db := self.db:
             result = ''
             items = EarningRow.total_earning_group_by_month(con=db.conn, month=7)
-            items.sort(key=lambda i: (i.region, i.month, ), reverse=True)
+            items.sort(key=lambda i: (i.currency, i.month, ), reverse=True)
             for item in items:
                 month = f'{str(item.month)[:-2]}-{str(item.month)[-2:]}'
                 amount = FormatTool.pretty_usd(item.total, currency=item.currency, only_int=True)
