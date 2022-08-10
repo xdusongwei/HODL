@@ -30,7 +30,11 @@ class Store(QuoteMixin, TradeMixin):
     def prepare_plan(self):
         state = self.state
         if state.plan.cleanable:
-            state.plan = Plan.new_plan(self.store_config)
+            state.plan = Plan.new_plan(
+                store_config=self.store_config,
+                master_config=self.hedge_master_info(),
+                slave_config=self.hedge_slave_info(),
+            )
         state.plan.clean_orders()
         plan = state.plan
         profit_calc = plan.plan_calc()
@@ -300,17 +304,24 @@ class Store(QuoteMixin, TradeMixin):
     def try_fire_orders(self):
         state = self.state
         if state.plan.earning is not None:
-            state.plan = Plan.new_plan(self.store_config)
+            state.plan = Plan.new_plan(
+                store_config=self.store_config,
+                master_config=self.hedge_master_info(),
+                slave_config=self.hedge_slave_info(),
+            )
         plan = state.plan
         if not plan.base_price:
             price = self._base_price()
             self.state.plan.base_price = price
 
-        store_config = self.store_config
-        profit_table = self.build_table(store_config=store_config, plan=plan)
-        state_fire = StateFire(profit_table=profit_table)
-        self.try_fire_sell(fire_state=state_fire)
-        self.try_fire_buy(fire_state=state_fire)
+        if hedge_config := self.hedge_slave_info():
+            self.try_slaving(hedge_config=hedge_config)
+        else:
+            store_config = self.store_config
+            profit_table = self.build_table(store_config=store_config, plan=plan)
+            state_fire = StateFire(profit_table=profit_table)
+            self.try_fire_sell(fire_state=state_fire)
+            self.try_fire_buy(fire_state=state_fire)
 
     def current_changed(self, current: str, new_current: str):
         if new_current == self.STATE_SLEEP and self.store_config.closing_time:

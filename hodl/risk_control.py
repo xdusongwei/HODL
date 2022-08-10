@@ -100,10 +100,15 @@ class RiskControl:
             cash_amount = self.state.cash_amount
             total_sell = sum(order.filled_qty for order in orders if order.is_sell)
             total_buy = sum(order.filled_qty for order in orders if order.is_buy)
-            if self.store_config.lock_position and self.max_shares != chip_count + total_sell - total_buy:
-                raise RiskControlError(f'持仓核算失败, 应清算核对共计{self.max_shares:,}股, '
-                                       f'实际持仓{chip_count:,}股, '
-                                       f'已累计卖出{total_sell:,}股, 已累计买入{total_buy:,}股')
+            if self.store_config.lock_position:
+                if self.state.plan.slave_config:
+                    base_chip_count = 0
+                else:
+                    base_chip_count = chip_count
+                if self.max_shares != base_chip_count + total_sell - total_buy:
+                    raise RiskControlError(f'持仓核算失败, 应清算核对共计{self.max_shares:,}股, '
+                                           f'实际持仓{chip_count:,}股, '
+                                           f'已累计卖出{total_sell:,}股, 已累计买入{total_buy:,}股')
             if not order.limit_price:
                 raise RiskControlError(f'当日首单交易不能是市价单')
             elif diff := total_sell - total_buy:

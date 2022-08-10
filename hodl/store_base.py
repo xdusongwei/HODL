@@ -84,19 +84,24 @@ class StoreBase:
     def exception(self, v: Exception):
         setattr(self, '_exception', v)
 
+    @classmethod
+    def read_state(cls, content: str):
+        state = json.loads(content)
+        return State.new(state)
+
     def load_state(self):
         if not self.ENABLE_STATE_FILE:
             return
         if not self.state_file:
             return
         runtime_state = self.runtime_state
-        state = dict()
+        state = self.state
         if os.path.exists(self.state_file):
             with open(self.state_file, 'r', encoding='utf8') as f:
                 text = f.read()
                 runtime_state.state_compare = TimeTools.us_day_now(), text
-            state = json.loads(text)
-        self.state = State.new(state)
+            state = self.read_state(text)
+        self.state = state
         self.state.name = self.store_config.name
 
     def save_state(self):
@@ -223,6 +228,12 @@ class StoreBase:
         bar = list()
         plan = state.plan
 
+        if cfg := plan.master_config:
+            bar.append(f'⚖+{cfg.name}')
+
+        if cfg := plan.slave_config:
+            bar.append(f'⚖-{cfg.name}')
+
         if config.get('lockPosition') or config.lock_position:
             lock_position = '🔒'
             bar.append(lock_position)
@@ -250,6 +261,22 @@ class StoreBase:
         bar.append(process_time_text)
 
         return bar
+
+    def hedge_master_info(self) -> HedgeConfig | None:
+        hedge_list = self.runtime_state.variable.hedge_configs
+        for hedge_config in hedge_list:
+            if hedge_config.master != self.store_config.symbol:
+                continue
+            return hedge_config
+        return None
+
+    def hedge_slave_info(self) -> HedgeConfig | None:
+        hedge_list = self.runtime_state.variable.hedge_configs
+        for hedge_config in hedge_list:
+            if hedge_config.slave != self.store_config.symbol:
+                continue
+            return hedge_config
+        return None
 
 
 __all__ = ['StoreBase', ]

@@ -181,21 +181,24 @@
                             </div>
                         </div>
                         <h4 id="earningRecent" class="text-bg-dark">近期获利</h4>
-                        <ul class="list-group list-group-item-dark list-group-flush">
+                        <div class="row row-cols-1 row-cols-md-4 g-4">
                             {% for earning in earning_list %}
-                            <li class="list-group-item list-group-item-dark text-bg-dark border-secondary">
-                                <p class="mb-0">
-                                    <span class="fs-3 fw-bold {{ 'text-danger' if earning.currency == 'CNY' else 'text-success' }}">
-                                        {{ FMT.pretty_usd(earning.amount, currency=earning.currency, only_int=True) }}
-                                    </span>
-                                    <span>[{{ earning.region }}]{{ earning.symbol }}</span>
-                                </p>
-                                <p class="mb-0 text-muted">完成日期: {{ earning.day }}</p>
-
-                                <p class="mb-0 text-muted">买回价格: {{ FMT.pretty_usd(earning.buyback_price, currency=earning.currency) }}</p>
-                            </li>
+                            <div class="col">
+                            <div class="card border-0 text-bg-dark h-100">
+                                <div class="card-body">
+                                    <p class="mb-0">
+                                        <span class="fs-3 fw-bold {{ 'text-danger' if earning.currency == 'CNY' else 'text-success' }}">
+                                            {{ FMT.pretty_usd(earning.amount, currency=earning.currency, only_int=True) }}
+                                        </span>
+                                        <span>[{{ earning.region }}]{{ earning.symbol }}</span>
+                                    </p>
+                                    <p class="mb-0 text-muted">完成日期: {{ earning.day }}</p>
+                                    <p class="mb-0 text-muted">买回价格: {{ FMT.pretty_usd(earning.buyback_price, currency=earning.currency) }}</p>
+                                </div>
+                            </div>
+                            </div>
                             {% endfor %}
-                        </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -228,22 +231,26 @@
 
     function to_date(i) {
         let day = i.day.toString();
-        return `${day.slice(0,4)}-${day.slice(4,6)}-${day.slice(6,8)}`
+        return `${day.slice(0,4)}-${day.slice(4,6)}-${day.slice(6,8)}`;
     }
 
     function to_month(i) {
         let day = i.day.toString();
-        return `${day.slice(0,4)}-${day.slice(4,6)}-1`
+        return `${day.slice(0,4)}-${day.slice(4,6)}-1`;
     }
 
-    const marginLeft = 60;
+    function to_region_symbol(i) {
+        return `[${i.region}]${i.symbol}`;
+    }
+
+    const marginLeft = 80;
     const marginRight = 60;
     const height = 400;
-    const width = 1000;
+    const width = 1200;
     const style = {
         backgroundColor: "#212529",
         color: "#ffffff",
-        fontSize: 14,
+        fontSize: 12,
     };
     const color = {
         legend: true
@@ -259,10 +266,11 @@
         facet: {
             data: earnings,
             y: "currency",
-            label: "币种",
+            label: "",
         },
         x: {
             label: "金额",
+            tickFormat: "~s",
         },
         y: {
             grid: true,
@@ -287,14 +295,15 @@
         color,
         x: {
             label: "金额",
+            tickFormat: "~s",
         },
         y: {
             type: "band",
             label: "",
         },
         marks: [
-            Plot.barX(earnings.slice(), Plot.groupY({x: "sum"}, {x: "amount", y: "symbol", fill: currency_color})),
-            Plot.text(earnings, Plot.groupY({x: "sum", text: i => i.map(i => i.amount).reduce((j, k) => j + k, 0)}, {x: "amount", y: "symbol"})),
+            Plot.barX(earnings.slice(), Plot.groupY({x: "sum"}, {x: "amount", y: to_region_symbol, fill: currency_color})),
+            Plot.text(earnings, Plot.groupY({x: "sum", text: i => i.map(i => i.amount).reduce((j, k) => j + k, 0)}, {x: "amount", y: to_region_symbol})),
         ]
     })
     document.getElementById('sumBySymbols').appendChild(sumBySymbol);

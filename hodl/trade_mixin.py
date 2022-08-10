@@ -4,7 +4,7 @@ from datetime import time
 from expiringdict import ExpiringDict
 from hodl.store_base import StoreBase
 from hodl.state import *
-from hodl.storage import OrderRow
+from hodl.storage import *
 from hodl.tools import *
 from hodl.tools import FormatTool as FMT
 
@@ -361,6 +361,61 @@ class TradeMixin(StoreBase, ABC):
         self._buy_conditions_check_orders()
         self._buy_conditions_price_range(fire_state=fire_state)
         self._submit_buy_order(fire_state=fire_state)
+
+    def try_slaving(self, hedge_config: HedgeConfig):
+        if hedge_config.type != 'oneSide':
+            return
+        plan = self.state.plan
+        master_symbol = hedge_config.master
+        db = self.db
+        if not db:
+            return
+        master_row = StateRow.query_by_symbol_latest(con=db.conn, symbol=master_symbol)
+        if not master_row:
+            return
+        master_state = self.read_state(master_row.content)
+        master_plan = master_state.plan
+        master_total_chips = master_plan.total_chips
+        master_sold_chips = master_plan.total_volume_not_active()
+        assert master_total_chips >= master_sold_chips >= 0
+        if plan.master_total_chips:
+            assert master_total_chips == plan.master_total_chips
+
+        try:
+            if not master_total_chips:
+                return
+            if not plan.total_chips:
+                return
+
+            shares_per_unit = self.store_config.shares_per_unit
+            sold_diff = master_sold_chips - plan.master_sold_chips
+            assert abs(sold_diff) <= master_total_chips
+            qty = int(abs(sold_diff) / master_total_chips * plan.total_chips)
+            qty = (qty // shares_per_unit) * shares_per_unit
+            if qty <= 0:
+                return
+            if sold_diff > 0:
+                direction = 'BUY'
+            elif sold_diff < 0:
+                direction = 'SELL'
+            else:
+                return
+            self.logger.info(f'slave持仓准备追踪变动，方向:{direction}, 数量:{qty}')
+            order = Order()
+            order.symbol = self.store_config.symbol
+            order.level = 0
+            order.direction = direction
+            order.qty = qty
+            order.limit_price = None
+            order.spread = 0.0
+            self.create_order(
+                order=order,
+            )
+            self.create_order(order=order)
+            self.logger.info(f'slave市价下单完毕: {order}')
+        finally:
+            plan.master_total_chips = master_total_chips
+            plan.master_sold_chips = master_sold_chips
 
 
 __all__ = ['TradeMixin', ]

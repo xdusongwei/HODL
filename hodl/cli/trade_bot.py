@@ -114,7 +114,7 @@ class Manager:
             html = template.render(
                 store_list=store_list,
                 FMT=FormatTool,
-                earning_list=Manager.RECENT_EARNINGS[:50],
+                earning_list=Manager.RECENT_EARNINGS[:40],
                 earning_json=json.dumps(Manager.RECENT_EARNINGS, indent=2, cls=_EnhancedJSONEncoder),
             )
 

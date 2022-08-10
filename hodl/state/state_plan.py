@@ -10,21 +10,55 @@ class Plan(DictWrapper):
     以及其他在运行时不可改变的设置会从持仓配置中复制过来。
     """
     @classmethod
-    def new_plan(cls, store_config: StoreConfig):
+    def new_plan(
+            cls,
+            store_config: StoreConfig,
+            master_config: HedgeConfig = None,
+            slave_config: HedgeConfig = None,
+    ):
         plan = Plan()
-        plan.strategy_name = ''
+        plan.master_config = master_config
+        plan.slave_config = slave_config
         plan.total_chips = store_config.max_shares
         plan.prudent = store_config.prudent
         plan.price_rate = store_config.price_rate
         return plan
 
     @property
-    def strategy_name(self):
-        return self.d.get('strategyName')
+    def master_config(self):
+        return HedgeConfig(self.d.get('masterConfig') or dict())
 
-    @strategy_name.setter
-    def strategy_name(self, v: str):
-        self.d['strategyName'] = v
+    @master_config.setter
+    def master_config(self, v: dict):
+        self.d['masterConfig'] = v
+
+    @property
+    def slave_config(self):
+        return HedgeConfig(self.d.get('slaveConfig') or dict())
+
+    @slave_config.setter
+    def slave_config(self, v: dict):
+        self.d['slaveConfig'] = v
+
+    @property
+    def master_total_chips(self):
+        return self.d.get('masterTotalChips', 0)
+
+    @master_total_chips.setter
+    def master_total_chips(self, v: int):
+        assert isinstance(v, int)
+        assert v >= 0
+        self.d['masterTotalChips'] = v
+
+    @property
+    def master_sold_chips(self):
+        return self.d.get('masterSoldChips', 0)
+
+    @master_sold_chips.setter
+    def master_sold_chips(self, v: int):
+        assert isinstance(v, int)
+        assert v >= 0
+        self.d['masterSoldChips'] = v
 
     @property
     def base_price(self):
@@ -194,6 +228,11 @@ class Plan(DictWrapper):
         any_today = any(order for order in orders if order.is_today)
         if any_today:
             return False
+        elif self.slave_config:
+            if self.master_sold_chips == 0:
+                return True
+            else:
+                return False
         elif self.earning is not None:
             return True
         return not any(order for order in orders if order.filled_qty and not order.is_today)
