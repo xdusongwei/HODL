@@ -303,6 +303,45 @@ class GridApp(App, ConfigMixin, DataMixin):
             )
 
     @classmethod
+    def _order_filled_notification(cls, config: TuiConfig, status_list: list[State]):
+        order_filled = GridApp.ORDER_FILLED
+        for store_status in status_list:
+            plan = store_status.plan
+            orders = plan.orders
+            for order in orders:
+                unique_id = order.unique_id
+                if unique_id not in order_filled:
+                    order_filled[unique_id] = order.is_filled
+                if order.is_filled and not order_filled.get(unique_id):
+                    order_filled[unique_id] = order.is_filled
+                    if config.order_filled_notification:
+                        region = order.region
+                        symbol = order.symbol
+                        name = store_status.name
+                        direction = order.direction
+                        price = FMT.pretty_usd(order.avg_price, currency=order.currency)
+                        qty = FMT.pretty_number(order.filled_qty)
+                        msg = f'[{region}]{symbol} {name} {direction} {price}@{qty}'
+                        cls._set_up_notification(
+                            title=f'订单成交',
+                            msg=msg,
+                        )
+
+    @classmethod
+    def _bgm_update(cls, config: TuiConfig, status_list: list[State]):
+        if any(1 for state in status_list
+               if state.market_status == 'TRADING' and state.current != StoreBase.STATE_GET_OFF):
+            new_market_status = 'CASINO'
+        else:
+            new_market_status = 'SLEEP'
+        if cls.MARKET_STATUS != new_market_status:
+            cls.MARKET_STATUS = new_market_status
+            if new_market_status == 'CASINO':
+                cls._set_up_bgm(path=config.trading_sound)
+            else:
+                cls._set_up_bgm(path=config.sleep_sound)
+
+    @classmethod
     async def request_manager_api(cls, config: TuiConfig):
         try:
             url = config.manager_url
@@ -314,38 +353,9 @@ class GridApp(App, ConfigMixin, DataMixin):
             cls.CONFIG_ITEMS[id(config)] = [item.get('config', dict()) for item in resp_items]
             cls.THREAD_ITEMS[id(config)] = [item.get('thread', dict()) for item in resp_items]
             status_list = [State(item.get('state', dict())) for item in store_items]
-            for store_status in status_list:
-                plan = store_status.plan
-                orders = plan.orders
-                for order in orders:
-                    unique_id = order.unique_id
-                    if unique_id not in GridApp.ORDER_FILLED:
-                        GridApp[unique_id] = order.is_filled
-                    if order.is_filled and not GridApp.ORDER_FILLED.get(unique_id):
-                        GridApp.ORDER_FILLED[unique_id] = order.is_filled
-                        if config.order_filled_notification:
-                            region = order.region
-                            symbol = order.symbol
-                            name = store_status.name
-                            direction = order.direction
-                            price = FMT.pretty_usd(order.avg_price, currency=order.currency)
-                            qty = FMT.pretty_number(order.filled_qty)
-                            msg = f'[{region}]{symbol} {name} {direction} {price}@{qty}'
-                            cls._set_up_notification(
-                                title=f'订单成交',
-                                msg=msg,
-                            )
-            if any(1 for state in status_list
-                   if state.market_status == 'TRADING' and state.current != StoreBase.STATE_GET_OFF):
-                new_market_status = 'CASINO'
-            else:
-                new_market_status = 'SLEEP'
-            if cls.MARKET_STATUS != new_market_status:
-                cls.MARKET_STATUS = new_market_status
-                if new_market_status == 'CASINO':
-                    cls._set_up_bgm(path=config.trading_sound)
-                else:
-                    cls._set_up_bgm(path=config.sleep_sound)
+
+            cls._bgm_update(config=config, status_list=status_list)
+            cls._order_filled_notification(config=config, status_list=status_list)
         except Exception:
             pass
 
