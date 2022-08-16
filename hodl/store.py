@@ -95,16 +95,17 @@ class Store(QuoteMixin, TradeMixin):
         if not self.ENABLE_BROKER:
             return
         broker = self.store_config.broker
+        region = self.store_config.region
         symbol = self.store_config.symbol
         if self.broker_proxy.detect_plug_in():
-            text = f"""🔌交易券商[{broker}]管理标的{symbol}连通已恢复"""
+            text = f"""🔌交易券商[{broker}]管理标的[{region}]{symbol}连通已恢复"""
             self.state.is_plug_in = True
             self.bot.unset_alarm(AlertBot.K_TRADE_SERVICE, text=text)
         else:
-            text = f"""🔌交易券商[{broker}]管理标的{symbol}连通测试反馈失败"""
+            text = f"""🔌交易券商[{broker}]管理标的[{region}]{symbol}连通测试失败"""
             self.state.is_plug_in = False
             self.bot.set_alarm(AlertBot.K_TRADE_SERVICE, text=text)
-            raise PrepareError()
+            raise PlugInError()
 
     def try_get_off(self):
         """
@@ -127,6 +128,7 @@ class Store(QuoteMixin, TradeMixin):
 
     def try_cancel_orders(self):
         self.logger.info(f'进入清盘环节')
+        any_exception = False
         plan = self.state.plan
         orders = plan.orders
         for order in orders:
@@ -138,8 +140,10 @@ class Store(QuoteMixin, TradeMixin):
                 except Exception as e:
                     self.logger.exception(e)
                     self.bot.send_text(f'清盘时撤单操作失败[{e}]，请尽快手动撤销订单: {order}')
-        assert plan.buy_order_active_count() == 0
-        assert plan.sell_order_active_count() == 0
+                    any_exception = True
+        if not any_exception:
+            assert plan.buy_order_active_count() == 0
+            assert plan.sell_order_active_count() == 0
 
     def try_buy_remain(self):
         plan = self.state.plan
@@ -212,6 +216,7 @@ class Store(QuoteMixin, TradeMixin):
 
     def set_up_earning(self) -> float:
         store_config = self.store_config
+        region = store_config.region
         symbol = store_config.symbol
         plan = self.state.plan
         earning = plan.calc_earning()
@@ -227,7 +232,7 @@ class Store(QuoteMixin, TradeMixin):
         speed = earning / days
         speed = FMT.pretty_price(speed, config=store_config, only_int=True)
         buyback_text = FMT.pretty_price(buyback_price, store_config)
-        earning_text = f'💰{symbol}在{day_now}收益{cash}, 买回价:{buyback_text}, 持续{days}天，平均日收益{speed}'
+        earning_text = f'💰[{region}]{symbol}在{day_now}收益{cash}, 买回价:{buyback_text}, 持续{days}天, 平均日收益{speed}'
         self.logger.info(earning_text)
         assert earning >= 0
 
@@ -415,6 +420,8 @@ class Store(QuoteMixin, TradeMixin):
                             self.refresh_orders()
                             order_checked = True
                         self.prepare_quote()
+                    except PlugInError:
+                        continue
                     except PrepareError as e:
                         if self.ENABLE_LOG_ALIVE:
                             self.alive_logger.exception(e)

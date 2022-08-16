@@ -28,6 +28,7 @@ class CiticsRestApi(BrokerApiBase):
             timeout=30,
             session: requests.Session = None,
             token: str = '',
+            raise_for_status = False,
     ):
         args = dict(
             method=method,
@@ -43,9 +44,13 @@ class CiticsRestApi(BrokerApiBase):
             resp = session.request(**args)
         else:
             resp = requests.request(**args)
-        resp.raise_for_status()
-        d: dict = resp.json()
-        return d
+        if raise_for_status:
+            resp.raise_for_status()
+        try:
+            d: dict = resp.json()
+            return d
+        except requests.JSONDecodeError:
+            return dict()
 
     def _citics_fetch(self, uri: str) -> dict:
         base_site = self.broker_config.get('url')
@@ -60,6 +65,7 @@ class CiticsRestApi(BrokerApiBase):
                 timeout=timeout,
                 session=session,
                 token=token,
+                raise_for_status=True,
             )
             citics_state = d.get('state', dict())
             citics_current = citics_state.get('current')
@@ -81,6 +87,7 @@ class CiticsRestApi(BrokerApiBase):
             timeout=timeout,
             session=session,
             token=token,
+            raise_for_status=False,
         )
         return d
 

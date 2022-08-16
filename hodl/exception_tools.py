@@ -16,6 +16,10 @@ class PrepareError(BotError):
         self.thread_killer = False
 
 
+class PlugInError(PrepareError):
+    pass
+
+
 class QuoteOutdatedError(PrepareError):
     pass
 
@@ -55,6 +59,7 @@ class BrokerMismatchError(BotError):
 __all__ = [
     'BotError',
     'PrepareError',
+    'PlugInError',
     'QuoteOutdatedError',
     'QuoteFieldError',
     'QuoteScheduleOver',

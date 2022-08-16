@@ -242,6 +242,12 @@ class StoreBase:
             rework_set = '🔁'
             bar.append(rework_set)
 
+        if plan.price_rate != 1.0:
+            price_rate = plan.price_rate
+            percent = int(price_rate * 100)
+            price_rate_text = f'🎢{percent}%'
+            bar.append(price_rate_text)
+
         battery = '🔋'
         chips = plan.total_chips
         diff = plan.total_volume_not_active(assert_zero=False)

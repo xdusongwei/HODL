@@ -12,8 +12,8 @@ class _Argument:
 @dataclass
 class ProfitRow:
     level: int
-    #
-    profit_rate: float
+    # 计算出新市值，目前没什么用途
+    value: float
     # 调仓过的部分自身的获利比例
     float_rate: float
     # 调仓过的部分占全部仓位的获利比例
@@ -22,7 +22,7 @@ class ProfitRow:
     sell_at: float
     # 买入价格
     buy_at: float
-    # 点差
+    # 点差，买卖价格已经把点差算进去了，如果需要还原期望价格，从这里扣除
     buy_spread: float
     sell_spread: float
     # 卖出股数
@@ -154,29 +154,35 @@ class PlanCalc:
         buy_spread = abs(buy_spread)
         sell_spread = abs(sell_spread)
         weight = list(self.weight)
-        sell_percent = list(self.sell_rate)
-        buy_percent = list(self.buy_rate)
+        sell_rate = list(self.sell_rate)
+        buy_rate = list(self.buy_rate)
         result = ProfitTable()
         result.table_row = self.table_size
+        sum_shares = 0
         for i in range(self.table_size):
             range_weight = weight[0:i + 1]
 
-            sell_value = sum(weight[j] * sell_percent[j] for j in range(i + 1))
-            buy_value = sum(range_weight) * buy_percent[i]
+            # 平均卖出和买入的重心centre-of-gravity
+            sell_cog = sum(weight[j] * sell_rate[j] for j in range(i + 1))
+            buy_cog = sum(range_weight) * buy_rate[i]
 
-            profit = sell_value - buy_value
-            float_rate = profit / sum(range_weight)
-            total_rate = profit / sum(weight)
-            profit_rate = base_asset * total_rate
-            sell_at = base_price * sell_percent[i] + sell_spread
-            buy_at = base_price * buy_percent[i] - buy_spread
-            shares = int(max_shares * weight[i] / sum(weight))
+            cog_diff = sell_cog - buy_cog
+            float_rate = cog_diff / sum(range_weight)
+            total_rate = cog_diff / sum(weight)
+            value = base_asset * total_rate
+            sell_at = base_price * sell_rate[i] + sell_spread
+            buy_at = base_price * buy_rate[i] - buy_spread
+
+            # 由于权重不能把全部股数整除的原因，下一档的股数要补上之前档位股数的余下部分，减少因为除不尽导致不能流动的股票份额
+            range_shares = int(max_shares * sum(range_weight) / sum(weight))
+            shares = range_shares - sum_shares
             shares = (shares // shares_per_unit) * shares_per_unit
+            sum_shares += shares
             if shares <= 0:
                 return ProfitTable()
             row = ProfitRow(
                 level=i+1,
-                profit_rate=FMT.adjust_precision(profit_rate, precision),
+                value=FMT.adjust_precision(value, precision),
                 float_rate=FMT.adjust_precision(float_rate + 1, 4),
                 total_rate=FMT.adjust_precision(total_rate + 1, 4),
                 sell_at=FMT.adjust_precision(sell_at, precision),

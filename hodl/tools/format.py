@@ -1,4 +1,3 @@
-import hashlib
 import base58
 import xxhash
 from decimal import Decimal
@@ -45,7 +44,14 @@ class FormatTool:
         return unit
 
     @classmethod
-    def pretty_usd(cls, v: None | int | float, currency=None, unit='$', only_int=False) -> str:
+    def pretty_usd(
+            cls,
+            v: None | int | float,
+            currency = None,
+            unit = '$',
+            only_int = False,
+            precision: int = 3,
+    ) -> str:
         if currency:
             match currency:
                 case 'USDT':
@@ -60,7 +66,8 @@ class FormatTool:
             v = int(v)
             return unit + '{:,}'.format(v)
         else:
-            return unit + '{:,.3f}'.format(v)
+            template = f'{{:,.{precision}f}}'
+            return unit + template.format(v)
 
     @classmethod
     def pretty_price(cls, v: None | int | float, config: StoreConfig, only_int=False):
@@ -68,6 +75,7 @@ class FormatTool:
             v=v,
             currency=config.currency,
             only_int=only_int,
+            precision=config.precision,
         )
 
     @classmethod

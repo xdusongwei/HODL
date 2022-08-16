@@ -79,8 +79,6 @@ class StatusWidget(PlaceholderBase):
             text = Text(style=default_style)
             tags = list()
             prudent = '惜售' if plan.prudent else '超卖'
-            if plan.price_rate != 1.0:
-                prudent += f'({int(plan.price_rate * 100)}%)'
             tags.append(prudent)
             tags.append('昨收')
             if config.get('basePriceLastBuy'):
@@ -287,20 +285,29 @@ class GridApp(App, ConfigMixin, DataMixin):
     @classmethod
     def _set_up_notification(
             cls,
+            order_id: str,
             title: str,
             msg: str,
-            duration: int = 4 * 60 * 60,
+            duration: int = 1 * 60 * 60,
     ):
         if sys.platform == 'win32' and not GridApp.TOASTER:
             from win10toast import ToastNotifier
             GridApp.TOASTER = ToastNotifier()
-        if GridApp.TOASTER:
-            GridApp.TOASTER.show_toast(
+        if toaster := GridApp.TOASTER:
+            import threading
+            args = dict(
                 title=title,
                 msg=msg,
                 duration=duration,
                 threaded=False,
             )
+            thread = threading.Thread(
+                name=f'orderFilledNotification:{order_id}',
+                daemon=True,
+                target=toaster.show_toast,
+                kwargs=args,
+            )
+            thread.start()
 
     @classmethod
     def _order_filled_notification(cls, config: TuiConfig, status_list: list[State]):
@@ -323,6 +330,7 @@ class GridApp(App, ConfigMixin, DataMixin):
                         qty = FMT.pretty_number(order.filled_qty)
                         msg = f'[{region}]{symbol} {name} {direction} {price}@{qty}'
                         cls._set_up_notification(
+                            order_id=order.unique_id,
                             title=f'订单成交',
                             msg=msg,
                         )
