@@ -21,7 +21,7 @@ class StoreState(StoreStateBase):
         self.tz_name = TimeTools.region_to_tz(region=store_config.region)
 
         symbol = store_config.symbol
-        log_root = store_config.log_root
+        log_root = store_config.log_root()
         self.alive_log = Logger(
             logger_name=f'alive-{symbol}',
             log_root=log_root,
@@ -37,6 +37,7 @@ class StoreState(StoreStateBase):
             log_root=log_root,
             write_stdout=False,
             write_json=False,
+            file_max_size=128 * 1024,
         )
         self.log.set_up()
 

@@ -77,7 +77,6 @@ class StoreConfig(dict):
         """
         return self.get('prudent', True)
 
-    @property
     def log_root(self) -> str:
         """
         指定一个目录，用来专门保存持仓的日志
