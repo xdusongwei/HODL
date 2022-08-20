@@ -77,20 +77,6 @@ class StoreConfig(dict):
         """
         return self.get('prudent', True)
 
-    def log_root(self) -> str:
-        """
-        指定一个目录，用来专门保存持仓的日志
-        Returns
-        -------
-
-        """
-        path: str = self.get('log_root')
-        if path:
-            path = path.format(symbol=self.symbol)
-            path = os.path.expanduser(path)
-            os.makedirs(path, exist_ok=True)
-        return path
-
     @property
     def state_file_path(self) -> str:
         """

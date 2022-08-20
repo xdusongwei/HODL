@@ -180,5 +180,19 @@ class VariableTools:
         """
         return self._config.get('html_file_path', None)
 
+    def log_root(self, broker: str, region: str, symbol: str) -> str:
+        """
+        指定一个目录，用来专门保存持仓的日志
+        Returns
+        -------
+
+        """
+        path: str = self._config.get('log_root')
+        if path:
+            path = path.format(broker=broker, region=region, symbol=symbol)
+            path = os.path.expanduser(path)
+            os.makedirs(path, exist_ok=True)
+        return path
+
 
 __all__ = ['VariableTools', ]

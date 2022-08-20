@@ -20,10 +20,13 @@ class StoreState(StoreStateBase):
         self.enable = store_config.enable
         self.tz_name = TimeTools.region_to_tz(region=store_config.region)
 
-        symbol = store_config.symbol
-        log_root = store_config.log_root()
+        log_root = self.variable.log_root(
+            broker=store_config.broker,
+            region=store_config.region,
+            symbol=store_config.symbol,
+        )
         self.alive_log = Logger(
-            logger_name=f'alive-{symbol}',
+            logger_name=f'alive-[{store_config.region}]{store_config.symbol}',
             log_root=log_root,
             log_level='DEBUG',
             write_stdout=False,
@@ -33,7 +36,7 @@ class StoreState(StoreStateBase):
         )
         self.alive_log.set_up()
         self.log = Logger(
-            logger_name=f'main-{symbol}',
+            logger_name=f'main-[{store_config.region}]{store_config.symbol}',
             log_root=log_root,
             write_stdout=False,
             write_json=False,
