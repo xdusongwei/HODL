@@ -43,7 +43,7 @@
                                     <p class="mb-0 mt-2">
                                         <span class="fs-4">{{ store_config.name }}</span>
                                         <span class="fs-6 fw-bold {{ 'text-success' if store.state.quote_rate >= 0 else 'text-danger' }}">
-                                            {{ FMT.pretty_usd(state.quote_latest_price, currency=store_config.currency) + '(%+.2f%%)'|format(state.quote_rate) }}
+                                            {{ FMT.pretty_price(state.quote_latest_price, config=store_config) + '(%+.2f%%)'|format(state.quote_rate) }}
                                         </span>
                                     </p>
                                     <p class="text-muted fs-6 mb-0">{{ FMT.pretty_dt(state.quote_time, region=store_config.region, with_year=True, with_tz=True) }}</p>
