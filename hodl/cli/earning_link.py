@@ -15,7 +15,7 @@ amount = int(input('amount:\n'))
 unit = FormatTool.currency_to_unit(currency=currency)
 create_time = int(TimeTools.us_time_now().timestamp())
 
-print(f'symbol:{symbol}\nbroker:{broker}\nregion:{region}\nday:{day}\ncurrency:{currency}\namount:{amount}\nunit:{unit}\ncreate_time:{create_time}\n')
+print(f'\n\nsymbol:{symbol}\nbroker:{broker}\nregion:{region}\nday:{day}\ncurrency:{currency}\namount:{amount}\nunit:{unit}\ncreate_time:{create_time}\n')
 input('confirm?')
 
 earning = EarningRow(

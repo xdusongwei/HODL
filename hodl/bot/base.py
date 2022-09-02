@@ -27,6 +27,7 @@ class _Session:
 
 
 class TelegramBotBase:
+    UPDATER = None
     BOT = None
     DB: LocalDb = None
     SESSION = ExpiringDict(max_len=1024, max_age_seconds=3600)
@@ -34,10 +35,15 @@ class TelegramBotBase:
 
     def __init__(self, updater: Updater = None, db: LocalDb = None):
         if updater and not TelegramBotBase.BOT:
+            TelegramBotBase.UPDATER = updater
             updater.start_polling()
             TelegramBotBase.BOT = updater.bot
         if db and not TelegramBotBase.DB:
             TelegramBotBase.DB = db
+
+    @property
+    def updater(self):
+        return TelegramBotBase.UPDATER
 
     @property
     def bot(self):

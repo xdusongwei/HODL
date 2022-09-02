@@ -1,90 +1,233 @@
-import datetime
 import os
 import json
 import time
+import datetime
 import dataclasses
 from threading import Thread
+from collections import defaultdict
 from hodl.bot import AlertBot, ConversationBot
 from hodl.storage import *
 from hodl.store import Store
 from hodl.quote_mixin import QuoteMixin
+from hodl.thread_mixin import *
 from hodl.broker.broker_proxy import *
 from hodl.tools import *
 
 
-class Manager:
-    CONVERSATION_BOT = None
+class MarketStatusThread(ThreadMixin):
+    def __init__(self, broker_proxy: BrokerProxy):
+        self.broker_proxy = broker_proxy
+        self.ok_counter = defaultdict(int)
+        self.error_counter = defaultdict(int)
+        self.latest_time = dict()
+        self.broker_names = set()
+
+    def prepare(self):
+        print(f'开启异步线程拉取市场状态')
+        self.broker_proxy.pull_market_status()
+        print(f'预拉取市场状态结束')
+
+    def run(self):
+        super(MarketStatusThread, self).run()
+        while True:
+            ms = self.broker_proxy.pull_market_status()
+            if not ms:
+                continue
+            for t_broker, d in ms.items():
+                broker_name = t_broker.BROKER_NAME
+                self.broker_names.add(broker_name)
+                if '_exception' in d:
+                    self.error_counter[broker_name] += 1
+                else:
+                    self.ok_counter[broker_name] += 1
+                    self.latest_time[broker_name] = TimeTools.us_time_now(tz='UTC')
+
+    def primary_bar(self) -> list[BarElementDesc]:
+        bar = [
+            BarElementDesc(
+                content=f'{name}:✅{self.ok_counter[name]}❌{self.error_counter[name]}',
+                tooltip=f'上次成功时间: {FormatTool.pretty_dt(self.latest_time[name])}',
+            )
+            for name in sorted(self.broker_names)
+        ]
+        return bar
+
+
+class HtmlWriterThread(ThreadMixin):
+    class _EnhancedJSONEncoder(json.JSONEncoder):
+        def default(self, o):
+            if dataclasses.is_dataclass(o):
+                return dataclasses.asdict(o)
+            return super().default(o)
+
+    def __init__(self, variable: VariableTools, db: LocalDb, template, items: list[tuple[str, Store, Thread]]):
+        self.variable = variable
+        self. db = db
+        self.template = template
+        self.items = items
+        self.total_write = 0
+        self.current_hash = ''
+        self.recent_earnings = list()
+        self.earning_list = list()
+        self.earning_json = '{}'
+        self.total_earning = list()
+
+    def primary_bar(self) -> list[BarElementDesc]:
+        bar = [
+            BarElementDesc(
+                content=f'🎞️{FormatTool.number_to_size(self.total_write)}',
+                tooltip=f'累计写入量',
+            )
+        ]
+        return bar
+
+    def write_html(self):
+        try:
+            html_file_path = self.variable.html_file_path
+            template = self.template
+            db = self.db
+            items = self.items
+            store_list: list[Store] = [item[1] for item in items]
+            new_hash = ' '.join(f'{store.state.version}:{store.state.current}' for store in store_list)
+            if self.current_hash != new_hash:
+                self.current_hash = new_hash
+                if db:
+                    create_time = (TimeTools.us_time_now(tz='Asia/Shanghai') - datetime.timedelta(days=365)).timestamp()
+                    create_time = int(create_time)
+                    self.recent_earnings = list(EarningRow.items_after_time(con=db.conn, create_time=create_time))
+                else:
+                    self.recent_earnings = list()
+                self.earning_list = self.recent_earnings[:24]
+                self.earning_json = json.dumps(
+                    self.recent_earnings,
+                    indent=2,
+                    cls=HtmlWriterThread._EnhancedJSONEncoder,
+                )
+                create_time = int(TimeTools.us_time_now().timestamp())
+                self.total_earning = [
+                    (currency, EarningRow.total_amount_before_time(db.conn, create_time, currency))
+                    for currency in ('USD', 'CNY', 'HKD',)
+                ]
+
+            html = template.render(
+                store_list=store_list,
+                FMT=FormatTool,
+                earning_list=self.earning_list,
+                earning_json=self.earning_json,
+                threads=ThreadMixin.threads(),
+                total_earning=self.total_earning,
+            ).encode('utf8')
+            with open(html_file_path, "wb") as f:
+                f.write(html)
+            self.total_write += len(html)
+        except Exception as e:
+            print(e)
+
+    def run(self):
+        super(HtmlWriterThread, self).run()
+        while True:
+            time.sleep(24)
+            if not self.variable.html_file_path:
+                continue
+            self.write_html()
+
+
+class JsonWriterThread(ThreadMixin):
+    def __init__(self, sleep_secs: int, items: list[tuple[str, Store, Thread]]):
+        self.sleep_secs = sleep_secs
+        self.items = items
+        self.total_write = 0
+
+    def primary_bar(self) -> list[BarElementDesc]:
+        bar = [
+            BarElementDesc(
+                content=f'🎞️{FormatTool.number_to_size(self.total_write)}',
+                tooltip=f'累计写入量',
+            )
+        ]
+        return bar
+
+    def run(self):
+        super(JsonWriterThread, self).run()
+        sleep_secs = self.sleep_secs
+        items = self.items
+        while True:
+            time.sleep(4)
+            path = VariableTools().manager_state_path
+            if not path:
+                return
+            ms = BrokerProxy.MARKET_STATUS or dict()
+            ms = {broker_type.BROKER_NAME: detail for broker_type, detail in ms.items()}
+            d = {
+                'type': 'manager',
+                'pid': os.getpid(),
+                'time': TimeTools.us_time_now().timestamp(),
+                'storeSleepSecs': sleep_secs,
+                'marketStatus': ms,
+                'marketStatusThread': {
+                    'name': Manager.MARKET_STATUS_THREAD.name,
+                    'id': Manager.MARKET_STATUS_THREAD.native_id,
+                    'dead': not Manager.MARKET_STATUS_THREAD.is_alive(),
+                } if Manager.MARKET_STATUS_THREAD else {},
+                'htmlWriterThread': {
+                    'name': Manager.HTML_THREAD.name,
+                    'id': Manager.HTML_THREAD.native_id,
+                    'dead': not Manager.HTML_THREAD.is_alive(),
+                } if Manager.HTML_THREAD else {},
+                'items': [
+                    {
+                        'symbol': symbol,
+                        'thread': {
+                            'name': store.current_thread.name,
+                            'id': store.current_thread.native_id,
+                            'dead': not store.current_thread.is_alive(),
+                        },
+                        'store': {
+                            'state': store.state,
+                            'exception': str(store.exception or ''),
+                            'hasDb': bool(store.db),
+                            'hasAlertBot': store.bot.is_alive,
+                            'processTime': store.process_time,
+                        },
+                        'config': {
+                            'name': store.store_config.name,
+                            'symbol': store.store_config.symbol,
+                            'maxShares': store.store_config.max_shares,
+                            'enable': store.store_config.enable,
+                            'prudent': store.store_config.prudent,
+                            'broker': store.store_config.broker,
+                            'tradeType': store.store_config.trade_type,
+                            'region': store.store_config.region,
+                            'precision': store.store_config.precision,
+                            'lockPosition': store.store_config.lock_position,
+                            'basePriceLastBuy': store.store_config.base_price_last_buy,
+                            'basePriceDayLow': store.store_config.base_price_day_low,
+                            'currency': store.store_config.currency,
+                            'reworkLevel': store.store_config.rework_level,
+                        },
+                        'broker': {
+                            'tradeBroker': str(store.broker_proxy.trade_broker),
+                        } if store.broker_proxy else {},
+                    }
+                    for symbol, store, _ in items if store.state],
+            }
+            body = json.dumps(d, indent=2, sort_keys=True).encode('utf8')
+            with open(path, 'wb') as f:
+                f.write(body)
+            self.total_write += len(body)
+
+
+class Manager(ThreadMixin):
+    DB: LocalDb = None
+    CONVERSATION_BOT: ConversationBot = None
     MARKET_STATUS_THREAD: Thread = None
     HTML_THREAD: Thread = None
-    RECENT_EARNINGS: list[EarningRow] = None
-
-    @classmethod
-    def write_system_state(cls, items: list[tuple[str, Store, Thread]], sleep_secs):
-        path = VariableTools().manager_state_path
-        if not path:
-            return
-        ms = BrokerProxy.MARKET_STATUS or dict()
-        ms = {broker_type.BROKER_NAME: detail for broker_type, detail in ms.items()}
-        d = {
-            'type': 'manager',
-            'pid': os.getpid(),
-            'time': TimeTools.us_time_now().timestamp(),
-            'storeSleepSecs': sleep_secs,
-            'marketStatus': ms,
-            'marketStatusThread': {
-                'name': Manager.MARKET_STATUS_THREAD.name,
-                'id': Manager.MARKET_STATUS_THREAD.native_id,
-                'dead': not Manager.MARKET_STATUS_THREAD.is_alive(),
-            } if Manager.MARKET_STATUS_THREAD else {},
-            'htmlWriterThread': {
-                'name': Manager.HTML_THREAD.name,
-                'id': Manager.HTML_THREAD.native_id,
-                'dead': not Manager.HTML_THREAD.is_alive(),
-            } if Manager.HTML_THREAD else {},
-            'items': [
-                {
-                    'symbol': symbol,
-                    'thread': {
-                        'name': thread.name,
-                        'id': thread.native_id,
-                        'dead': not thread.is_alive(),
-                    },
-                    'store': {
-                        'state': store.state,
-                        'exception': str(store.exception or ''),
-                        'hasDb': bool(store.db),
-                        'hasAlertBot': store.bot.is_alive,
-                        'processTime': store.process_time,
-                    },
-                    'config': {
-                        'name': store.store_config.name,
-                        'symbol': store.store_config.symbol,
-                        'maxShares': store.store_config.max_shares,
-                        'enable': store.store_config.enable,
-                        'prudent': store.store_config.prudent,
-                        'broker': store.store_config.broker,
-                        'tradeType': store.store_config.trade_type,
-                        'region': store.store_config.region,
-                        'precision': store.store_config.precision,
-                        'lockPosition': store.store_config.lock_position,
-                        'basePriceLastBuy': store.store_config.base_price_last_buy,
-                        'basePriceDayLow': store.store_config.base_price_day_low,
-                        'currency': store.store_config.currency,
-                        'reworkLevel': store.store_config.rework_level,
-                    },
-                    'broker': {
-                        'tradeBroker': str(store.broker_proxy.trade_broker),
-                    } if store.broker_proxy else {},
-                }
-                for symbol, store, thread in items if store.state],
-        }
-        text = json.dumps(d, indent=4, sort_keys=True)
-        with open(path, 'w', encoding='utf8') as f:
-            f.write(text)
+    JSON_THREAD: Thread = None
 
     @classmethod
     def monitor_alert(cls, items: list[tuple[str, Store, Thread]]):
-        for symbol, store, thread in items:
+        for symbol, store, _ in items:
+            thread = store.current_thread
             if thread.is_alive():
                 continue
             text = f'💀线程[{thread.name}]已崩溃。\n'
@@ -93,35 +236,6 @@ class Manager:
             if e := store.exception:
                 text += f'异常原因:{e}\n'
             store.bot.set_alarm(AlertBot.K_THREAD_DEAD, text=text)
-
-    @classmethod
-    def write_html(cls, db: LocalDb, html_file_path, template, items: list[tuple[str, Store, Thread]]):
-        try:
-            store_list: list[Store] = [item[1] for item in items]
-            if db:
-                create_time = (TimeTools.us_time_now(tz='Asia/Shanghai') - datetime.timedelta(days=365)).timestamp()
-                create_time = int(create_time)
-                Manager.RECENT_EARNINGS = list(EarningRow.items_after_time(con=db.conn, create_time=create_time))
-            else:
-                Manager.RECENT_EARNINGS = list()
-
-            class _EnhancedJSONEncoder(json.JSONEncoder):
-                def default(self, o):
-                    if dataclasses.is_dataclass(o):
-                        return dataclasses.asdict(o)
-                    return super().default(o)
-
-            html = template.render(
-                store_list=store_list,
-                FMT=FormatTool,
-                earning_list=Manager.RECENT_EARNINGS[:24],
-                earning_json=json.dumps(Manager.RECENT_EARNINGS, indent=2, cls=_EnhancedJSONEncoder),
-            )
-
-            with open(html_file_path, "w", encoding='utf8') as f:
-                f.write(html)
-        except Exception as e:
-            print(e)
 
     @classmethod
     def rework_store(cls, items: list[tuple[str, Store, Thread]]):
@@ -154,8 +268,16 @@ class Manager:
             except Exception as e:
                 store.bot.send_text(f'{thread.name}套利后价格达到条件, 持仓状态数据被重置失败: {e}')
 
-    @classmethod
-    def run(cls):
+    def primary_bar(self) -> list[BarElementDesc]:
+        bar = []
+        if Manager.CONVERSATION_BOT.bot:
+            bar.append(BarElementDesc(content=f'🤖Telegram', tooltip=f'机器人可以对话或者报警'))
+        if Manager.DB:
+            bar.append(BarElementDesc(content=f'📼sqlite', tooltip=f'已启用数据库'))
+        return bar
+
+    def run(self):
+        super(Manager, self).run()
         var = VariableTools()
         store_configs = var.store_configs
         if not store_configs:
@@ -165,12 +287,22 @@ class Manager:
         db = None
         if path := var.db_path:
             db = LocalDb(db_path=path)
+            Manager.DB = db
         try:
-            cls.CONVERSATION_BOT = ConversationBot(updater=var.telegram_updater(), db=db)
+            Manager.CONVERSATION_BOT = ConversationBot(updater=var.telegram_updater(), db=db)
             stores = [Store(store_config=config, db=db) for config in store_configs.values()]
+            for store in stores:
+                store.prepare()
             symbols = [store.store_config.symbol for store in stores]
-            threads = [Thread(name=f'Store({store.store_config.symbol})', target=store.idle, daemon=True)
-                       for store in stores]
+            threads = [
+                Thread(
+                    name=f'Store([{store.store_config.region}]{store.store_config.symbol})',
+                    target=store.run,
+                    daemon=True,
+                )
+                for store in stores
+            ]
+            Manager.CONVERSATION_BOT.set_store_list(store_list=stores)
             items = list(zip(symbols, stores, threads))
             for thread in threads:
                 thread.start()
@@ -180,44 +312,43 @@ class Manager:
             raise e
 
         if var.async_market_status:
-            print(f'开启异步线程拉取市场状态')
-            store = stores[0]
-            proxy = store.broker_proxy
-            proxy.pull_market_status()
-            print(f'预拉取市场状态结束')
-
-            def _loop(s: Store):
-                while True:
-                    s.broker_proxy.pull_market_status()
+            mkt_thread = MarketStatusThread(broker_proxy=stores[0].broker_proxy)
+            mkt_thread.prepare()
 
             Manager.MARKET_STATUS_THREAD = Thread(
                 name='marketStatusPuller',
-                target=_loop,
+                target=mkt_thread.run,
                 daemon=True,
-                args=(store, )
             )
             Manager.MARKET_STATUS_THREAD.start()
-            print(f'异步线程已启动')
-
-        print(f'开启HTML刷新线程')
-
-        def _loop(local_db, html_file_path, template, items: list[tuple[str, Store, Thread]]):
-            while True:
-                time.sleep(24)
-                if not variable.html_file_path:
-                    continue
-                cls.write_html(db=local_db, html_file_path=html_file_path, template=template, items=items)
 
         env = var.jinja_env
         template = env.get_template("index.html")
+        html_thread = HtmlWriterThread(
+            variable=var,
+            db=db,
+            template=template,
+            items=items,
+        )
         Manager.HTML_THREAD = Thread(
             name='htmlWriter',
-            target=_loop,
+            target=html_thread.run,
             daemon=True,
-            args=(db, var.html_file_path, template, items, )
         )
         Manager.HTML_THREAD.start()
         print(f'HTML刷新线程已启动')
+
+        json_thread = JsonWriterThread(
+            sleep_secs=var.sleep_limit,
+            items=items,
+        )
+        Manager.JSON_THREAD = Thread(
+            name='jsonWriter',
+            target=json_thread.run,
+            daemon=True,
+        )
+        Manager.JSON_THREAD.start()
+        print(f'json刷新线程已启动')
 
         while True:
             try:
@@ -240,19 +371,19 @@ class Manager:
                         return
                     store.runtime_state.sleep_secs = sleep_secs
                     QuoteMixin.change_cache_ttl(sleep_secs)
-                cls.write_system_state(
-                    items=items,
-                    sleep_secs=sleep_secs,
-                )
-                cls.monitor_alert(items=items)
-                cls.rework_store(items=items)
+                self.monitor_alert(items=items)
+                self.rework_store(items=items)
             except KeyboardInterrupt:
                 for thread in threads:
                     if thread.is_alive():
                         thread.join()
                 if db:
                     db.conn.close()
+
+                if updater := Manager.CONVERSATION_BOT.updater:
+                    updater.stop()
                 return
 
 
-Manager.run()
+instance = Manager()
+instance.run()

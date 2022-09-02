@@ -91,7 +91,7 @@ class StatusWidget(PlaceholderBase):
                 config=config,
                 state=state,
             )
-            text.append(Text('  '.join(state_bar) + '\n'))
+            text.append(Text('  '.join(bar.content for bar in state_bar) + '\n'))
             if state.risk_control_break:
                 text.append(Text(f'风控异常: {state.risk_control_detail}\n', style='red'))
             if e and e != state.risk_control_detail:
@@ -144,8 +144,9 @@ class QuoteWidget(PlaceholderBase):
                 f'{FMT.pretty_price(latest_price, config=config)}({rate:+.2f}%)\n',
                 style=self._color(latest_price, state.quote_pre_close),
             )
+            buff_bar = StoreBase.buff_bar(config=config, state=state, process_time=store_dict.get("processTime"))
             text.append(
-                f'状态: {"".join(StoreBase.buff_bar(config=config, state=state, process_time=store_dict.get("processTime")))}\n',
+                f'状态: {"".join(bar.content for bar in buff_bar)}\n',
             )
             container.append(Text(title, style=default_style))
             container.append(text)
@@ -198,7 +199,7 @@ class OrderWidget(PlaceholderBase):
                 Text(text=f'{order.order_emoji}'),
                 Text(text=f'{time.strftime("%y-%m-%d")}\n{time.strftime("%H:%M:%S")}', style=style),
                 Text(text=f'[{order.region}]{symbol}', style=style),
-                Text(text=f'{order.direction}.{order.level}', style=style),
+                Text(text=f'{order.direction}#{order.level}', style=style),
                 Text(text=FMT.pretty_usd(order.limit_price, currency=order.currency)),
                 Text(text=FMT.pretty_number(order.qty), style=style),
                 Text(text=FMT.pretty_usd(order.avg_price, currency=order.currency)),

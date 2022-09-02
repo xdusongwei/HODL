@@ -547,7 +547,7 @@ dependencies = [
 
 [[package]]
 name = "tigeropen"
-version = "2.1.6"
+version = "2.1.8"
 summary = "TigerBrokers Open API"
 dependencies = [
     "cryptography==37.0.2",
@@ -661,7 +661,7 @@ dependencies = [
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:4d2feae2c9d71d9ad1aa3e8a37532dc5f9c304ed9f7fda7e992b86b83522ec35"
+content_hash = "sha256:6a123590d9ba1d5f5f9890365f61ebd3a7b689a8186e2a9a97a3778a68587be2"
 
 [metadata.files]
 "anyio 3.6.1" = [
@@ -1306,8 +1306,8 @@ content_hash = "sha256:4d2feae2c9d71d9ad1aa3e8a37532dc5f9c304ed9f7fda7e992b86b83
     {url = "https://mirrors.aliyun.com/pypi/packages/28/f7/4b9d17a2b53a46a95781106ffe29a7414dc8760d542bd430196d201d1a91/textual-0.1.18-py3-none-any.whl", hash = "sha256:59110935418c597c1c50876edfd6799ad5b59d51a91ca6744fc45e36eb89638e"},
     {url = "https://mirrors.aliyun.com/pypi/packages/8c/d1/c228993e8a21e24bb43a0376b2901b6f3f2033dae13e7f76d1103bb9b8a3/textual-0.1.18.tar.gz", hash = "sha256:b2883f8ed291de58b9aa73de6d24bbaae0174687487458a4eb2a7c188a2acf23"},
 ]
-"tigeropen 2.1.6" = [
-    {url = "https://mirrors.aliyun.com/pypi/packages/1d/5d/0bc5e525f498afe6c589c8eb636b7d506d473eda7ae2f9da098c8aeedc5b/tigeropen-2.1.6.tar.gz", hash = "sha256:cfa8a4956b901e4edea370d5a6639d5cdef6fe6df97a5316608be8d92ebbd163"},
+"tigeropen 2.1.8" = [
+    {url = "https://mirrors.aliyun.com/pypi/packages/f9/1e/99ba2bbd7262ecc3142ed34888bcae1e48b86078bb13b5144186d77a1de2/tigeropen-2.1.8.tar.gz", hash = "sha256:73ae9482223b662563b175e2bd64cd653125aae0dce2f7038b155d44457df989"},
 ]
 "toml 0.10.2" = [
     {url = "https://mirrors.aliyun.com/pypi/packages/44/6f/7120676b6d73228c96e17f1f794d8ab046fc910d781c8d151120c3f1569e/toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},

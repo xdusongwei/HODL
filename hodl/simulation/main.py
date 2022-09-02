@@ -159,7 +159,7 @@ def start_simulation():
             row: ProfitRow = row
             print(f'表格项: {row} totalRate:{row.total_rate}')
         SimulationStore.PLAN = table
-        store.idle()
+        store.run()
         if store.exception:
             raise store.exception
     except Exception as e:

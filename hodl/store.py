@@ -1,5 +1,3 @@
-import json
-
 from hodl.bot import *
 from hodl.tools import *
 from hodl.state import *
@@ -165,55 +163,6 @@ class Store(QuoteMixin, TradeMixin):
             )
         self.logger.info(f'清盘订单全部成功完成')
 
-    @classmethod
-    def rewrite_earning_json(cls, db: LocalDb, earning_json_path: str, now, weeks=2):
-        last_sunday_utc = TimeTools.last_sunday_utc(now, weeks=-weeks)
-        create_time = int(last_sunday_utc.timestamp())
-        items = EarningRow.items_after_time(con=db.conn, create_time=create_time)
-        total_list = [(currency, EarningRow.total_amount_before_time(db.conn, create_time, currency))
-                      for currency in ('USD', 'CNY',)]
-        recent_earnings = list()
-        for item in items:
-            day = str(item.day)
-            day_now = f'{day[:4]}-{day[4:6]}-{day[6:]}'
-            recent_earnings.append({
-                'type': 'earningItem',
-                'day': day_now,
-                'name': item.symbol,
-                'broker': item.broker,
-                'region': item.region,
-                'symbol': item.symbol,
-                'earning': item.amount,
-                'currency': item.currency,
-            })
-        for currency, earning in total_list:
-            recent_earnings.append({
-                'type': 'earningHistory',
-                'day': TimeTools.date_to_ymd(last_sunday_utc),
-                'name': '历史',
-                'broker': None,
-                'region': None,
-                'symbol': None,
-                'earning': earning,
-                'currency': currency,
-            })
-        monthly_list = list()
-        monthly_rows = EarningRow.total_earning_group_by_month(con=db.conn)
-        for row in monthly_rows:
-            monthly_list.append({
-                'month': row.month,
-                'currency': row.currency,
-                'total': row.total,
-            })
-        file_dict = {
-            'type': 'earningReport',
-            'recentEarnings': recent_earnings,
-            'monthlyEarnings': monthly_list,
-        }
-        file_body = json.dumps(file_dict, indent=2, sort_keys=True)
-        with open(earning_json_path, mode='w', encoding='utf8') as f:
-            f.write(file_body)
-
     def set_up_earning(self) -> float:
         store_config = self.store_config
         region = store_config.region
@@ -375,7 +324,8 @@ class Store(QuoteMixin, TradeMixin):
             case self.STATE_TRADE:
                 self.try_fire_orders()
 
-    def idle(self):
+    def run(self):
+        super(Store, self).run()
         is_checked = False
         logger = self.logger
         logger.info(f'启动程序')

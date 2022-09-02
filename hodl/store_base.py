@@ -7,10 +7,11 @@ from hodl.tools import *
 from hodl.storage import *
 from hodl.bot import *
 from hodl.broker.broker_proxy import *
+from hodl.thread_mixin import *
 from hodl.state import *
 
 
-class StoreBase:
+class StoreBase(ThreadMixin):
     STATE_SLEEP = '被抑制'
     STATE_TRADE = '监控中'
     STATE_GET_OFF = '已套利'
@@ -95,13 +96,12 @@ class StoreBase:
         if not self.state_file:
             return
         runtime_state = self.runtime_state
-        state = self.state
         if os.path.exists(self.state_file):
             with open(self.state_file, 'r', encoding='utf8') as f:
                 text = f.read()
                 runtime_state.state_compare = TimeTools.us_day_now(), text
             state = self.read_state(text)
-        self.state = state
+            self.state = state
         self.state.name = self.store_config.name
 
     def save_state(self):
@@ -195,7 +195,7 @@ class StoreBase:
         self.broker_proxy.on_init()
 
     @classmethod
-    def state_bar(cls, thread_alive: bool, config: StoreConfig, state: State) -> list[str]:
+    def state_bar(cls, thread_alive: bool, config: StoreConfig, state: State) -> list[BarElementDesc]:
         cross_mark = '❌'
         skull = '💀'
         money_bag = '💰'
@@ -205,68 +205,98 @@ class StoreBase:
         if config.enable:
             if not thread_alive:
                 system_status = skull
+                system_tooltip = '持仓管理线程已经崩溃'
             elif state.current == StoreBase.STATE_GET_OFF:
                 system_status = money_bag
+                system_tooltip = '持仓完成套利'
             elif not state.is_plug_in:
                 system_status = plug
+                system_tooltip = '券商系统连通未成功'
             elif state.current == StoreBase.STATE_TRADE:
                 system_status = check
+                system_tooltip = '正常'
             else:
                 system_status = cross_mark
+                system_tooltip = '其他三项不能达到工作条件'
         else:
             system_status = no_entry
+            system_tooltip = '使能关闭'
         market_status = check if state.market_status == 'TRADING' else cross_mark
         return [
-            f'{system_status}系统',
-            f'{market_status}市场',
-            f'{check if state.quote_enable_trade else cross_mark}标的',
-            f'{cross_mark if state.risk_control_break else check}风控',
+            BarElementDesc(
+                content=f'{system_status}系统',
+                tooltip=system_tooltip,
+            ),
+            BarElementDesc(
+                content=f'{market_status}市场',
+                tooltip=f'指示持仓所属市场是否开市',
+            ),
+            BarElementDesc(
+                content=f'{check if state.quote_enable_trade else cross_mark}标的',
+                tooltip=f'持仓标的没有异常状态，例如停牌、熔断',
+            ),
+            BarElementDesc(
+                content=f'{cross_mark if state.risk_control_break else check}风控',
+                tooltip=f'持仓量、现金额、下单是否触发了风控限制',
+            ),
         ]
 
     @classmethod
-    def buff_bar(cls, config: StoreConfig, state: State, process_time: int = None) -> list[str]:
+    def buff_bar(cls, config: StoreConfig, state: State, process_time: int = None) -> list[BarElementDesc]:
         bar = list()
         plan = state.plan
 
         if cfg := plan.master_config:
-            bar.append(f'⚖+{cfg.name}')
+            bar.append(BarElementDesc(content=f'⚖+{cfg.name}', tooltip='对冲正向仓位'))
 
         if cfg := plan.slave_config:
-            bar.append(f'⚖-{cfg.name}')
+            bar.append(BarElementDesc(content=f'⚖-{cfg.name}', tooltip='对冲负向仓位'))
 
         if config.get('lockPosition') or config.lock_position:
             lock_position = '🔒'
-            bar.append(lock_position)
+            bar.append(BarElementDesc(content=lock_position, tooltip='持仓量核对已纳入风控，不可随时加仓'))
 
         if state.plan.rework_price:
             rework_set = '🔁'
-            bar.append(rework_set)
+            bar.append(BarElementDesc(content=rework_set, tooltip='今日已计划重置状态数据，使套利持仓重新工作'))
 
         if plan.price_rate != 1.0:
             price_rate = plan.price_rate
-            percent = int(price_rate * 100)
-            price_rate_text = f'🎢{percent}%'
-            bar.append(price_rate_text)
+            price_rate_text = f'🎢{FormatTool.factor_to_percent(price_rate)}'
+            bar.append(BarElementDesc(content=price_rate_text, tooltip='按缩放系数重新调整买卖价格的幅度'))
 
         battery = '🔋'
         chips = plan.total_chips
         diff = plan.total_volume_not_active(assert_zero=False)
+        remain_rate = None
         if chips and (chips - diff) >= 0:
             remain = chips - diff
-            percent = int(remain / chips * 100)
-            battery += f'{percent}%'
-        else:
-            battery += f'--'
-        bar.append(battery)
+            remain_rate = remain / chips
+        battery += FormatTool.factor_to_percent(remain_rate)
+        bar.append(BarElementDesc(content=battery, tooltip='剩余持仓占比'))
 
         if process_time is not None:
             process_time = f'{int(process_time * 1000)}'
         else:
             process_time = '--'
         process_time_text = f'📶{process_time}ms'
-        bar.append(process_time_text)
+        bar.append(BarElementDesc(content=process_time_text, tooltip='持仓处理耗时'))
 
         return bar
+
+    def primary_bar(self) -> list[BarElementDesc]:
+        return self.state_bar(
+            thread_alive=self.current_thread.is_alive() if self.current_thread else False,
+            config=self.store_config,
+            state=self.state,
+        )
+
+    def secondary_bar(self) -> list[BarElementDesc]:
+        return self.buff_bar(
+            config=self.store_config,
+            state=self.state,
+            process_time=self.process_time,
+        )
 
     def hedge_master_info(self) -> HedgeConfig | None:
         hedge_list = self.runtime_state.variable.hedge_configs
@@ -283,6 +313,55 @@ class StoreBase:
                 continue
             return hedge_config
         return None
+
+    @classmethod
+    def rewrite_earning_json(cls, db: LocalDb, earning_json_path: str, now, weeks=2):
+        last_sunday_utc = TimeTools.last_sunday_utc(now, weeks=-weeks)
+        create_time = int(last_sunday_utc.timestamp())
+        items = EarningRow.items_after_time(con=db.conn, create_time=create_time)
+        total_list = [(currency, EarningRow.total_amount_before_time(db.conn, create_time, currency))
+                      for currency in ('USD', 'CNY', )]
+        recent_earnings = list()
+        for item in items:
+            day = str(item.day)
+            day_now = f'{day[:4]}-{day[4:6]}-{day[6:]}'
+            recent_earnings.append({
+                'type': 'earningItem',
+                'day': day_now,
+                'name': item.symbol,
+                'broker': item.broker,
+                'region': item.region,
+                'symbol': item.symbol,
+                'earning': item.amount,
+                'currency': item.currency,
+            })
+        for currency, earning in total_list:
+            recent_earnings.append({
+                'type': 'earningHistory',
+                'day': TimeTools.date_to_ymd(last_sunday_utc),
+                'name': '历史',
+                'broker': None,
+                'region': None,
+                'symbol': None,
+                'earning': earning,
+                'currency': currency,
+            })
+        monthly_list = list()
+        monthly_rows = EarningRow.total_earning_group_by_month(con=db.conn)
+        for row in monthly_rows:
+            monthly_list.append({
+                'month': row.month,
+                'currency': row.currency,
+                'total': row.total,
+            })
+        file_dict = {
+            'type': 'earningReport',
+            'recentEarnings': recent_earnings,
+            'monthlyEarnings': monthly_list,
+        }
+        file_body = json.dumps(file_dict, indent=2, sort_keys=True)
+        with open(earning_json_path, mode='w', encoding='utf8') as f:
+            f.write(file_body)
 
 
 __all__ = ['StoreBase', ]

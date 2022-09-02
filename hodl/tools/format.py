@@ -2,6 +2,7 @@ import base58
 import xxhash
 from decimal import Decimal
 from datetime import datetime
+import humanize
 from currency_symbols import CurrencySymbols
 from hodl.tools.time import TimeTools
 from hodl.tools.store_config import StoreConfig
@@ -15,8 +16,13 @@ class FormatTool:
         return f
 
     @classmethod
-    def pretty_dt(cls, v: None | int | float | datetime, region=None, with_year=True, with_tz=False) \
-            -> str:
+    def pretty_dt(
+            cls,
+            v: None | int | float | datetime,
+            region=None,
+            with_year=True,
+            with_tz=False,
+    ) -> str:
         if v is None:
             return '--'
         dt = v
@@ -35,13 +41,23 @@ class FormatTool:
         if not with_year:
             iso_format = iso_format[5:]
         if with_tz:
-            return f'{tz_name}:{iso_format}'
+            return f'{tz_name}: {iso_format}'
         return iso_format
+
+    @classmethod
+    def factor_to_percent(cls, v: None | float, precision: int = 0) -> str:
+        if v is None:
+            return '--%'
+        return humanize.clamp(v, format=f"{{:.{precision}%}}")
 
     @classmethod
     def currency_to_unit(cls, currency: str) -> str:
         unit = CurrencySymbols.get_symbol(currency) or '$'
         return unit
+
+    @classmethod
+    def number_to_size(cls, number: int) -> str:
+        return humanize.naturalsize(number, binary=True, format="%.2f")
 
     @classmethod
     def pretty_usd(
@@ -61,13 +77,13 @@ class FormatTool:
                 case _:
                     unit = cls.currency_to_unit(currency)
         if v is None:
-            return f'{unit}--'
-        if only_int:
+            intcomma = '--'
+        elif only_int:
             v = int(v)
-            return unit + '{:,}'.format(v)
+            intcomma = humanize.intcomma(v)
         else:
-            template = f'{{:,.{precision}f}}'
-            return unit + template.format(v)
+            intcomma = humanize.intcomma(v, ndigits=precision)
+        return f'{unit}{intcomma}'
 
     @classmethod
     def pretty_price(cls, v: None | int | float, config: StoreConfig, only_int=False):

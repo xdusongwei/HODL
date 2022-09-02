@@ -19,6 +19,7 @@ class ConversationBot(TelegramBotBase):
             from hodl.bot.bot_conversation.report import Report
             from hodl.bot.bot_conversation.delete_state import DeleteState
             from hodl.bot.bot_conversation.base_price_day_low import BasePriceDayLow
+            from hodl.bot.bot_conversation.revive_store import ReviveStore
 
             dispatcher = updater.dispatcher
             dispatcher.add_handler(MonthlyEarning.handler())
@@ -33,6 +34,12 @@ class ConversationBot(TelegramBotBase):
             dispatcher.add_handler(Report.handler())
             dispatcher.add_handler(DeleteState.handler())
             dispatcher.add_handler(BasePriceDayLow.handler())
+            dispatcher.add_handler(ReviveStore.handler())
+
+    @classmethod
+    def set_store_list(cls, store_list):
+        from hodl.bot.bot_conversation.revive_store import ReviveStore
+        ReviveStore.set_store_list(store_list=store_list)
 
 
 __all__ = ['ConversationBot', ]
