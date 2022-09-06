@@ -99,6 +99,9 @@ class ReviveStore(TelegramBotBase):
                         f'已创建新线程',
                         reply_markup=ReplyKeyboardRemove(),
                     )
+                    alert_bot = getattr(t, 'bot')
+                    if alert_bot:
+                        alert_bot.d = dict()
                 except Exception as e:
                     update.message.reply_text(
                         f'改动失败:{e}',

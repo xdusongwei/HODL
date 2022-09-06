@@ -2,7 +2,6 @@ import os
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters
 from hodl.bot import TelegramBotBase
-from hodl.tools import *
 
 
 class DeleteState(TelegramBotBase):
