@@ -102,6 +102,8 @@ class StoreBase(ThreadMixin):
                 runtime_state.state_compare = TimeTools.us_day_now(), text
             state = self.read_state(text)
             self.state = state
+        else:
+            self.state = State.new()
         self.state.name = self.store_config.name
 
     def save_state(self):
