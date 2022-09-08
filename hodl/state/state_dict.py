@@ -10,11 +10,14 @@ class State(dict):
             s: State = State(d)
         else:
             s: State = State()
-        if not s.version:
+        now = TimeTools.us_time_now()
+        ymd = now.strftime('%y%m%d')
+        prefix = now.strftime('%y%m%d%H%M%S')
+        if not s.version or not s.version.startswith(ymd):
             s.version = FormatTool.base58_hash(
                 salt=str(id(s)),
-                data=str(TimeTools.utc_now().timestamp()),
-                prefix=TimeTools.us_time_now().strftime('%y%m%d%H%M%S'),
+                data=str(now.timestamp()),
+                prefix=prefix,
             )
         return s
 
