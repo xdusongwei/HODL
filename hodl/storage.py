@@ -149,7 +149,9 @@ class OrderRow:
             filled_detail = f'部成:{filled_price}@{filled_qty}'
         else:
             filled_detail = '--'
-        return f'{time_str}: {order.symbol} {order.direction}[{level}] {order_price}@{total_qty} {filled_detail}\n'
+        full_symbol = f'[{order.region}]{order.symbol}'
+        emoji = order.order_emoji
+        return f'{emoji}{full_symbol} {order.direction}#{level} {time_str} {order_price}@{total_qty} {filled_detail}\n'
 
 
 @dataclass
