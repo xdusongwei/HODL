@@ -242,31 +242,31 @@ class Manager(ThreadMixin):
         for symbol, store, thread in items:
             if not store.store_config.enable:
                 continue
-            state = store.state
-            plan = state.plan
-            state_path = store.store_config.state_file_path
-            if not state_path:
-                continue
-            if not state.is_today_get_off:
-                continue
-            if not plan.rework_price:
-                continue
-            latest_price = state.quote_latest_price
-            if not latest_price:
-                continue
-            if plan.rework_price > latest_price:
-                continue
-            if not os.path.exists(state_path):
-                continue
-            try:
-                with store.lock:
+            with store.lock:
+                state = store.state
+                plan = state.plan
+                state_path = store.store_config.state_file_path
+                if not state_path:
+                    continue
+                if not state.is_today_get_off:
+                    continue
+                if not plan.rework_price:
+                    continue
+                latest_price = state.quote_latest_price
+                if not latest_price:
+                    continue
+                if plan.rework_price > latest_price:
+                    continue
+                if not os.path.exists(state_path):
+                    continue
+                try:
                     os.remove(state_path)
-                rework_price = FormatTool.pretty_price(plan.rework_price, config=store.store_config)
-                store.bot.send_text(f'{thread.name}套利后价格达到{rework_price}, 持仓状态数据被重置')
-            except FileNotFoundError:
-                pass
-            except Exception as e:
-                store.bot.send_text(f'{thread.name}套利后价格达到条件, 持仓状态数据被重置失败: {e}')
+                    rework_price = FormatTool.pretty_price(plan.rework_price, config=store.store_config)
+                    store.bot.send_text(f'{thread.name}套利后价格达到{rework_price}, 持仓状态数据被重置')
+                except FileNotFoundError:
+                    pass
+                except Exception as e:
+                    store.bot.send_text(f'{thread.name}套利后价格达到条件, 持仓状态数据被重置失败: {e}')
 
     def primary_bar(self) -> list[BarElementDesc]:
         bar = []
