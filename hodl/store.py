@@ -324,12 +324,20 @@ class Store(QuoteMixin, TradeMixin):
             case self.STATE_TRADE:
                 self.try_fire_orders()
 
+    def clear_error(self):
+        alert_bot = self.bot
+        if alert_bot:
+            alert_bot.d = dict()
+        if self.exception:
+            self.exception = ''
+
     def run(self):
         super(Store, self).run()
         is_checked = False
         logger = self.logger
-        logger.info(f'启动程序')
+        logger.info(f'启动线程')
         TimeTools.thread_register(region=self.store_config.region)
+        self.clear_error()
 
         while True:
             try:
