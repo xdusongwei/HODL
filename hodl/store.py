@@ -301,10 +301,14 @@ class Store(QuoteMixin, TradeMixin):
                 if state.is_today_get_off:
                     return
 
-                if not state.chip_day or state.chip_day != TimeTools.us_day_now():
-                    self.prepare_chip()
-                if not state.cash_day or state.cash_day != TimeTools.us_day_now():
-                    self.prepare_cash()
+                try:
+                    if not state.chip_day or state.chip_day != TimeTools.us_day_now():
+                        self.prepare_chip()
+                    if not state.cash_day or state.cash_day != TimeTools.us_day_now():
+                        self.prepare_cash()
+                except Exception as e:
+                    error = PrepareError(str(e))
+                    raise error
 
                 quote_date = TimeTools.from_timestamp(state.quote_time)
                 us_date = TimeTools.us_time_now()
