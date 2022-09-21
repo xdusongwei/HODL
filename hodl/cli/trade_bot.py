@@ -260,10 +260,11 @@ class Manager(ThreadMixin):
             with store.thread_lock():
                 state = store.state
                 plan = state.plan
+                tz = store.runtime_state.tz_name
                 state_path = store.store_config.state_file_path
                 if not state_path:
                     continue
-                if not state.is_today_get_off:
+                if not state.is_today_get_off(tz=tz):
                     continue
                 if not plan.rework_price:
                     continue

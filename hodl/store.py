@@ -126,7 +126,7 @@ class Store(QuoteMixin, TradeMixin):
         :return:
         """
         state = self.state
-        if state.is_today_get_off:
+        if state.is_today_get_off():
             return
         if state.plan.should_today_get_off:
             self.logger.info(f'判断有买单全成交，设置收工日为 {TimeTools.us_day_now()}')
@@ -323,7 +323,7 @@ class Store(QuoteMixin, TradeMixin):
                 self.assert_quote_time_diff()
 
                 self.try_get_off()
-                if state.is_today_get_off:
+                if state.is_today_get_off():
                     return
 
                 try:
@@ -435,17 +435,17 @@ class Store(QuoteMixin, TradeMixin):
                     new_current = current
                     match current:
                         case self.STATE_SLEEP:
-                            if market_status == 'TRADING' and self.store_config.enable and not state.is_today_get_off:
+                            if market_status == 'TRADING' and self.store_config.enable and not state.is_today_get_off():
                                 new_current = self.STATE_TRADE
                         case self.STATE_TRADE:
                             if not self.store_config.enable:
                                 new_current = self.STATE_SLEEP
                             elif market_status != 'TRADING':
                                 new_current = self.STATE_SLEEP
-                            elif state.is_today_get_off:
+                            elif state.is_today_get_off():
                                 new_current = self.STATE_GET_OFF
                         case self.STATE_GET_OFF:
-                            if not state.is_today_get_off:
+                            if not state.is_today_get_off():
                                 new_current = self.STATE_SLEEP
                         case _:
                             new_current = self.STATE_SLEEP

@@ -176,9 +176,8 @@ class State(dict):
     def reset_day(self, v: str):
         self['resetDay'] = v
 
-    @property
-    def is_today_get_off(self) -> bool:
-        today = TimeTools.us_day_now()
+    def is_today_get_off(self, tz=None) -> bool:
+        today = TimeTools.us_day_now(tz=tz)
         return today == self.reset_day
 
     @property
