@@ -36,10 +36,5 @@ class ConversationBot(TelegramBotBase):
             dispatcher.add_handler(BasePriceDayLow.handler())
             dispatcher.add_handler(ReviveStore.handler())
 
-    @classmethod
-    def set_store_list(cls, store_list):
-        from hodl.bot.bot_conversation.revive_store import ReviveStore
-        ReviveStore.set_store_list(store_list=store_list)
-
 
 __all__ = ['ConversationBot', ]

@@ -7,16 +7,16 @@ db = LocalDb(var.db_path)
 
 
 symbol = input('symbol:\n')
-broker = input('broker(tiger, citics):\n')
-region = input('region(US, CN, HK):\n')
-day = int(input('day(yyyymmdd, 20220102):\n'))
-currency = input('currency(USD, CNY, HKD):\n')
-amount = int(input('amount:\n'))
+broker = input('broker(可以是tiger, citics):\n')
+region = input('region(可以是US, CN, HK):\n')
+day = int(input('day(格式为yyyymmdd, 例如20220102):\n'))
+currency = input('currency(可以是USD, CNY, HKD):\n')
+amount = int(input('获利金额amount:\n'))
 unit = FormatTool.currency_to_unit(currency=currency)
 create_time = int(TimeTools.us_time_now().timestamp())
 
 print(f'\n\nsymbol:{symbol}\nbroker:{broker}\nregion:{region}\nday:{day}\ncurrency:{currency}\namount:{amount}\nunit:{unit}\ncreate_time:{create_time}\n')
-input('confirm?')
+input('确认?')
 
 earning = EarningRow(
     day=day,
@@ -34,4 +34,4 @@ earning = EarningRow(
 )
 earning.save(con=db.conn)
 
-print('done')
+print('已完成')

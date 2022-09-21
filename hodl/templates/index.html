@@ -208,12 +208,12 @@
                             <div class="card border-0 text-bg-dark h-100">
                                 <div class="card-body">
                                     <p class="mb-0">
-                                        <span class="fs-3 fw-bold {{ 'text-danger' if earning.currency == 'CNY' else 'text-success' }}">
+                                        <span class="fs-3 fw-bold {{ earning.style }}">
                                             {{ FMT.pretty_usd(earning.amount, currency=earning.currency, only_int=True) }}
                                         </span>
                                         <span>[{{ earning.region }}]{{ earning.symbol }}</span>
                                     </p>
-                                    <p class="mb-0 text-muted">完成日期: {{ earning.day }}</p>
+                                    <p class="mb-0 text-muted">完成日期: {{ earning.date }}</p>
                                     <p class="mb-0 text-muted">买回价格: {{ FMT.pretty_usd(earning.buyback_price, currency=earning.currency) }}</p>
                                 </div>
                             </div>
@@ -271,6 +271,9 @@
             return "#198754";
         }
         else if(currency==='CNY'){
+            return "#dc3545";
+        }
+        else if(currency==='HKD'){
             return "#dc3545";
         }
         else{

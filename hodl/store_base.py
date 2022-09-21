@@ -300,6 +300,13 @@ class StoreBase(ThreadMixin):
             process_time=self.process_time,
         )
 
+    def thread_lock(self) -> threading.Lock:
+        return self.lock
+
+    def thread_tags(self) -> tuple:
+        config = self.store_config
+        return 'Store', config.broker, config.region, config.symbol,
+
     def hedge_master_info(self) -> HedgeConfig | None:
         hedge_list = self.runtime_state.variable.hedge_configs
         for hedge_config in hedge_list:

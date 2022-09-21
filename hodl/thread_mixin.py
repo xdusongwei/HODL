@@ -1,5 +1,6 @@
 import threading
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -15,7 +16,7 @@ class BarElementDesc:
 
 
 class ThreadMixin:
-    _THREADS = set()
+    _THREADS: set['ThreadMixin'] = set()
 
     @classmethod
     def threads(cls) -> list['ThreadMixin']:
@@ -43,9 +44,41 @@ class ThreadMixin:
         self._register_thread()
 
     def unmount(self):
-        ThreadMixin._THREADS.remove(self)
+        if self in ThreadMixin._THREADS:
+            ThreadMixin._THREADS.remove(self)
         if hasattr(self, '__thread'):
             delattr(self, '__thread')
+
+    def start(self, name: str, daemon: bool = True, start=True) -> threading.Thread:
+        self.unmount()
+        thread = threading.Thread(
+            name=name,
+            target=self.run,
+            daemon=daemon,
+        )
+        if start:
+            thread.start()
+        return thread
+
+    def thread_lock(self) -> Optional[threading.Lock]:
+        return None
+
+    def thread_action(self, method: str, **kwargs):
+        if not hasattr(self, method):
+            raise NotImplementedError
+        method = getattr(self, method)
+        return method(**kwargs)
+
+    def thread_tags(self) -> tuple:
+        return tuple()
+
+    @classmethod
+    def find_by_tags(cls, tags: tuple):
+        threads = ThreadMixin._THREADS.copy()
+        for thread in threads:
+            if thread.thread_tags() == tags:
+                return thread
+        return None
 
 
 __all__ = ['BarElementDesc', 'ThreadMixin', ]

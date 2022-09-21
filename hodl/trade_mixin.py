@@ -64,8 +64,10 @@ class TradeMixin(StoreBase, ABC):
         assert order.qty > 0
         order.region = self.store_config.region
         order.broker = self.store_config.broker
-        order.create_timestamp = TimeTools.us_time_now().timestamp()
-        order.order_day = TimeTools.us_day_now()
+        if order.create_timestamp is None:
+            order.create_timestamp = TimeTools.us_time_now().timestamp()
+        if order.order_day is None:
+            order.order_day = TimeTools.us_day_now()
         order.currency = self.store_config.currency
         order.filled_qty = 0
         order.remain_qty = order.qty
@@ -231,13 +233,18 @@ class TradeMixin(StoreBase, ABC):
             f'参考当前等级规则设定设定卖出价:{FMT.pretty_price(row.sell_at, config=self.store_config)}, '
             f'实际下单价格:{FMT.pretty_price(limit_price, config=self.store_config)}'
         )
-        order = Order()
-        order.symbol = self.store_config.symbol
-        order.level = fire_state.new_sell_level
-        order.direction = 'SELL'
-        order.qty = qty
-        order.limit_price = limit_price
-        order.spread = self.store_config.sell_spread
+        order = Order.new_order(
+            symbol=self.store_config.symbol,
+            region=self.store_config.region,
+            broker=self.store_config.broker,
+            currency=self.store_config.currency,
+            level=fire_state.new_sell_level,
+            direction='SELL',
+            qty=qty,
+            limit_price=limit_price,
+            precision=self.store_config.precision,
+            spread=self.store_config.sell_spread,
+        )
         self.create_order(
             order=order,
         )
@@ -344,13 +351,18 @@ class TradeMixin(StoreBase, ABC):
         self.logger.info(f'买单计划下单价格{FMT.pretty_price(row.buy_at, config=self.store_config)}')
         self.logger.info(f'买单实际下单价格{FMT.pretty_price(limit_price, config=self.store_config)}')
         self.logger.info(f'买单下单数量{volume}')
-        order = Order()
-        order.symbol = self.store_config.symbol
-        order.level = fire_state.new_buy_level
-        order.direction = 'BUY'
-        order.qty = volume
-        order.limit_price = limit_price
-        order.spread = self.store_config.buy_spread
+        order = Order.new_order(
+            symbol=self.store_config.symbol,
+            region=self.store_config.region,
+            broker=self.store_config.broker,
+            currency=self.store_config.currency,
+            level=fire_state.new_buy_level,
+            direction='BUY',
+            qty=volume,
+            limit_price=limit_price,
+            precision=self.store_config.precision,
+            spread=self.store_config.buy_spread,
+        )
         self.create_order(
             order=order,
         )
@@ -401,13 +413,18 @@ class TradeMixin(StoreBase, ABC):
             else:
                 return
             self.logger.info(f'slave持仓准备追踪变动，方向:{direction}, 数量:{qty}')
-            order = Order()
-            order.symbol = self.store_config.symbol
-            order.level = 0
-            order.direction = direction
-            order.qty = qty
-            order.limit_price = None
-            order.spread = 0.0
+            order = Order.new_order(
+                symbol=self.store_config.symbol,
+                region=self.store_config.region,
+                broker=self.store_config.broker,
+                currency=self.store_config.currency,
+                level=0,
+                direction=direction,
+                qty=qty,
+                limit_price=None,
+                precision=self.store_config.precision,
+                spread=self.store_config.buy_spread,
+            )
             self.create_order(
                 order=order,
             )

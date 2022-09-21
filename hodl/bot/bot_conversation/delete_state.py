@@ -2,12 +2,18 @@ import os
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters
 from hodl.bot import TelegramBotBase
+from hodl.thread_mixin import *
 
 
 class DeleteState(TelegramBotBase):
     K_DS_SELECT = 0
     K_DS_INPUT = 1
     K_DS_CONFIRM = 2
+    STORE_LIST: list[ThreadMixin] = list()
+
+    @classmethod
+    def set_store_list(cls, store_list):
+        DeleteState.STORE_LIST = store_list
 
     def delete_state_start(self, update, context):
         lines = self._symbol_lines()
@@ -51,12 +57,26 @@ class DeleteState(TelegramBotBase):
                     reply_markup=ReplyKeyboardRemove(),
                 )
                 try:
-                    state_path = session.position.config.state_file_path
-                    os.remove(state_path)
-                    update.message.reply_text(
-                        f'改动完成',
-                        reply_markup=ReplyKeyboardRemove(),
-                    )
+                    broker = session.position.config.broker
+                    region = session.position.config.region
+                    symbol = session.position.symbol
+                    thread = ThreadMixin.find_by_tags(tags=('Store', broker, region, symbol,))
+                    if thread:
+                        with thread.thread_lock():
+                            count = thread.thread_action(method='prepare_delete_state')
+                            if count:
+                                update.message.reply_text(
+                                    f'已撤销{count}个订单',
+                                    reply_markup=ReplyKeyboardRemove(),
+                                )
+                            state_path = session.position.config.state_file_path
+                            os.remove(state_path)
+                            update.message.reply_text(
+                                f'清除完成',
+                                reply_markup=ReplyKeyboardRemove(),
+                            )
+                    else:
+                        raise ValueError(f'找不到持仓对应的线程')
                 except FileNotFoundError:
                     update.message.reply_text(
                         f'改动完成(不存在状态文件)',

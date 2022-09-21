@@ -40,30 +40,66 @@ class ApiMeta:
 
 class BrokerApiMixin(abc.ABC):
     def fetch_market_status(self) -> dict:
+        """
+        返回此券商可以获得的市场状态，
+        产生以region为键，市场状态为值的字典。
+        市场状态有些值是重要的，如果券商的数据格式不一样，则它们需要做变换处理:
+        TRADING: 开盘时段；
+        CLOSING: 收盘时段，对于24小时全天可交易的交易所，closing_time配置项将可以自动把指定时段的TRADING状态变换为收盘，以便激活LSOD检查；
+        其他值则按非活跃时段处理。
+        如果该券商不支持市场状态，则返回空字典。
+        """
         raise NotImplementedError
 
     def fetch_quote(self) -> Quote:
+        """
+        根据 self.symbol 拉取执行行情，返回已填充的 Quote 对象。
+        """
         raise NotImplementedError
 
     def place_order(self, order: Order):
+        """
+        根据订单参数完成下单，并将订单号填充进 Order.order_id。
+        """
         raise NotImplementedError
 
     def cancel_order(self, order: Order):
+        """
+        根据订单号执行撤单。
+        """
         raise NotImplementedError
 
     def refresh_order(self, order: Order):
+        """
+        根据订单号更新订单。
+        将订单需要的信息使用 self.modify_order_fields 方法填充进来。
+        """
         raise NotImplementedError
 
     def query_chips(self) -> int:
+        """
+        返回 self.symbol 获取实际持仓数量。
+        """
         raise NotImplementedError
 
     def query_cash(self) -> float:
+        """
+        获取可用资金数量。
+        """
         raise NotImplementedError
 
     def detect_plug_in(self) -> bool:
+        """
+        如果需要持仓线程每次都要提前检查券商服务的连通，需要在此处完成类似ping接口的调用工作。
+        """
         return True
 
     def on_init(self):
+        """
+        每当创建了一个持仓对象后，此方法会被调用。
+        这里的场景多用于执行券商的操作动作，比如必须有且只有一次去调用行情订阅接口；
+        而BrokerApiBase.__post_init__多用于构建对象的成员变量。
+        """
         pass
 
 
@@ -102,9 +138,12 @@ class BrokerApiBase(BrokerApiMixin):
             trade_timestamp: float = None,
             reason: str = '',
             is_cancelled: bool = False,
-            # tiger broker bypass
+            # tiger broker bypass，保留默认值
             broker_order: BrokerOrder = None,
     ):
+        """
+        更新订单信息的通用方法
+        """
         if not broker_order:
             broker_order = BrokerOrder(
                 account=None,
@@ -122,6 +161,9 @@ class BrokerApiBase(BrokerApiMixin):
         return order
 
     def __post_init__(self):
+        """
+        初始化对象的其他成员变量
+        """
         pass
 
     def _override_order_fields(self, order: Order, broker_order: BrokerOrder):

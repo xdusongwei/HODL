@@ -77,6 +77,20 @@ class Store(QuoteMixin, TradeMixin):
         state.quote_latest_price = quote.latest_price
         state.quote_low_price = quote.day_low
 
+    def prepare_delete_state(self) -> int:
+        orders = self.state.plan.orders
+        total_sell = sum(order.filled_qty for order in orders if order.is_sell)
+        total_buy = sum(order.filled_qty for order in orders if order.is_buy)
+        if total_sell != total_buy:
+            raise ValueError(f'当前计划存在买卖股票的差额')
+        count = 0
+        for order in orders:
+            if not order.cancelable:
+                continue
+            self.broker_proxy.cancel_order(order=order)
+            count += 1
+        return count
+
     def prepare_chip(self):
         state = self.state
         chip_count = self.current_chip()
@@ -150,13 +164,18 @@ class Store(QuoteMixin, TradeMixin):
         if volume < 0:
             raise ValueError(f'清盘计算相差股数:{volume}为负，可能因为多买')
         if volume:
-            order = Order()
-            order.symbol = self.store_config.symbol
-            order.level = 0
-            order.direction = 'BUY'
-            order.qty = volume
-            order.limit_price = None
-            order.spread = self.store_config.buy_spread
+            order = Order.new_order(
+                symbol=self.store_config.symbol,
+                region=self.store_config.region,
+                broker=self.store_config.broker,
+                currency=self.store_config.currency,
+                level=0,
+                direction='BUY',
+                qty=volume,
+                limit_price=None,
+                precision=self.store_config.precision,
+                spread=self.store_config.buy_spread,
+            )
             self.create_order(
                 order=order,
                 wait=True,
@@ -224,7 +243,13 @@ class Store(QuoteMixin, TradeMixin):
         if level := store_config.rework_level:
             self.logger.info(f'设定清除持仓状态的价格等级为{level}')
             try:
-                row = self.build_table(store_config=store_config, plan=plan).row_by_level(level=level)
+                rework_plan = Plan.new_plan(
+                    store_config=store_config,
+                    master_config=self.hedge_master_info(),
+                    slave_config=self.hedge_slave_info(),
+                )
+                rework_plan.base_price = self._base_price()
+                row = self.build_table(store_config=store_config, plan=rework_plan).row_by_level(level=level)
                 if row.sell_at > buyback_price:
                     price = row.sell_at
                     plan.rework_price = price
@@ -280,7 +305,7 @@ class Store(QuoteMixin, TradeMixin):
     def current_changed(self, current: str, new_current: str):
         if new_current == self.STATE_SLEEP and self.store_config.closing_time:
             logger = self.logger
-            logger.info(f'进入定制的收盘时间段')
+            logger.info(f'进入定制的收盘时间段, 执行主动撤单')
             orders = self.state.plan.orders
             for order in orders:
                 if order.cancelable:
@@ -357,7 +382,7 @@ class Store(QuoteMixin, TradeMixin):
 
                 TimeTools.sleep(self.runtime_state.sleep_secs)
 
-                with self.lock:
+                with self.thread_lock():
                     if not self.before_loop():
                         logger.warning(f'循环开始前的检查要求退出')
                         break

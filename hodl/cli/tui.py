@@ -200,9 +200,9 @@ class OrderWidget(PlaceholderBase):
                 Text(text=f'{time.strftime("%y-%m-%d")}\n{time.strftime("%H:%M:%S")}', style=style),
                 Text(text=f'[{order.region}]{symbol}', style=style),
                 Text(text=f'{order.direction}#{order.level}', style=style),
-                Text(text=FMT.pretty_usd(order.limit_price, currency=order.currency)),
+                Text(text=FMT.pretty_usd(order.limit_price, currency=order.currency, precision=order.precision)),
                 Text(text=FMT.pretty_number(order.qty), style=style),
-                Text(text=FMT.pretty_usd(order.avg_price, currency=order.currency)),
+                Text(text=FMT.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision)),
                 Text(text=FMT.pretty_number(order.filled_qty), style=style),
                 Text(text=''.join(order.order_flags)),
             )

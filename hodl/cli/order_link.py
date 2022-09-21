@@ -9,7 +9,8 @@ from hodl.tools import *
 from hodl.broker import *
 
 
-symbol = input('symbol:\n')
+print('补挂订单信息脚本')
+symbol = input('输入symbol:\n')
 var = VariableTools()
 config = var.store_configs[symbol]
 assert config
@@ -17,12 +18,12 @@ assert config
 region = config.region
 currency = config.currency
 broker = config.broker
-level = int(input('level:\n'))
-order_day = input('orderDay, YYYY-mm-dd:\n')
-direction = input('direction, BUY, SELL:\n')
-qty = int(input('qty:\n'))
-limit_price = float(input('limit_price, 0 for market price:\n'))
-order_id = input('order id/contract id:\n')
+level = int(input('输入level:\n'))
+order_day = input('输入orderDay, 格式为YYYY-mm-dd:\n')
+direction = input('输入direction, 可以是BUY, SELL:\n')
+qty = int(input('输入订单数量qty:\n'))
+limit_price = float(input('输入订单限价, 0代表市价单:\n'))
+order_id = input('输入订单号/委托号/合同号:\n')
 
 
 match broker:
@@ -30,25 +31,29 @@ match broker:
         order_id = int(order_id)
 
 limit_price = limit_price if limit_price > 0 else None
+spread = config.buy_spread if direction == 'BUY' else config.sell_spread
 
-order = Order()
-order.currency = currency
-order.symbol = symbol
-order.region = region
-order.broker = broker
-order.level = level
-order.order_day = order_day
-order.create_timestamp = TimeTools.us_time_now().timestamp()
-order.direction = direction
-order.qty = qty
-order.limit_price = limit_price
+order = Order.new_order(
+    symbol=symbol,
+    region=region,
+    broker=broker,
+    currency=currency,
+    level=level,
+    direction=direction,
+    qty=qty,
+    limit_price=limit_price,
+    precision=config.precision,
+    spread=spread,
+    create_timestamp=TimeTools.us_time_now().timestamp(),
+    order_day=order_day,
+)
 order.order_id = order_id
 order.filled_qty = 0
 order.avg_price = 0
 
 state_file = config.state_file_path
 assert state_file
-print('state file:', state_file)
+print('状态文件位置:', state_file)
 
 with open(state_file, 'r', encoding='utf8') as f:
     text = f.read()
@@ -57,10 +62,10 @@ state = State(state)
 state.plan.append_order(order)
 
 print(json.dumps(state.plan.d, indent=2))
-input('confirm?')
+input('确认?')
 
 config_text = json.dumps(state, indent=4)
 with open(state_file, 'w', encoding='utf8') as f:
     f.write(config_text)
 
-print('done')
+print('已完成')

@@ -60,11 +60,11 @@ class HtmlWriterThread(ThreadMixin):
                 return dataclasses.asdict(o)
             return super().default(o)
 
-    def __init__(self, variable: VariableTools, db: LocalDb, template, items: list[tuple[str, Store, Thread]]):
+    def __init__(self, variable: VariableTools, db: LocalDb, template, stores: list[Store]):
         self.variable = variable
         self. db = db
         self.template = template
-        self.items = items
+        self.stores = stores
         self.total_write = 0
         self.current_hash = ''
         self.recent_earnings = list()
@@ -81,13 +81,27 @@ class HtmlWriterThread(ThreadMixin):
         ]
         return bar
 
+    @classmethod
+    def _earning_style(cls, earning: EarningRow):
+        match earning.currency:
+            case 'USD':
+                setattr(earning, 'style', 'text-success')
+            case 'CNY':
+                setattr(earning, 'style', 'text-danger')
+            case 'HKD':
+                setattr(earning, 'style', 'text-danger')
+            case _:
+                setattr(earning, 'style', 'text-success')
+        day = str(earning.day)
+        setattr(earning, 'date', f'{day[:4]}年{day[4:6]}月{day[6:]}日')
+        return earning
+
     def write_html(self):
         try:
             html_file_path = self.variable.html_file_path
             template = self.template
             db = self.db
-            items = self.items
-            store_list: list[Store] = [item[1] for item in items]
+            store_list: list[Store] = self.stores
             new_hash = ' '.join(f'{store.state.version}:{store.state.current}' for store in store_list)
             if self.current_hash != new_hash:
                 self.current_hash = new_hash
@@ -97,7 +111,7 @@ class HtmlWriterThread(ThreadMixin):
                     self.recent_earnings = list(EarningRow.items_after_time(con=db.conn, create_time=create_time))
                 else:
                     self.recent_earnings = list()
-                self.earning_list = self.recent_earnings[:24]
+                self.earning_list = [self._earning_style(earning) for earning in self.recent_earnings[:24]]
                 self.earning_json = json.dumps(
                     self.recent_earnings,
                     indent=2,
@@ -133,9 +147,9 @@ class HtmlWriterThread(ThreadMixin):
 
 
 class JsonWriterThread(ThreadMixin):
-    def __init__(self, sleep_secs: int, items: list[tuple[str, Store, Thread]]):
+    def __init__(self, sleep_secs: int, stores: list[Store]):
         self.sleep_secs = sleep_secs
-        self.items = items
+        self.stores = stores
         self.total_write = 0
 
     def primary_bar(self) -> list[BarElementDesc]:
@@ -150,7 +164,7 @@ class JsonWriterThread(ThreadMixin):
     def run(self):
         super(JsonWriterThread, self).run()
         sleep_secs = self.sleep_secs
-        items = self.items
+        stores = self.stores
         while True:
             time.sleep(4)
             path = VariableTools().manager_state_path
@@ -176,7 +190,7 @@ class JsonWriterThread(ThreadMixin):
                 } if Manager.HTML_THREAD else {},
                 'items': [
                     {
-                        'symbol': symbol,
+                        'symbol': store.store_config.symbol,
                         'thread': {
                             'name': store.current_thread.name,
                             'id': store.current_thread.native_id,
@@ -209,7 +223,7 @@ class JsonWriterThread(ThreadMixin):
                             'tradeBroker': str(store.broker_proxy.trade_broker),
                         } if store.broker_proxy else {},
                     }
-                    for symbol, store, _ in items if store.state],
+                    for store in stores if store.state],
             }
             body = json.dumps(d, indent=2, sort_keys=True).encode('utf8')
             with open(path, 'wb') as f:
@@ -225,8 +239,8 @@ class Manager(ThreadMixin):
     JSON_THREAD: Thread = None
 
     @classmethod
-    def monitor_alert(cls, items: list[tuple[str, Store, Thread]]):
-        for symbol, store, _ in items:
+    def monitor_alert(cls, stores: list[Store]):
+        for store in stores:
             thread = store.current_thread
             if thread.is_alive():
                 continue
@@ -238,11 +252,12 @@ class Manager(ThreadMixin):
             store.bot.set_alarm(AlertBot.K_THREAD_DEAD, text=text)
 
     @classmethod
-    def rework_store(cls, items: list[tuple[str, Store, Thread]]):
-        for symbol, store, thread in items:
+    def rework_store(cls, stores: list[Store]):
+        for store in stores:
             if not store.store_config.enable:
                 continue
-            with store.lock:
+            thread = store.current_thread
+            with store.thread_lock():
                 state = store.state
                 plan = state.plan
                 state_path = store.store_config.state_file_path
@@ -293,19 +308,12 @@ class Manager(ThreadMixin):
             stores = [Store(store_config=config, db=db) for config in store_configs.values()]
             for store in stores:
                 store.prepare()
-            symbols = [store.store_config.symbol for store in stores]
             threads = [
-                Thread(
+                store.start(
                     name=f'Store([{store.store_config.region}]{store.store_config.symbol})',
-                    target=store.run,
-                    daemon=True,
                 )
                 for store in stores
             ]
-            Manager.CONVERSATION_BOT.set_store_list(store_list=stores)
-            items = list(zip(symbols, stores, threads))
-            for thread in threads:
-                thread.start()
         except Exception as e:
             if db:
                 db.conn.close()
@@ -315,39 +323,28 @@ class Manager(ThreadMixin):
             mkt_thread = MarketStatusThread(broker_proxy=stores[0].broker_proxy)
             mkt_thread.prepare()
 
-            Manager.MARKET_STATUS_THREAD = Thread(
+            Manager.MARKET_STATUS_THREAD = mkt_thread.start(
                 name='marketStatusPuller',
-                target=mkt_thread.run,
-                daemon=True,
             )
-            Manager.MARKET_STATUS_THREAD.start()
 
         env = var.jinja_env
         template = env.get_template("index.html")
-        html_thread = HtmlWriterThread(
+        Manager.HTML_THREAD = HtmlWriterThread(
             variable=var,
             db=db,
             template=template,
-            items=items,
-        )
-        Manager.HTML_THREAD = Thread(
+            stores=stores,
+        ).start(
             name='htmlWriter',
-            target=html_thread.run,
-            daemon=True,
         )
-        Manager.HTML_THREAD.start()
         print(f'HTML刷新线程已启动')
 
-        json_thread = JsonWriterThread(
+        Manager.JSON_THREAD = JsonWriterThread(
             sleep_secs=var.sleep_limit,
-            items=items,
-        )
-        Manager.JSON_THREAD = Thread(
+            stores=stores,
+        ).start(
             name='jsonWriter',
-            target=json_thread.run,
-            daemon=True,
         )
-        Manager.JSON_THREAD.start()
         print(f'json刷新线程已启动')
 
         while True:
@@ -356,14 +353,14 @@ class Manager(ThreadMixin):
                 variable = VariableTools()
                 sleep_secs = variable.sleep_limit
                 store_configs = variable.store_configs
-                if len(store_configs) != len(items):
+                if len(store_configs) != len(stores):
                     print(f'运行中的持仓对象数量和配置文件中的持仓配置数量不一致')
                     return
                 for store in stores:
                     symbol = store.store_config.symbol
                     new_config = store_configs.get(symbol)
                     if new_config:
-                        with store.lock:
+                        with store.thread_lock():
                             store.runtime_state.store_config = new_config
                             store.runtime_state.variable = variable
                     else:
@@ -371,8 +368,8 @@ class Manager(ThreadMixin):
                         return
                     store.runtime_state.sleep_secs = sleep_secs
                     QuoteMixin.change_cache_ttl(sleep_secs)
-                self.monitor_alert(items=items)
-                self.rework_store(items=items)
+                self.monitor_alert(stores=stores)
+                self.rework_store(stores=stores)
             except KeyboardInterrupt:
                 for thread in threads:
                     if thread.is_alive():

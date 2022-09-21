@@ -9,6 +9,42 @@ class Order(DictWrapper):
         'Change order succeeded',
     }
 
+    @classmethod
+    def new_order(
+            cls,
+            symbol: str,
+            region: str,
+            broker: str,
+            currency: str,
+            level: int,
+            direction: str,
+            qty: int,
+            limit_price: float | None,
+            precision: int = 2,
+            spread: float = 0.0,
+            create_timestamp: float = None,
+            order_day: str = None,
+    ) -> 'Order':
+        o = Order()
+        now = TimeTools.us_time_now()
+        if create_timestamp is None:
+            create_timestamp = now.timestamp()
+        if order_day is None:
+            order_day = TimeTools.date_to_ymd(now)
+        o.symbol = symbol
+        o.region = region
+        o.broker = broker
+        o.currency = currency
+        o.level = level
+        o.direction = direction
+        o.qty = qty
+        o.limit_price = limit_price
+        o.precision = precision
+        o.spread = spread
+        o.create_timestamp = create_timestamp
+        o.order_day = order_day
+        return o
+
     # 创建对象时必填的字段
     @property
     def symbol(self) -> str:
@@ -127,6 +163,14 @@ class Order(DictWrapper):
 
         """
         self.d['currency'] = v
+
+    @property
+    def precision(self):
+        return self.d.get('precision', 2)
+
+    @precision.setter
+    def precision(self, v):
+        self.d['precision'] = v
 
     # 交易系统创建订单产生的字段
     @property

@@ -11,11 +11,6 @@ class ReviveStore(TelegramBotBase):
     K_RS_SELECT = 0
     K_RS_DECISION = 1
     K_RS_CONFIRM = 2
-    STORE_LIST: list[ThreadMixin] = list()
-
-    @classmethod
-    def set_store_list(cls, store_list):
-        ReviveStore.STORE_LIST = store_list
 
     def revive_store_start(self, update, context):
         lines = self._symbol_lines()
@@ -59,18 +54,13 @@ class ReviveStore(TelegramBotBase):
                     if not state_path:
                         raise ValueError(f'不存在持仓状态文件位置，不能重置风控信息')
 
-                    for store in ReviveStore.STORE_LIST:
-                        thread = store.current_thread
-                        if not thread:
-                            continue
-                        region = session.position.config.region
-                        symbol = session.position.symbol
-                        if f'Store([{region}]{symbol})' not in thread.name:
-                            continue
+                    broker = session.position.config.broker
+                    region = session.position.config.region
+                    symbol = session.position.symbol
+                    thread = ThreadMixin.find_by_tags(tags=('Store', broker, region, symbol, ))
+                    if thread:
                         if thread.is_alive():
-                            raise ValueError(f'线程{store}仍然存活')
-                        t = store
-                        break
+                            raise ValueError(f'线程{thread}仍然存活')
                     else:
                         raise ValueError(f'找不到持仓对应的线程')
 
@@ -88,13 +78,7 @@ class ReviveStore(TelegramBotBase):
                             f'已清除风控错误',
                             reply_markup=ReplyKeyboardRemove(),
                         )
-                    t.unmount()
-                    thread = threading.Thread(
-                        name=f'Store([{region}]{symbol})',
-                        target=t.run,
-                        daemon=True,
-                    )
-                    thread.start()
+                    thread.start(name=f'Store([{region}]{symbol})')
                     update.message.reply_text(
                         f'已创建新线程',
                         reply_markup=ReplyKeyboardRemove(),

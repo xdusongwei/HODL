@@ -63,9 +63,9 @@ class FormatTool:
     def pretty_usd(
             cls,
             v: None | int | float,
-            currency = None,
-            unit = '$',
-            only_int = False,
+            currency=None,
+            unit='$',
+            only_int=False,
             precision: int = 3,
     ) -> str:
         if currency:
