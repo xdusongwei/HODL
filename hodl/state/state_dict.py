@@ -260,12 +260,12 @@ class State(dict):
         self['isPlugIn'] = v
 
     @property
-    def quote_rate(self):
+    def quote_rate(self) -> None | float:
         pre_close = self.quote_pre_close
         latest = self.quote_latest_price
-        rate = 0.00
+        rate = None
         if pre_close and latest:
-            rate = round(latest / pre_close * 100 - 100, 2)
+            rate = round(latest / pre_close - 1.0, 4)
         return rate
 
 

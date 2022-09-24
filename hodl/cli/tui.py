@@ -135,13 +135,13 @@ class QuoteWidget(PlaceholderBase):
             default_style = 'white' if state.market_status == 'TRADING' else 'grey50'
 
             title = f'[{region}]{symbol} {FMT.pretty_dt(state.quote_time, region=region, with_year=False)[:-10]}'
-            rate = state.quote_rate
+            rate = FMT.factor_to_percent(state.quote_rate, fmt='{:+.2%}')
             text = Text(style=default_style)
             text.append(
                 '最新: '
             )
             text.append(
-                f'{FMT.pretty_price(latest_price, config=config)}({rate:+.2f}%)\n',
+                f'{FMT.pretty_price(latest_price, config=config)}({rate})\n',
                 style=self._color(latest_price, state.quote_pre_close),
             )
             buff_bar = StoreBase.buff_bar(config=config, state=state, process_time=store_dict.get("processTime"))

@@ -45,12 +45,6 @@ class FormatTool:
         return iso_format
 
     @classmethod
-    def factor_to_percent(cls, v: None | float, precision: int = 0) -> str:
-        if v is None:
-            return '--%'
-        return humanize.clamp(v, format=f"{{:.{precision}%}}")
-
-    @classmethod
     def currency_to_unit(cls, currency: str) -> str:
         unit = CurrencySymbols.get_symbol(currency) or '$'
         return unit
@@ -101,6 +95,13 @@ class FormatTool:
             unit='',
             only_int=True,
         )
+
+    @classmethod
+    def factor_to_percent(cls, v: None | int | float, fmt: str = '{:.0%}') -> str:
+        s = humanize.clamp(v, format=fmt)
+        if s is None:
+            return '--%'
+        return s
 
     @classmethod
     def base58_hash(

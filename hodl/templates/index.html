@@ -49,7 +49,7 @@
                                     <p class="mb-0 mt-2">
                                         <span class="fs-4">{{ store_config.name }}</span>
                                         <span class="fs-6 fw-bold {{ 'text-success' if store.state.quote_rate >= 0 else 'text-danger' }}">
-                                            {{ FMT.pretty_price(state.quote_latest_price, config=store_config) + '(%+.2f%%)'|format(state.quote_rate) }}
+                                            {{ FMT.pretty_price(state.quote_latest_price, config=store_config) + '(%+.2f%%)'|format(state.quote_rate * 100) }}
                                         </span>
                                     </p>
                                     <p class="mb-0">[{{ store_config.region }}]{{ store_config.symbol }}<span class="text-muted ms-2">交易通道: {{ store_config.broker }}</span></p>
@@ -97,7 +97,7 @@
                                                             {{ FMT.pretty_price(row.sell_at, config=store_config) }}
                                                         </td>
                                                         <td class="text-end">
-                                                            {{ FMT.factor_to_percent(row.shares / plan.total_chips, precision=1) }}
+                                                            {{ FMT.factor_to_percent(row.shares / plan.total_chips, fmt="{:.1%}") }}
                                                         </td>
                                                         <td class="text-end">
                                                             {{ FMT.pretty_price(row.buy_at, config=store_config) }}
