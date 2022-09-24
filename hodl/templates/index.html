@@ -122,43 +122,66 @@
                 </div>
                 <div class="tab-pane fade" id="pills-orders" role="tabpanel" aria-labelledby="pills-orders-tab"
                      tabindex="0">
-                    <table class="table table-striped table-hover table-dark align-middle">
-                        <thead>
-                        <tr>
-                            <th scope="col" class="text-end">状态</th>
-                            <th scope="col">时间</th>
-                            <th scope="col">标的</th>
-                            <th scope="col">方向</th>
-                            <th scope="col" class="text-end">订单价</th>
-                            <th scope="col" class="text-end">订单量</th>
-                            <th scope="col" class="text-end">成交价</th>
-                            <th scope="col" class="text-end">成交量</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% set state_list = store_list|map(attribute='state') %}
-                        {% set plan_list = state_list|map(attribute='template_plan') %}
-                        {% set order_list = plan_list|map(attribute='orders')|sum(start=[]) %}
-                        {% set orders = order_list|sort(attribute="create_timestamp", reverse=True) %}
-                        {% for order in orders %}
-                        <tr>
-                            <th scope="row" class="text-end">{{ order.order_emoji }}</th>
-                            <td>
-                                <span class="badge bg-secondary">{{ FMT.pretty_dt(order.create_timestamp, region=order.region,
-                                    with_year=True, with_tz=False)[2:10] }}</span>
-                                <span class="badge bg-secondary">{{ FMT.pretty_dt(order.create_timestamp, region=order.region,
-                                    with_year=True, with_tz=False)[11:-10] }}</span>
-                            </td>
-                            <td>[{{ order.region }}]{{ order.symbol }}</td>
-                            <td>{{ order.direction }}#{{ order.level }}</td>
-                            <td class="text-end">{{ FMT.pretty_usd(order.limit_price, currency=order.currency) }}</td>
-                            <td class="text-end">{{ FMT.pretty_number(order.qty) }}</td>
-                            <td class="text-end">{{ FMT.pretty_usd(order.avg_price, currency=order.currency) }}</td>
-                            <td class="text-end">{{ FMT.pretty_number(order.filled_qty) }}</td>
-                        </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                    <nav id="navbar-order" class="navbar bg-dark px-3 mb-3">
+                        <ul class="nav nav-pills">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#orderYtd">全年概况</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#currentOrders">有效订单</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div  data-bs-spy="scroll" data-bs-target="#navbar-order" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" class="bg-dark p-3 rounded-2" tabindex="0">
+                        <h4 id="orderYtd" class="text-bg-dark">全年概况</h4>
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <div id="orderGridYtd" style="opacity: 0.4"></div>
+                            </div>
+                        </div>
+                        <h4 id="currentOrders" class="text-bg-dark">有效订单</h4>
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <table class="table table-striped table-hover table-dark align-middle">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col" class="text-end">状态</th>
+                                        <th scope="col">时间</th>
+                                        <th scope="col">标的</th>
+                                        <th scope="col">方向</th>
+                                        <th scope="col" class="text-end">订单价</th>
+                                        <th scope="col" class="text-end">订单量</th>
+                                        <th scope="col" class="text-end">成交价</th>
+                                        <th scope="col" class="text-end">成交量</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% set state_list = store_list|map(attribute='state') %}
+                                    {% set plan_list = state_list|map(attribute='template_plan') %}
+                                    {% set order_list = plan_list|map(attribute='orders')|sum(start=[]) %}
+                                    {% set orders = order_list|sort(attribute="create_timestamp", reverse=True) %}
+                                    {% for order in orders %}
+                                    <tr>
+                                        <th scope="row" class="text-end">{{ order.order_emoji }}</th>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ FMT.pretty_dt(order.create_timestamp, region=order.region,
+                                                with_year=True, with_tz=False)[2:10] }}</span>
+                                            <span class="badge bg-secondary">{{ FMT.pretty_dt(order.create_timestamp, region=order.region,
+                                                with_year=True, with_tz=False)[11:-10] }}</span>
+                                        </td>
+                                        <td>[{{ order.region }}]{{ order.symbol }}</td>
+                                        <td>{{ order.direction }}#{{ order.level }}</td>
+                                        <td class="text-end">{{ FMT.pretty_usd(order.limit_price, currency=order.currency) }}</td>
+                                        <td class="text-end">{{ FMT.pretty_number(order.qty) }}</td>
+                                        <td class="text-end">{{ FMT.pretty_usd(order.avg_price, currency=order.currency) }}</td>
+                                        <td class="text-end">{{ FMT.pretty_number(order.filled_qty) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="tab-pane fade" id="pills-earning" role="tabpanel" aria-labelledby="pills-earning-tab" tabindex="0">
                     <nav id="navbar-earning" class="navbar bg-dark px-3 mb-3">
@@ -263,6 +286,7 @@
 <script type="module">
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    const orderTimesYtd = {{ order_times_ytd|safe }}
     const earnings = {{ earning_json|safe }}
 
     function currency_color(i) {
@@ -313,6 +337,37 @@
     const color = {
         legend: true
     };
+
+    let orderGridYtd = Plot.plot({
+        style,
+        height: 120,
+        x: {
+            axis: null,
+            padding: 0,
+        },
+        y: {
+            padding: 0,
+            tickFormat: Plot.formatWeekday("en", "narrow"),
+            tickSize: 0
+        },
+        fy: {
+            reverse: true
+        },
+        color: {
+            type: "linear",
+            scheme: "blues"
+        },
+        marks: [
+            Plot.cell(orderTimesYtd, {
+                x: d => d3.utcWeek.count(d3.utcYear(new Date(d.date)), new Date(d.date)),
+                y: d => (new Date(d.date)).getUTCDay(),
+                fill: (d, i) => d.v ? -d.v : NaN,
+                title: (d, i) => `${d.date}: ${d.v}单`,
+                inset: 0.75
+            })
+        ]
+    })
+    document.getElementById('orderGridYtd').appendChild(orderGridYtd);
 
     let monthlyEarnings = Plot.plot({
         marginLeft,

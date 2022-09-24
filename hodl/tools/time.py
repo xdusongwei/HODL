@@ -37,7 +37,7 @@ class TimeTools:
         return datetime.utcnow()
 
     @classmethod
-    def us_time_now(cls, tz: str=None) -> datetime:
+    def us_time_now(cls, tz: str = None) -> datetime:
         tz = tz if tz else cls.current_tz()
         return pytz.utc.localize(cls.utc_now()).astimezone(pytz.timezone(tz))
 

@@ -306,6 +306,7 @@ class LocalDb:
                         `update_time` INTEGER NOT NULL
                         );''')
         cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_unique_id ON `orders` (`unique_id`);')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_orders_create_time ON `orders` (`create_time`);')
 
         cur.execute('''CREATE TABLE IF NOT EXISTS `alarm` (
                                 id INTEGER PRIMARY KEY, 

@@ -5,6 +5,7 @@ import datetime
 import dataclasses
 from threading import Thread
 from collections import defaultdict
+import pytz
 from hodl.bot import AlertBot, ConversationBot
 from hodl.storage import *
 from hodl.store import Store
@@ -71,6 +72,7 @@ class HtmlWriterThread(ThreadMixin):
         self.earning_list = list()
         self.earning_json = '{}'
         self.total_earning = list()
+        self.order_times_ytd_json = '{}'
 
     def primary_bar(self) -> list[BarElementDesc]:
         bar = [
@@ -96,6 +98,34 @@ class HtmlWriterThread(ThreadMixin):
         setattr(earning, 'date', f'{day[:4]}年{day[4:6]}月{day[6:]}日')
         return earning
 
+    def _order_times_ytd(self):
+        db = self.db
+        world_latest = TimeTools.us_time_now(tz='Pacific/Auckland')
+        this_year = world_latest.year
+        utc_year = int(datetime.datetime(year=this_year, month=1, day=1, tzinfo=pytz.timezone('UTC')).timestamp())
+        orders = OrderRow.items_after_create_time(db.conn, create_time=utc_year)
+        d = dict()
+        for order in orders:
+            dt = TimeTools.from_timestamp(order.create_time, tz=TimeTools.region_to_tz(region=order.region))
+            day = TimeTools.date_to_ymd(dt)
+            if day in d:
+                d[day] += 1
+            else:
+                d[day] = 1
+        dt_count = datetime.datetime(year=this_year, month=1, day=1, tzinfo=pytz.timezone('UTC'))
+        while dt_count.year == this_year:
+            day = TimeTools.date_to_ymd(dt_count)
+            if day not in d:
+                d[day] = 0
+            dt_count += datetime.timedelta(days=1)
+
+        order_times_ytd = [dict(date=k, v=v) for k, v in d.items()]
+        order_times_ytd.sort(key=lambda i: i['date'])
+        return json.dumps(
+            order_times_ytd,
+            indent=2,
+        )
+
     def write_html(self):
         try:
             html_file_path = self.variable.html_file_path
@@ -105,6 +135,8 @@ class HtmlWriterThread(ThreadMixin):
             new_hash = ' '.join(f'{store.state.version}:{store.state.current}' for store in store_list)
             if self.current_hash != new_hash:
                 self.current_hash = new_hash
+                if db:
+                    self.order_times_ytd_json = self._order_times_ytd()
                 if db:
                     create_time = (TimeTools.us_time_now(tz='Asia/Shanghai') - datetime.timedelta(days=365)).timestamp()
                     create_time = int(create_time)
@@ -117,13 +149,13 @@ class HtmlWriterThread(ThreadMixin):
                     indent=2,
                     cls=HtmlWriterThread._EnhancedJSONEncoder,
                 )
-                create_time = int(TimeTools.us_time_now().timestamp())
                 self.total_earning = [
-                    (currency, EarningRow.total_amount_before_time(db.conn, create_time, currency))
+                    (currency, EarningRow.total_amount_before_time(db.conn, create_time=0, currency=currency))
                     for currency in ('USD', 'CNY', 'HKD',)
                 ]
 
             html = template.render(
+                order_times_ytd=self.order_times_ytd_json,
                 store_list=store_list,
                 FMT=FormatTool,
                 earning_list=self.earning_list,
