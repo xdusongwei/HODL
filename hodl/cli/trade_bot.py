@@ -127,16 +127,14 @@ class HtmlWriterThread(ThreadMixin):
         )
 
     def write_html(self):
+        new_hash = self.current_hash
         try:
             html_file_path = self.variable.html_file_path
             template = self.template
             db = self.db
-            store_list: list[Store] = self.stores
-            new_hash = ' '.join(f'{store.state.version}:{store.state.current}' for store in store_list)
+            store_list: list[Store] = self.stores.copy()
+            new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
             if self.current_hash != new_hash:
-                self.current_hash = new_hash
-                if db:
-                    self.order_times_ytd_json = self._order_times_ytd()
                 if db:
                     create_time = (TimeTools.us_time_now(tz='Asia/Shanghai') - datetime.timedelta(days=365)).timestamp()
                     create_time = int(create_time)
@@ -149,10 +147,13 @@ class HtmlWriterThread(ThreadMixin):
                     indent=2,
                     cls=HtmlWriterThread._EnhancedJSONEncoder,
                 )
+                create_time = int(TimeTools.us_time_now().timestamp())
                 self.total_earning = [
-                    (currency, EarningRow.total_amount_before_time(db.conn, create_time=0, currency=currency))
+                    (currency, EarningRow.total_amount_before_time(db.conn, create_time=create_time, currency=currency))
                     for currency in ('USD', 'CNY', 'HKD',)
                 ]
+                if db:
+                    self.order_times_ytd_json = self._order_times_ytd()
 
             html = template.render(
                 order_times_ytd=self.order_times_ytd_json,
@@ -168,6 +169,8 @@ class HtmlWriterThread(ThreadMixin):
             self.total_write += len(html)
         except Exception as e:
             print(e)
+        finally:
+            self.current_hash = new_hash
 
     def run(self):
         super(HtmlWriterThread, self).run()
