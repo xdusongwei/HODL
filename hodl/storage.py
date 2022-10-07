@@ -1,13 +1,9 @@
 import json
-from collections import namedtuple
 from datetime import timedelta
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import sqlite3
 from hodl.state import *
 from hodl.tools import FormatTool, TimeTools
-
-
-SimpleOrder = namedtuple('Order', ['unique_id', 'symbol', 'order_id', 'region', 'broker', 'create_time', 'update_time'])
 
 
 @dataclass
@@ -101,10 +97,10 @@ class OrderRow:
     order_id: str
     region: str
     broker: str
-    content: str
     create_time: int
     update_time: int
-    id: int = None
+    content: str = field(default=None)
+    id: int = field(default=None)
 
     def save(self, con: sqlite3.Connection):
         with con:
@@ -136,7 +132,7 @@ class OrderRow:
         cur = con.cursor()
         cur.execute("SELECT `unique_id`, `symbol`, `order_id`, `region`, `broker`, `create_time`, `update_time` FROM `orders` WHERE `create_time` >= ? ORDER BY `create_time` DESC;", (create_time,))
         items = cur.fetchall()
-        items = map(lambda item: SimpleOrder(**item), items)
+        items = map(lambda item: OrderRow(**item), items)
         return items
 
     def summary(self) -> str:
