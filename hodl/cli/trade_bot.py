@@ -103,7 +103,7 @@ class HtmlWriterThread(ThreadMixin):
         world_latest = TimeTools.us_time_now(tz='Pacific/Auckland')
         this_year = world_latest.year
         utc_year = int(datetime.datetime(year=this_year, month=1, day=1, tzinfo=pytz.timezone('UTC')).timestamp())
-        orders = OrderRow.items_after_create_time(db.conn, create_time=utc_year)
+        orders = OrderRow.simple_items_after_create_time(db.conn, create_time=utc_year)
         d = dict()
         for order in orders:
             dt = TimeTools.from_timestamp(order.create_time, tz=TimeTools.region_to_tz(region=order.region))
