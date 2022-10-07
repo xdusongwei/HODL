@@ -260,25 +260,29 @@ class Store(QuoteMixin, TradeMixin):
                 self.logger.warning(f'设置reworkPrice出现错误: {e}')
 
     def _base_price(self) -> float:
-        quote_pre_close = self.state.quote_pre_close
-        low_price = self.state.quote_low_price
-        price_list = [quote_pre_close, ]
-        if self.store_config.base_price_last_buy:
-            if db := self.db:
-                con = db.conn
-                symbol = self.store_config.symbol
-                earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol)
-                if earning_row and earning_row.buyback_price > 0:
-                    price_list.append(earning_row.buyback_price)
-                base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
-                if base_price_row and base_price_row.price > 0:
-                    price_list.append(base_price_row.price)
-        if self.store_config.base_price_day_low:
-            if low_price is not None:
-                price_list.append(low_price)
-        price = min(price_list)
-        assert price > 0.0
-        return price
+        match self.store_config.trade_strategy:
+            case TradeStrategyEnum.HODL:
+                quote_pre_close = self.state.quote_pre_close
+                low_price = self.state.quote_low_price
+                price_list = [quote_pre_close, ]
+                if self.store_config.base_price_last_buy:
+                    if db := self.db:
+                        con = db.conn
+                        symbol = self.store_config.symbol
+                        earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol)
+                        if earning_row and earning_row.buyback_price > 0:
+                            price_list.append(earning_row.buyback_price)
+                        base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
+                        if base_price_row and base_price_row.price > 0:
+                            price_list.append(base_price_row.price)
+                if self.store_config.base_price_day_low:
+                    if low_price is not None:
+                        price_list.append(low_price)
+                price = min(price_list)
+                assert price > 0.0
+                return price
+            case _:
+                raise NotImplementedError
 
     def try_fire_orders(self):
         state = self.state

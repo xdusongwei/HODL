@@ -3,6 +3,7 @@ from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters
 from hodl.bot import TelegramBotBase
 from hodl.thread_mixin import *
+from hodl.tools import *
 
 
 class DeleteState(TelegramBotBase):
@@ -33,7 +34,13 @@ class DeleteState(TelegramBotBase):
         position = self._symbol_list()[idx]
         user_id = update.message.from_user.id
         self._create_session(user_id=user_id, position=position)
-        if path := position.config.state_file_path:
+        if position.config.trade_strategy != TradeStrategyEnum.HODL:
+            update.message.reply_text(
+                f'该持仓不是”长期持有套利(HODL)“控制模式，无法[清除持仓状态]。',
+                reply_markup=ReplyKeyboardRemove(),
+            )
+            return ConversationHandler.END
+        elif path := position.config.state_file_path:
             update.message.reply_text(
                 f'确认针对{position.display}执行[清除持仓状态]? 状态文件在:{path}。 使用命令 /confirm 来确认',
                 reply_markup=ReplyKeyboardRemove(),

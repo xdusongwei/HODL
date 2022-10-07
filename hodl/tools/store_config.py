@@ -1,4 +1,10 @@
 import os
+import enum
+
+
+class TradeStrategyEnum(enum.Enum):
+    HODL = enum.auto()
+    RECYCLE = enum.auto()
 
 
 class StoreConfig(dict):
@@ -37,8 +43,38 @@ class StoreConfig(dict):
         return self.get('currency', None)
 
     @property
+    def trade_strategy(self) -> TradeStrategyEnum:
+        """
+        持仓使用的交易策略，可以是：
+        hodl：默认，长期持有套利；
+        recycle：保本型拐点套利；
+        """
+        strategy = self.get('trade_strategy', 'hodl')
+        match strategy:
+            case 'hodl':
+                return TradeStrategyEnum.HODL
+            case 'recycle':
+                return TradeStrategyEnum.RECYCLE
+            case _:
+                return TradeStrategyEnum.HODL
+
+    @property
     def trade_type(self) -> str:
         return self.get('trade_type', 'stock')
+
+    @property
+    def cost_price(self) -> float:
+        """
+        对于保本型拐点套利，必须设定建仓成本价，以便计算清仓价格
+        """
+        return self.get('cost_price', None)
+
+    @property
+    def recycle_rate(self) -> float:
+        """
+        对于保本型拐点套利，必须设定清仓比例，假设cost_price=10，recycle_rate设定0.01，那么市价低于10.1则触发清仓机制。
+        """
+        return self.get('cost_price', None)
 
     @property
     def symbol(self) -> str:
@@ -251,4 +287,4 @@ class StoreConfig(dict):
         return self.get('factors', None)
 
 
-__all__ = ['StoreConfig', ]
+__all__ = ['TradeStrategyEnum', 'StoreConfig', ]
