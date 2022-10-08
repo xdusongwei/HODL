@@ -102,7 +102,7 @@ class TigerApi(BrokerApiBase):
 
     HAS_GRAB = False
     GRAB_LOCK = threading.Lock()
-    # 老虎证券提供的文档限制频率，使用漏桶可能会触发超频，所以设定比其文档频率低一次
+    # 老虎证券提供的文档限制频率，使用漏桶仍存在可能会触发超频，所以设定比其文档频率低一次
     MARKET_STATUS_BUCKET = LeakyBucket(9)
     QUOTE_BUCKET = LeakyBucket(119)
     ORDER_BUCKET = LeakyBucket(119)

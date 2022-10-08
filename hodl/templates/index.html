@@ -95,9 +95,13 @@
                                                         {% set earning_forcast = base_value * (row.total_rate - 1) %}
                                                         <tr>
                                                             <th scope="row" class="text-end">{{ loop.index }}</th>
-                                                            <td>
-                                                                {{ '✅' if max_level >= loop.index else '⏳' }}
-                                                            </td>
+                                                            {% if max_level >= loop.index %}
+                                                                <td>✅</td>
+                                                            {% elif plan.earning %}
+                                                                <td>❌</td>
+                                                            {% else %}
+                                                                <td>⏳</td>
+                                                            {% endif %}
                                                             <td class="text-end">
                                                                 {{ FMT.pretty_price(row.sell_at, config=store_config) }}
                                                             </td>
