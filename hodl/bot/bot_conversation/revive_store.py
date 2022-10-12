@@ -57,7 +57,8 @@ class ReviveStore(TelegramBotBase):
                     broker = session.position.config.broker
                     region = session.position.config.region
                     symbol = session.position.symbol
-                    thread = ThreadMixin.find_by_tags(tags=('Store', broker, region, symbol, ))
+                    store = ThreadMixin.find_by_tags(tags=('Store', broker, region, symbol, ))
+                    thread = store.current_thread
                     if thread:
                         if thread.is_alive():
                             raise ValueError(f'线程{thread}仍然存活')
@@ -78,7 +79,7 @@ class ReviveStore(TelegramBotBase):
                             f'已清除风控错误',
                             reply_markup=ReplyKeyboardRemove(),
                         )
-                    thread.start(name=f'Store([{region}]{symbol})')
+                    store.start(name=f'Store([{region}]{symbol})')
                     update.message.reply_text(
                         f'已创建新线程',
                         reply_markup=ReplyKeyboardRemove(),
