@@ -20,8 +20,8 @@ class MonthlyEarning(TelegramBotBase):
                 currency_items = [item for item in items if item.currency == currency]
                 month_count = len(currency_items)
                 total = sum([item.total for item in currency_items])
-                forcast = int(total / month_count * 12) // 1000 * 1000
-                amount = FormatTool.pretty_usd(forcast, currency=currency, only_int=True)
+                forecast = int(total / month_count * 12) // 1000 * 1000
+                amount = FormatTool.pretty_usd(forecast, currency=currency, only_int=True)
                 result += f'[{currency}]预测12个月总收入{amount}\n'
         update.message.reply_text(result)
 

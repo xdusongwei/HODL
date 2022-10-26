@@ -70,11 +70,11 @@ class StoreBase(ThreadMixin):
         setattr(self, '_risk_control', v)
 
     @property
-    def process_time(self) -> int | None:
+    def process_time(self) -> float | None:
         return getattr(self, '_process_time', None)
 
     @process_time.setter
-    def process_time(self, v: int):
+    def process_time(self, v: float):
         setattr(self, '_process_time', v)
 
     @property
@@ -187,6 +187,9 @@ class StoreBase(ThreadMixin):
         )
         return profit_table
 
+    def current_table(self):
+        return self.build_table(store_config=self.store_config, plan=self.state.plan)
+
     def init_trade_service(self):
         if not self.ENABLE_BROKER:
             return
@@ -210,13 +213,14 @@ class StoreBase(ThreadMixin):
                 system_tooltip = '持仓管理线程已经崩溃'
             elif state.current == StoreBase.STATE_GET_OFF:
                 system_status = money_bag
-                system_tooltip = '持仓完成套利'
+                earning = state.plan.earning
+                system_tooltip = f'持仓完成套利{FormatTool.pretty_price(earning, config=config, only_int=True)}'
             elif not state.is_plug_in:
                 system_status = plug
                 system_tooltip = '券商系统连通未成功'
             elif state.current == StoreBase.STATE_TRADE:
                 system_status = check
-                system_tooltip = '正常'
+                system_tooltip = '监控中'
             else:
                 system_status = cross_mark
                 system_tooltip = '其他三项不能达到工作条件'
@@ -244,28 +248,27 @@ class StoreBase(ThreadMixin):
         ]
 
     @classmethod
-    def buff_bar(cls, config: StoreConfig, state: State, process_time: int = None) -> list[BarElementDesc]:
+    def buff_bar(cls, config: StoreConfig, state: State, process_time: float = None) -> list[BarElementDesc]:
         bar = list()
         plan = state.plan
-
-        if cfg := plan.master_config:
-            bar.append(BarElementDesc(content=f'⚖+{cfg.name}', tooltip='对冲正向仓位'))
-
-        if cfg := plan.slave_config:
-            bar.append(BarElementDesc(content=f'⚖-{cfg.name}', tooltip='对冲负向仓位'))
 
         if config.get('lockPosition') or config.lock_position:
             lock_position = '🔒'
             bar.append(BarElementDesc(content=lock_position, tooltip='持仓量核对已纳入风控，不可随时加仓'))
 
-        if state.plan.rework_price:
-            rework_set = '🔁'
+        if rework_price := state.plan.rework_price:
+            rework_set = f'🔁{FormatTool.pretty_price(rework_price, config=config)}'
             bar.append(BarElementDesc(content=rework_set, tooltip='今日已计划重置状态数据，使套利持仓重新工作'))
 
         if plan.price_rate != 1.0:
             price_rate = plan.price_rate
             price_rate_text = f'🎢{FormatTool.factor_to_percent(price_rate)}'
             bar.append(BarElementDesc(content=price_rate_text, tooltip='按缩放系数重新调整买卖价格的幅度'))
+
+        if rate := config.get('marketPriceRate') or config.market_price_rate:
+            market_price_set = '⚡'
+            market_price_set += FormatTool.factor_to_percent(rate)
+            bar.append(BarElementDesc(content=market_price_set, tooltip='市场价格偏离超过预期幅度触发市价单'))
 
         battery = '🔋'
         chips = plan.total_chips
@@ -277,11 +280,16 @@ class StoreBase(ThreadMixin):
         battery += FormatTool.factor_to_percent(remain_rate)
         bar.append(BarElementDesc(content=battery, tooltip='剩余持仓占比'))
 
+        unit = 'ms'
         if process_time is not None:
-            process_time = f'{int(process_time * 1000)}'
+            if process_time >= 1.0:
+                unit = 's'
+                process_time = f'{process_time:.2f}'
+            else:
+                process_time = f'{int(process_time * 1000)}'
         else:
             process_time = '--'
-        process_time_text = f'📶{process_time}ms'
+        process_time_text = f'📶{process_time}{unit}'
         bar.append(BarElementDesc(content=process_time_text, tooltip='持仓处理耗时'))
 
         return bar
@@ -306,22 +314,6 @@ class StoreBase(ThreadMixin):
     def thread_tags(self) -> tuple:
         config = self.store_config
         return 'Store', config.broker, config.region, config.symbol,
-
-    def hedge_master_info(self) -> HedgeConfig | None:
-        hedge_list = self.runtime_state.variable.hedge_configs
-        for hedge_config in hedge_list:
-            if hedge_config.master != self.store_config.symbol:
-                continue
-            return hedge_config
-        return None
-
-    def hedge_slave_info(self) -> HedgeConfig | None:
-        hedge_list = self.runtime_state.variable.hedge_configs
-        for hedge_config in hedge_list:
-            if hedge_config.slave != self.store_config.symbol:
-                continue
-            return hedge_config
-        return None
 
     @classmethod
     def rewrite_earning_json(cls, db: LocalDb, earning_json_path: str, now, weeks=2):

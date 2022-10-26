@@ -61,15 +61,12 @@ class FormatTool:
             unit='$',
             only_int=False,
             precision: int = 3,
+            show_currency_name=False,
     ) -> str:
         if currency:
-            match currency:
-                case 'USDT':
-                    unit = 'USDT'
-                case 'USDC':
-                    unit = 'USDC'
-                case _:
-                    unit = cls.currency_to_unit(currency)
+            unit = cls.currency_to_unit(currency)
+            if show_currency_name:
+                unit = f'{currency}{unit}'
         if v is None:
             intcomma = '--'
         elif only_int:

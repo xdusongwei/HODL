@@ -101,10 +101,7 @@ class RiskControl:
             total_sell = sum(order.filled_qty for order in orders if order.is_sell)
             total_buy = sum(order.filled_qty for order in orders if order.is_buy)
             if self.store_config.lock_position:
-                if self.state.plan.slave_config:
-                    base_chip_count = 0
-                else:
-                    base_chip_count = chip_count
+                base_chip_count = chip_count
                 if self.max_shares != base_chip_count + total_sell - total_buy:
                     raise RiskControlError(f'持仓核算失败, 应清算核对共计{self.max_shares:,}股, '
                                            f'实际持仓{chip_count:,}股, '

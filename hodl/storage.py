@@ -61,7 +61,7 @@ class EarningRow:
     @classmethod
     def latest_earning_by_symbol(cls, con: sqlite3.Connection, symbol: str):
         cur = con.cursor()
-        cur.execute("SELECT * FROM `earning` WHERE symbol = ? ORDER BY `day` DESC LIMIT 1;", (symbol, ))
+        cur.execute("SELECT * FROM `earning` WHERE `symbol` = ? AND `buyback_price` IS NOT NULL ORDER BY `day` DESC LIMIT 1;", (symbol, ))
         row = cur.fetchone()
         if row:
             item = EarningRow(**row)

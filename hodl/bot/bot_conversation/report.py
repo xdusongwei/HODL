@@ -41,7 +41,7 @@ class Report(TelegramBotBase):
             d = json.loads(row.content)
             state = State(d)
             plan = state.plan
-            if not plan.earning and plan.base_price:
+            if plan.table_ready:
                 base_value = (plan.total_chips or 0) * (plan.base_price or 0.0)
                 max_level = plan.current_sell_level_filled()
                 bp_text = FormatTool.pretty_price(plan.base_price, config=store_config)
@@ -60,16 +60,16 @@ class Report(TelegramBotBase):
                 for idx, table_row in enumerate(profit_table):
                     level = idx + 1
                     table_row: ProfitRow = table_row
-                    earning_forcast = base_value * (table_row.total_rate - 1)
-                    earning_forcast = FormatTool.pretty_usd(
-                        earning_forcast,
+                    earning_forecast = base_value * (table_row.total_rate - 1)
+                    earning_forecast = FormatTool.pretty_usd(
+                        earning_forecast,
                         only_int=True,
                         currency=store_config.currency,
                     )
                     buy_at = FormatTool.pretty_price(table_row.buy_at, config=store_config)
                     rate = -round(table_row.total_rate * 100 - 100, 2)
                     hit = '[当前]' if max_level == level else ''
-                    lines.append(f'{hit}{idx + 1} {buy_at}: {rate:+.2f}%(+{earning_forcast})')
+                    lines.append(f'{hit}{idx + 1} {buy_at}: {rate:+.2f}%(+{earning_forecast})')
                 update.message.reply_text(
                     '\n'.join(lines), reply_markup=ReplyKeyboardRemove()
                 )

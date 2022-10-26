@@ -27,6 +27,10 @@ class TuiConfig(dict):
         return self.get('border_style', 'yellow')
 
     @property
+    def show_order_status(self):
+        return self.get('show_order_status', False)
+
+    @property
     def sleep_sound(self):
         return self.get('sleep_sound', None)
 

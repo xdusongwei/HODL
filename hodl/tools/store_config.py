@@ -286,5 +286,14 @@ class StoreConfig(dict):
         """
         return self.get('factors', None)
 
+    @property
+    def market_price_rate(self) -> float:
+        """
+        设置一个系数，当市场价格偏离预期价格多少比例时，下达市价单而非限价单。
+        例如，假如这里设定0.05，此时市场价为10.6，计划卖出下单价格为10.0，那么10.6 > 1.05 * 10.0，则下达市价卖单。
+        同理如果市场价为9.3，计划买入下单价格为10.0，那么9.3 < 0.95 * 10.0，则下达市价买单。
+        """
+        return self.get('market_price_rate', None)
+
 
 __all__ = ['TradeStrategyEnum', 'StoreConfig', ]

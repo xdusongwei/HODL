@@ -167,10 +167,10 @@ class TigerApi(BrokerApiBase):
             us_date, pre_close, open_price, latest_price, status, low_price = \
                 row['us_date'], row['pre_close'], row['open'], row['latest_price'], row['status'], row['low']
             try:
-                assert pre_close > 0.4
-                assert open_price > 0.4
-                assert latest_price > 0.4
-                assert low_price > 0.4
+                assert pre_close > 0.1
+                assert open_price > 0.1
+                assert latest_price > 0.1
+                assert low_price > 0.1
             except Exception as e:
                 raise QuoteFieldError(e)
             return Quote(

@@ -3,7 +3,6 @@ import toml
 from telegram.ext import Updater
 from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.locate import LocateTools
-from hodl.tools.hedge_config import HedgeConfig
 from hodl.tools.store_config import StoreConfig
 from hodl.tools.tui_config import TuiConfig
 
@@ -47,11 +46,6 @@ class VariableTools:
             autoescape=select_autoescape(),
         )
         return env
-
-    @property
-    def hedge_configs(self) -> list[HedgeConfig]:
-        hedge_config_list = [HedgeConfig(d) for d in self._config.get('hedge', dict()).values()]
-        return hedge_config_list
 
     @property
     def store_configs(self) -> dict[str, StoreConfig]:

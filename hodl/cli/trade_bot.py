@@ -3,6 +3,7 @@ import json
 import time
 import datetime
 import dataclasses
+import traceback
 from threading import Thread
 from collections import defaultdict
 import pytz
@@ -126,7 +127,47 @@ class HtmlWriterThread(ThreadMixin):
             indent=2,
         )
 
+    @classmethod
+    def store_value(cls, currency_list, store_list: list[Store]):
+        hodl_dict = {currency: 0.0 for currency in currency_list}
+        sell_dict = {currency: 0.0 for currency in currency_list}
+        earning_dict = {currency: 0.0 for currency in currency_list}
+        for store in store_list:
+            currency = store.store_config.currency
+            price = store.state.quote_latest_price
+            plan = store.state.plan
+            total_chips = plan.total_chips
+            sell_volume = plan.total_volume_not_active(assert_zero=False)
+            max_level = plan.current_sell_level_filled()
+            orders = plan.orders
+            if currency not in currency_list:
+                continue
+            if not price:
+                continue
+            if total_chips < sell_volume:
+                continue
+            sell_cost = sum(order.filled_value for order in orders if order.is_sell)
+            hodl_cost = (total_chips - sell_volume) * price
+            hodl_dict[currency] += hodl_cost
+            sell_dict[currency] += sell_cost
+            forecast_earning = 0.0
+            if plan.table_ready:
+                rows = store.current_table()
+            else:
+                rows = list()
+            for idx, row in enumerate(rows):
+                level = idx + 1
+                if max_level >= level:
+                    base_value = (plan.total_chips or 0) * (plan.base_price or 0.0)
+                    forecast_earning = (row.total_rate - 1) * base_value
+            earning_dict[currency] += forecast_earning
+        hodl_list = [(k, v,) for k, v in hodl_dict.items()]
+        sell_list = [(k, v,) for k, v in sell_dict.items()]
+        earning_list = [(k, v,) for k, v in earning_dict.items()]
+        return hodl_list, sell_list, earning_list
+
     def write_html(self):
+        currency_list = ('USD', 'CNY', 'HKD',)
         new_hash = self.current_hash
         try:
             html_file_path = self.variable.html_file_path
@@ -141,7 +182,7 @@ class HtmlWriterThread(ThreadMixin):
                     self.recent_earnings = list(EarningRow.items_after_time(con=db.conn, create_time=create_time))
                 else:
                     self.recent_earnings = list()
-                self.earning_list = [self._earning_style(earning) for earning in self.recent_earnings[:24]]
+                self.earning_list = [self._earning_style(earning) for earning in self.recent_earnings[:20]]
                 self.earning_json = json.dumps(
                     self.recent_earnings,
                     indent=2,
@@ -150,10 +191,11 @@ class HtmlWriterThread(ThreadMixin):
                 create_time = int(TimeTools.us_time_now().timestamp())
                 self.total_earning = [
                     (currency, EarningRow.total_amount_before_time(db.conn, create_time=create_time, currency=currency))
-                    for currency in ('USD', 'CNY', 'HKD',)
+                    for currency in currency_list
                 ]
                 if db:
                     self.order_times_ytd_json = self._order_times_ytd()
+            hodl_list, sell_list, earning_list = self.store_value(currency_list=currency_list, store_list=store_list)
 
             html = template.render(
                 order_times_ytd=self.order_times_ytd_json,
@@ -163,12 +205,15 @@ class HtmlWriterThread(ThreadMixin):
                 earning_json=self.earning_json,
                 threads=ThreadMixin.threads(),
                 total_earning=self.total_earning,
+                hodl_value=hodl_list,
+                sell_value=sell_list,
+                earning_value=earning_list,
             ).encode('utf8')
             with open(html_file_path, "wb") as f:
                 f.write(html)
             self.total_write += len(html)
-        except Exception as e:
-            print(e)
+        except Exception:
+            traceback.print_last()
         finally:
             self.current_hash = new_hash
 
@@ -253,6 +298,7 @@ class JsonWriterThread(ThreadMixin):
                             'basePriceDayLow': store.store_config.base_price_day_low,
                             'currency': store.store_config.currency,
                             'reworkLevel': store.store_config.rework_level,
+                            'marketPriceRate': store.store_config.market_price_rate,
                         },
                         'broker': {
                             'tradeBroker': str(store.broker_proxy.trade_broker),

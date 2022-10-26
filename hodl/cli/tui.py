@@ -182,7 +182,8 @@ class OrderWidget(PlaceholderBase):
         table.add_column("订单量", justify="right", style="grey66")
         table.add_column("成交价", justify="right", style="green")
         table.add_column("成交量", justify="right", style="grey66")
-        table.add_column("标志", justify="right", style="red")
+        if config.show_order_status:
+            table.add_column("标志", justify="right", style="red")
 
         for order in orders:
             tz = TimeTools.region_to_tz(region=order.region)
@@ -195,7 +196,7 @@ class OrderWidget(PlaceholderBase):
                 style = 'grey50'
 
             symbol = order.symbol
-            table.add_row(
+            cells = [
                 Text(text=f'{order.order_emoji}'),
                 Text(text=f'{time.strftime("%y-%m-%d")}\n{time.strftime("%H:%M:%S")}', style=style),
                 Text(text=f'[{order.region}]{symbol}', style=style),
@@ -204,8 +205,10 @@ class OrderWidget(PlaceholderBase):
                 Text(text=FMT.pretty_number(order.qty), style=style),
                 Text(text=FMT.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision)),
                 Text(text=FMT.pretty_number(order.filled_qty), style=style),
-                Text(text=''.join(order.order_flags)),
-            )
+            ]
+            if config.show_order_status:
+                cells.append(Text(text=''.join(order.order_flags)))
+            table.add_row(*cells)
         return table
 
 
@@ -240,15 +243,23 @@ class ProfitWidget(PlaceholderBase):
             sum(item[2] for item in items if item[3] == 'USD'),
             only_int=True,
             currency='USD',
+            show_currency_name=True,
         )
         total_earning_cny = FMT.pretty_usd(
             sum(item[2] for item in items if item[3] == 'CNY'),
             only_int=True,
             currency='CNY',
+            show_currency_name=True,
+        )
+        total_earning_hkd = FMT.pretty_usd(
+            sum(item[2] for item in items if item[3] == 'HKD'),
+            only_int=True,
+            currency='HKD',
+            show_currency_name=True,
         )
         return Panel(
             Columns(lines, column_first=False, width=config.profit_width, padding=(0, 0, 0, 3, )),
-            title=f'{config.name}({total_earning_usd}, {total_earning_cny})',
+            title=f'{config.name}({total_earning_usd}, {total_earning_cny}, {total_earning_hkd})',
             border_style=config.border_style,
             box=box.ROUNDED,
             style=self.style,

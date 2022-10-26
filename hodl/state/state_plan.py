@@ -13,32 +13,12 @@ class Plan(DictWrapper):
     def new_plan(
             cls,
             store_config: StoreConfig,
-            master_config: HedgeConfig = None,
-            slave_config: HedgeConfig = None,
     ):
         plan = Plan()
-        plan.master_config = master_config
-        plan.slave_config = slave_config
         plan.total_chips = store_config.max_shares
         plan.prudent = store_config.prudent
         plan.price_rate = store_config.price_rate
         return plan
-
-    @property
-    def master_config(self):
-        return HedgeConfig(self.d.get('masterConfig') or dict())
-
-    @master_config.setter
-    def master_config(self, v: dict):
-        self.d['masterConfig'] = v
-
-    @property
-    def slave_config(self):
-        return HedgeConfig(self.d.get('slaveConfig') or dict())
-
-    @slave_config.setter
-    def slave_config(self, v: dict):
-        self.d['slaveConfig'] = v
 
     @property
     def master_total_chips(self):
@@ -228,11 +208,6 @@ class Plan(DictWrapper):
         any_today = any(order for order in orders if order.is_today)
         if any_today:
             return False
-        elif self.slave_config:
-            if self.master_sold_chips == 0:
-                return True
-            else:
-                return False
         elif self.earning is not None:
             return True
         return not any(order for order in orders if order.filled_qty and not order.is_today)
@@ -341,6 +316,10 @@ class Plan(DictWrapper):
         sell_cost = sum(order.filled_value for order in orders if order.is_sell)
         buy_income = sum(order.filled_value for order in orders if order.is_buy)
         return int(sell_cost - buy_income)
+
+    @property
+    def table_ready(self) -> bool:
+        return not self.earning and self.base_price
 
     def plan_calc(self):
         return PlanCalc(

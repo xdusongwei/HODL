@@ -30,8 +30,6 @@ class Store(QuoteMixin, TradeMixin):
         if state.plan.cleanable:
             state.plan = Plan.new_plan(
                 store_config=self.store_config,
-                master_config=self.hedge_master_info(),
-                slave_config=self.hedge_slave_info(),
             )
         state.plan.clean_orders()
         plan = state.plan
@@ -200,7 +198,10 @@ class Store(QuoteMixin, TradeMixin):
         speed = earning / days
         speed = FMT.pretty_price(speed, config=store_config, only_int=True)
         buyback_text = FMT.pretty_price(buyback_price, store_config)
-        earning_text = f'💰[{region}]{symbol}在{day_now}收益{cash}, 买回价:{buyback_text}, 持续{days}天, 平均日收益{speed}'
+
+        earning_text = f'💰[{region}]{symbol}在{day_now}收益{cash}, 买回价:{buyback_text}'
+        if days > 1:
+            earning_text += f', 持续{days}天, 平均日收益{speed}'
         self.logger.info(earning_text)
         assert earning >= 0
 
@@ -245,11 +246,9 @@ class Store(QuoteMixin, TradeMixin):
             try:
                 rework_plan = Plan.new_plan(
                     store_config=store_config,
-                    master_config=self.hedge_master_info(),
-                    slave_config=self.hedge_slave_info(),
                 )
                 rework_plan.base_price = self._base_price()
-                row = self.build_table(store_config=store_config, plan=rework_plan).row_by_level(level=level)
+                row = self.current_table().row_by_level(level=level)
                 if row.sell_at > buyback_price:
                     price = row.sell_at
                     plan.rework_price = price
@@ -270,7 +269,7 @@ class Store(QuoteMixin, TradeMixin):
                         con = db.conn
                         symbol = self.store_config.symbol
                         earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol)
-                        if earning_row and earning_row.buyback_price > 0:
+                        if earning_row and earning_row.buyback_price and earning_row.buyback_price > 0:
                             price_list.append(earning_row.buyback_price)
                         base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
                         if base_price_row and base_price_row.price > 0:
@@ -289,22 +288,16 @@ class Store(QuoteMixin, TradeMixin):
         if state.plan.earning is not None:
             state.plan = Plan.new_plan(
                 store_config=self.store_config,
-                master_config=self.hedge_master_info(),
-                slave_config=self.hedge_slave_info(),
             )
         plan = state.plan
         if not plan.base_price:
             price = self._base_price()
             self.state.plan.base_price = price
 
-        if hedge_config := self.hedge_slave_info():
-            self.try_slaving(hedge_config=hedge_config)
-        else:
-            store_config = self.store_config
-            profit_table = self.build_table(store_config=store_config, plan=plan)
-            state_fire = StateFire(profit_table=profit_table)
-            self.try_fire_sell(fire_state=state_fire)
-            self.try_fire_buy(fire_state=state_fire)
+        profit_table = self.current_table()
+        state_fire = StateFire(profit_table=profit_table, market_price_rate=self.store_config.market_price_rate)
+        self.try_fire_sell(fire_state=state_fire)
+        self.try_fire_buy(fire_state=state_fire)
 
     def current_changed(self, current: str, new_current: str):
         if new_current == self.STATE_SLEEP and self.store_config.closing_time:
