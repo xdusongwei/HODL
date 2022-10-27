@@ -223,7 +223,7 @@
                                             </td>
                                             <td>[{{ order.region }}]{{ order.symbol }}</td>
                                             <td>{{ order.direction }}#{{ order.level }}</td>
-                                            <td class="text-end">{{ FMT.pretty_usd(order.limit_price, currency=order.currency, precision=order.precision) }}</td>
+                                            <td class="text-end">{{ FMT.pretty_usd(order.limit_price, currency=order.currency, precision=order.precision) if order.order_type == 'limit' else '市价' }}</td>
                                             <td class="text-end d-none d-sm-table-cell">{{ FMT.pretty_number(order.qty) }}</td>
                                             <td class="text-end d-none d-sm-table-cell">{{ FMT.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision) }}</td>
                                             <td class="text-end d-none d-sm-table-cell">{{ FMT.pretty_number(order.filled_qty) }}</td>

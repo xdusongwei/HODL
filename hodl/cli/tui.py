@@ -196,12 +196,16 @@ class OrderWidget(PlaceholderBase):
                 style = 'grey50'
 
             symbol = order.symbol
+            if order.order_type == 'limit':
+                limit_price = FMT.pretty_usd(order.limit_price, currency=order.currency, precision=order.precision)
+            else:
+                limit_price = '市价'
             cells = [
                 Text(text=f'{order.order_emoji}'),
                 Text(text=f'{time.strftime("%y-%m-%d")}\n{time.strftime("%H:%M:%S")}', style=style),
                 Text(text=f'[{order.region}]{symbol}', style=style),
                 Text(text=f'{order.direction}#{order.level}', style=style),
-                Text(text=FMT.pretty_usd(order.limit_price, currency=order.currency, precision=order.precision)),
+                Text(text=limit_price),
                 Text(text=FMT.pretty_number(order.qty), style=style),
                 Text(text=FMT.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision)),
                 Text(text=FMT.pretty_number(order.filled_qty), style=style),

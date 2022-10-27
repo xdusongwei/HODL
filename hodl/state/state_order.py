@@ -31,6 +31,10 @@ class Order(DictWrapper):
             create_timestamp = now.timestamp()
         if order_day is None:
             order_day = TimeTools.date_to_ymd(now)
+        if limit_price:
+            o.order_type = 'limit'
+        else:
+            o.order_type = 'market'
         o.symbol = symbol
         o.region = region
         o.broker = broker
@@ -173,6 +177,14 @@ class Order(DictWrapper):
         self.d['precision'] = v
 
     # 交易系统创建订单产生的字段
+    @property
+    def order_type(self):
+        return self.d.get('orderType', 'limit')
+
+    @order_type.setter
+    def order_type(self, v: str):
+        self.d['orderType'] = v
+
     @property
     def order_id(self):
         """
