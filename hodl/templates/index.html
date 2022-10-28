@@ -90,7 +90,8 @@
                                 {% for store in store_list %}
                                     {% set state = store.state %}
                                     {% set store_config = store.store_config %}
-                                    {% set plan = state.plan %}
+                                    {% set total_chips = state.plan.total_chips %}
+                                    {% set row_tool = ProfitRowTool(store=store) %}
                                     <li class="list-group-item list-group-item-dark text-bg-dark border-secondary">
                                         <p class="mb-0 mt-2">
                                             <span class="fs-4">{{ store_config.name }}</span>
@@ -111,17 +112,26 @@
                                             {% endfor %}
                                         </p>
                                         <p>
-                                            {% if plan.table_ready %}
-                                                {% set base_value = (plan.total_chips or 0) * (plan.base_price or 0.0) %}
-                                                {% set max_level = plan.current_sell_level_filled() %}
-                                                {% set rows = store.build_table(store_config=store_config, plan=plan) %}
+                                            {% if row_tool.has_table %}
+                                                <p class="text-muted">
+                                                    执行计划: {{ row_tool.filled_level }}/{{ row_tool.rows|length }}
+                                                    {% if row_tool.buy_percent %}
+                                                    <span>
+                                                        , 距离买回价格: {{ FMT.factor_to_percent(row_tool.buy_percent, fmt="{:+.1%}") }}
+                                                    </span>
+                                                    {% endif %}
+                                                    {% if row_tool.sell_percent %}
+                                                    <span>
+                                                        , 距离下次卖出: {{ FMT.factor_to_percent(row_tool.sell_percent, fmt="{:+.1%}") }}
+                                                    </span>
+                                                    {% endif %}
+
+                                                </p>
                                                 <a class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse"
                                                    role="button" aria-expanded="false"
                                                    href="#report-{{ store_config.broker }}-{{ store_config.symbol }}"
                                                    aria-controls="report-{{ store_config.broker }}-{{ store_config.symbol }}"
-                                                >
-                                                  执行计划({{ max_level }}/{{ rows|length }})
-                                                </a>
+                                                >更多</a>
                                                 <div class="collapse" id="report-{{ store_config.broker }}-{{ store_config.symbol }}">
                                                     <div class="table-responsive-md">
                                                       <table class="table table-striped table-hover table-dark align-middle table-sm">
@@ -137,14 +147,12 @@
                                                         </tr>
                                                         </thead>
                                                           <tbody>
-                                                          {% for row in rows %}
-                                                            {% set earning_forecast = base_value * (row.total_rate - 1) %}
+                                                          {% for row in row_tool.rows %}
+                                                            {% set earning_forecast = row_tool.earning_forecast(row.total_rate) %}
                                                             <tr>
                                                                 <th scope="row" class="text-end">{{ loop.index }}</th>
-                                                                {% if max_level >= loop.index %}
+                                                                {% if row_tool.filled_level >= loop.index %}
                                                                     <td>✅</td>
-                                                                {% elif plan.earning %}
-                                                                    <td>❌</td>
                                                                 {% else %}
                                                                     <td>⏳</td>
                                                                 {% endif %}
@@ -152,7 +160,7 @@
                                                                     {{ FMT.pretty_price(row.sell_at, config=store_config) }}
                                                                 </td>
                                                                 <td class="text-end">
-                                                                    {{ FMT.factor_to_percent(row.shares / plan.total_chips, fmt="{:.1%}") }}
+                                                                    {{ FMT.factor_to_percent(row.shares / total_chips, fmt="{:.1%}") }}
                                                                 </td>
                                                                 <td class="text-end">
                                                                     {{ FMT.pretty_price(row.buy_at, config=store_config) }}
