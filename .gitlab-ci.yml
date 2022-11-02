@@ -21,7 +21,7 @@ before_script:
   - pip install pdm
   - export PATH="$HOME/.local/bin:$PATH"
   - pdm config pypi.url "https://mirrors.aliyun.com/pypi/simple"
-  - pdm install --prod --no-lock --no-editable
+  - pdm install --prod  -G test --no-lock --no-editable
 
 test:
   stage: test

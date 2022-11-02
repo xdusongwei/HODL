@@ -256,9 +256,20 @@ class StoreBase(ThreadMixin):
             lock_position = '🔒'
             bar.append(BarElementDesc(content=lock_position, tooltip='持仓量核对已纳入风控，不可随时加仓'))
 
+        factor_content = '☕'
+        if plan.prudent:
+            factor_content = '🚀'
+        tooltip = '基准价格参考: 昨收价'
+        if config.base_price_day_low:
+            tooltip += ', 当日最低价格'
+        if config.base_price_last_buy:
+            tooltip += ', 上次买回价格'
+        bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
+
         if rework_price := state.plan.rework_price:
-            rework_set = f'🔁{FormatTool.pretty_price(rework_price, config=config)}'
-            bar.append(BarElementDesc(content=rework_set, tooltip='今日已计划重置状态数据，使套利持仓重新工作'))
+            rework_set = f'🔁'
+            tooltip = f'已计划重置状态数据, 使套利持仓重新工作, 触发价格:{FormatTool.pretty_price(rework_price, config=config)}'
+            bar.append(BarElementDesc(content=rework_set, tooltip=tooltip))
 
         if plan.price_rate != 1.0:
             price_rate = plan.price_rate

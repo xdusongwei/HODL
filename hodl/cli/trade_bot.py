@@ -71,7 +71,7 @@ class HtmlWriterThread(ThreadMixin):
                 self.rows = Store.build_table(store_config=self.store_config, plan=self.plan)
             if self.filled_level and self.price:
                 idx = self.filled_level - 1
-                rate = -abs(self.price - self.rows[idx].buy_at) / self.price
+                rate = abs(self.price - self.rows[idx].buy_at) / self.price
                 self.buy_percent = rate
             if self.filled_level < len(self.rows):
                 idx = self.filled_level
@@ -240,7 +240,7 @@ class HtmlWriterThread(ThreadMixin):
                 f.write(html)
             self.total_write += len(html)
         except Exception:
-            traceback.print_last()
+            traceback.print_exc()
         finally:
             self.current_hash = new_hash
 

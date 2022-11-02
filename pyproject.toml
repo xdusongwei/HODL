@@ -11,29 +11,36 @@ dependencies = [
     "pytz>=2021.1",
     "concurrent-log-handler>=0.9.20",
     "json-log-formatter>=0.5.1",
-    "coverage>=6.3.2",
-    "pytest>=7.1.0",
     "toml>=0.10.2",
-    "textual>=0.1.17",
+    "textual==0.1.18",
     "httpx>=0.22.0",
     "h2>=4.1.0",
-    "pygame>=2.1.2",
     "requests>=2.27.1",
     "expiringdict>=1.2.1",
     "binance-connector>=1.13.0",
     "tigeropen>=2.1.3",
     "currency-symbols>=2.0.2",
-    "win10toast>=0.9; sys_platform == 'win32'",
     "Jinja2>=3.1.2",
     "base58>=2.1.1",
     "xxhash>=3.0.0",
     "humanize>=4.3.0",
 ]
+
 requires-python = ">=3.10"
 license = {text = "MIT"}
 
 [project.urls]
 homepage = "https://github.com/xdusongwei/HODL"
+
+[project.optional-dependencies]
+tui = [
+    "pygame>=2.1.2",
+    "win10toast>=0.9; sys_platform == 'win32'",
+]
+test = [
+    "coverage>=6.3.2",
+    "pytest>=7.1.0",
+]
 
 [tool]
 [tool.pdm]
