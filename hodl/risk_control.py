@@ -106,7 +106,7 @@ class RiskControl:
                     raise RiskControlError(f'持仓核算失败, 应清算核对共计{self.max_shares:,}股, '
                                            f'实际持仓{chip_count:,}股, '
                                            f'已累计卖出{total_sell:,}股, 已累计买入{total_buy:,}股')
-            if not order.limit_price:
+            if not self.store_config.market_price_rate and not order.limit_price:
                 raise RiskControlError(f'当日首单交易不能是市价单')
             elif diff := total_sell - total_buy:
                 if diff < 0:

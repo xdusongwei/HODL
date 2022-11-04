@@ -172,10 +172,11 @@ class HtmlWriterThread(ThreadMixin):
                 continue
             if total_chips < sell_volume:
                 continue
-            sell_cost = sum(order.filled_value for order in orders if order.is_sell)
             hodl_cost = (total_chips - sell_volume) * price
             hodl_dict[currency] += hodl_cost
-            sell_dict[currency] += sell_cost
+            if sell_volume:
+                sell_cost = sum(order.filled_value for order in orders if order.is_sell)
+                sell_dict[currency] += sell_cost
             forecast_earning = 0.0
             if plan.table_ready:
                 rows = store.current_table()
