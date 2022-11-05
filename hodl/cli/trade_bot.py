@@ -3,6 +3,7 @@ import json
 import time
 import datetime
 import dataclasses
+import platform
 import traceback
 from threading import Thread
 from collections import defaultdict
@@ -399,6 +400,13 @@ class Manager(ThreadMixin):
             bar.append(BarElementDesc(content=f'🤖Telegram', tooltip=f'机器人可以对话或者报警'))
         if Manager.DB:
             bar.append(BarElementDesc(content=f'📼sqlite', tooltip=f'已启用数据库'))
+        return bar
+
+    def secondary_bar(self) -> list[BarElementDesc]:
+        bar = list()
+        bar.append(BarElementDesc(content=f'os: {platform.system()}'))
+        bar.append(BarElementDesc(content=f'arch: {platform.machine()}'))
+        bar.append(BarElementDesc(content=f'python: {platform.python_version()}'))
         return bar
 
     def run(self):

@@ -136,6 +136,20 @@ class Plan(DictWrapper):
         return [Order(i) for i in self.d.get('orders')]
 
     @property
+    def sell_volume(self):
+        orders = self.orders
+        sell_orders = [order for order in orders if order.is_sell and not order.is_waiting_filling]
+        sell_volume = sum(order.filled_qty for order in sell_orders)
+        return sell_volume
+
+    @property
+    def buy_volume(self):
+        orders = self.orders
+        buy_orders = [order for order in orders if order.is_buy and not order.is_waiting_filling]
+        buy_volume = sum(order.filled_qty for order in buy_orders)
+        return buy_volume
+
+    @property
     def should_today_get_off(self) -> bool:
         """
         根据没有·有没有完全成交的今天买单确定是否今天应该收工
@@ -146,6 +160,9 @@ class Plan(DictWrapper):
         orders = self.orders
         for order in orders:
             if order.is_today and order.is_filled and order.is_buy:
+                return True
+        else:
+            if self.sell_volume and self.sell_volume == self.buy_volume:
                 return True
         return False
 
@@ -266,11 +283,8 @@ class Plan(DictWrapper):
         = 总卖量 - 总买量
         :return:
         """
-        orders = self.orders
-        sell_orders = [order for order in orders if order.is_sell and not order.is_waiting_filling]
-        buy_orders = [order for order in orders if order.is_buy and not order.is_waiting_filling]
-        sell_volume = sum(order.filled_qty for order in sell_orders)
-        buy_volume = sum(order.filled_qty for order in buy_orders)
+        sell_volume = self.sell_volume
+        buy_volume = self.buy_volume
         result = sell_volume - buy_volume
         if assert_zero:
             assert result > 0
