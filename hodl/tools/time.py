@@ -2,6 +2,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 import pytz
+import humanize
 from hodl.tools.store_state_base import StoreStateBase
 
 
@@ -75,6 +76,10 @@ class TimeTools:
         sunday = date - timedelta(days=date.weekday()) + timedelta(days=6, weeks=weeks)
         sunday = datetime(year=sunday.year, month=sunday.month, day=sunday.day, tzinfo=pytz.timezone('UTC'))
         return sunday
+
+    @classmethod
+    def precisedelta(cls, value, minimum_unit='seconds', suppress=(), format='%0.2f'):
+        return humanize.precisedelta(value=value, minimum_unit=minimum_unit, suppress=suppress, format=format)
 
 
 __all__ = ['TimeTools', ]

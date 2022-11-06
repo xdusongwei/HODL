@@ -71,12 +71,19 @@ class PsUtilThread(ThreadMixin):
         cpu_factor = process.cpu_percent(interval=30) / 100.0
         cpu_percent = FormatTool.factor_to_percent(cpu_factor, fmt='{:.1%}')
         memory_usage = FormatTool.number_to_size(process.memory_info().rss)
-        create_time = TimeTools.from_timestamp(process.create_time(), tz="UTC")
-        create_time = FormatTool.pretty_dt(create_time, with_year=False)
-        new_bar.append(BarElementDesc(content=f'start: {create_time}'))
+        create_time = process.create_time()
+        running_secs = TimeTools.us_time_now().timestamp() - create_time
+        running_time = TimeTools.precisedelta(running_secs, minimum_unit="minutes", format='%0.0f')
+        io_counter = process.io_counters()
+        total_read = FormatTool.number_to_size(io_counter.read_bytes)
+        total_write = FormatTool.number_to_size(io_counter.write_bytes)
+        new_bar.append(BarElementDesc(content=f'start: {running_time}'))
         new_bar.append(BarElementDesc(content=f'cpu: {cpu_percent}'))
         new_bar.append(BarElementDesc(content=f'memory: {memory_usage}'))
         new_bar.append(BarElementDesc(content=f'threads: {process.num_threads()}'))
+        new_bar.append(BarElementDesc(content=f'fds: {process.num_fds()}'))
+        new_bar.append(BarElementDesc(content=f'read: {total_read}'))
+        new_bar.append(BarElementDesc(content=f'write: {total_write}'))
         return new_bar
 
     def run(self):
