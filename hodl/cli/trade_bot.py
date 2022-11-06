@@ -8,6 +8,7 @@ import traceback
 from threading import Thread
 from collections import defaultdict
 import pytz
+import psutil
 from hodl.bot import AlertBot, ConversationBot
 from hodl.storage import *
 from hodl.store import Store
@@ -54,6 +55,38 @@ class MarketStatusThread(ThreadMixin):
             for name in sorted(self.broker_names)
         ]
         return bar
+
+
+class PsUtilThread(ThreadMixin):
+    BUFF_BAR = list()
+
+    def secondary_bar(self) -> list[BarElementDesc]:
+        return PsUtilThread.BUFF_BAR
+
+    @classmethod
+    def collect(cls):
+        new_bar = list()
+        pid = os.getpid()
+        process = psutil.Process(pid)
+        cpu_factor = process.cpu_percent(interval=30) / 100.0
+        cpu_percent = FormatTool.factor_to_percent(cpu_factor, fmt='{:.1%}')
+        memory_usage = FormatTool.number_to_size(process.memory_info().rss)
+        create_time = TimeTools.from_timestamp(process.create_time(), tz="UTC")
+        create_time = FormatTool.pretty_dt(create_time, with_year=False)
+        new_bar.append(BarElementDesc(content=f'start: {create_time}'))
+        new_bar.append(BarElementDesc(content=f'cpu: {cpu_percent}'))
+        new_bar.append(BarElementDesc(content=f'memory: {memory_usage}'))
+        new_bar.append(BarElementDesc(content=f'threads: {process.num_threads()}'))
+        return new_bar
+
+    def run(self):
+        super(PsUtilThread, self).run()
+        while True:
+            try:
+                PsUtilThread.BUFF_BAR = self.collect()
+            except Exception as e:
+                traceback.print_exc()
+                time.sleep(10)
 
 
 class HtmlWriterThread(ThreadMixin):
@@ -347,6 +380,7 @@ class Manager(ThreadMixin):
     MARKET_STATUS_THREAD: Thread = None
     HTML_THREAD: Thread = None
     JSON_THREAD: Thread = None
+    PSUTIL_THREAD: Thread = None
 
     @classmethod
     def monitor_alert(cls, stores: list[Store]):
@@ -464,6 +498,8 @@ class Manager(ThreadMixin):
             name='jsonWriter',
         )
         print(f'json刷新线程已启动')
+
+        Manager.PSUTIL_THREAD = PsUtilThread().start(name='psutil')
 
         while True:
             try:
