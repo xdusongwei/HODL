@@ -49,8 +49,8 @@ class MarketStatusThread(ThreadMixin):
     def primary_bar(self) -> list[BarElementDesc]:
         bar = [
             BarElementDesc(
-                content=f'{name}:✅{self.ok_counter[name]}❌{self.error_counter[name]}',
-                tooltip=f'上次成功时间: {FormatTool.pretty_dt(self.latest_time[name])}',
+                content=f'{name}:✅{self.ok_counter.get(name, 0)}❌{self.error_counter.get(name, 0)}',
+                tooltip=f'上次成功时间: {FormatTool.pretty_dt(self.latest_time.get(name))}',
             )
             for name in sorted(self.broker_names)
         ]
