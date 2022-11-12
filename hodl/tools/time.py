@@ -55,6 +55,10 @@ class TimeTools:
         return cls.date_to_ymd(day)
 
     @classmethod
+    def timedelta(cls, date: datetime, days=0):
+        return date + timedelta(days=days)
+
+    @classmethod
     def from_timestamp(cls, timestamp, tz=None) -> datetime:
         """
         秒单位时间戳

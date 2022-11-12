@@ -130,6 +130,22 @@ class StoreBase(ThreadMixin):
                     update_time=int(TimeTools.us_time_now().timestamp()),
                 )
                 row.save(con=db.conn)
+        quote_time = self.state.quote_time
+        low_price = self.state.quote_low_price
+        if quote_time and low_price:
+            quote_day = int(TimeTools.date_to_ymd(TimeTools.from_timestamp(quote_time), join=False))
+            if (quote_day, low_price, ) != runtime_state.low_price_compare:
+                runtime_state.low_price_compare = (quote_day, low_price, )
+                if db := self.db:
+                    row = QuoteLowHistoryRow(
+                        broker=self.store_config.broker,
+                        region=self.store_config.region,
+                        symbol=self.store_config.symbol,
+                        day=quote_day,
+                        low_price=low_price,
+                        update_time=int(TimeTools.us_time_now().timestamp()),
+                    )
+                    row.save(con=db.conn)
 
     @property
     def logger(self):

@@ -227,6 +227,16 @@ class StoreConfig(dict):
         return self.get('base_price_day_low', False)
 
     @property
+    def base_price_tumble_protect(self) -> bool:
+        """
+        这是一个控制开关，当启用 base_price_day_low 时：
+        如果此设置打开，那么昨收价和今日最低价两者取其最高的价格，作为一个基准价格参考价项目。
+        在证券暴跌时期，若采用到历史低点作为基准价格，很有可能增大执行计划全部卖飞的可能性，并且反弹时浪费了前几档卖出证券的套利价值，
+        所以通过此设置项目，避免取到当日或者前日收盘的历史低价作为基准价格。
+        """
+        return self.get('base_price_tumble_protect', False)
+
+    @property
     def lock_position(self) -> bool:
         """
         设置此项后，如果每日风控核对持仓数量不能跟配置 max_shares 一致，否则会触发风控异常

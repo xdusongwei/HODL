@@ -111,10 +111,11 @@ class RiskControl:
             elif diff := total_sell - total_buy:
                 if diff < 0:
                     raise RiskControlError(f'当日首单检查时,总买卖量差额({diff:,})出现了做空情形')
-                if order.is_buy and diff > 0 and order.limit_price and cash_amount / order.limit_price < diff:
-                    raise RiskControlError(f'当日首单检查时,现金无法完全买入总买卖量差量的股票: 差额{diff:,}股, 现金{cash_amount:,}')
-                if order.is_buy and order.limit_price and order.qty * order.limit_price > cash_amount:
-                    raise RiskControlError(f'当日首单检查时,限价单价值({order.qty * order.limit_price:,})超过现金额{cash_amount:,}')
+                if order.is_buy and order.limit_price:
+                    if diff > 0 and cash_amount / order.limit_price < diff:
+                        raise RiskControlError(f'当日首单检查时,现金无法完全买入总买卖量差量的股票: 差额{diff:,}股, 现金{cash_amount:,}')
+                    if order.qty * order.limit_price > cash_amount:
+                        raise RiskControlError(f'当日首单检查时,限价单价值({order.qty * order.limit_price:,})超过现金额{cash_amount:,}')
 
         order_day_times_limit = self.state.plan.plan_calc().table_size * 2 + 1
         if times >= order_day_times_limit:

@@ -2,7 +2,6 @@ import sys
 import asyncio
 from collections import defaultdict
 import httpx
-from pygame import mixer
 from rich import box
 from rich.panel import Panel
 from rich.text import Text
@@ -280,17 +279,23 @@ class GridApp(App, ConfigMixin, DataMixin):
 
     @classmethod
     def _init_bgm(cls):
-        try:
-            mixer.init()
-            GridApp.ENABLE_AUDIO = True
-            mixer.music.set_volume(0.5)
-        except Exception:
-            GridApp.ENABLE_AUDIO = False
+        for config in cls.CONFIGS:
+            if config.sleep_sound or config.trading_sound:
+                try:
+                    from pygame import mixer
+                    mixer.init()
+                    GridApp.ENABLE_AUDIO = True
+                    mixer.music.set_volume(0.5)
+                except Exception:
+                    GridApp.ENABLE_AUDIO = False
+                finally:
+                    break
 
     @classmethod
     def _set_up_bgm(cls, path):
         if not cls.ENABLE_AUDIO:
             return
+        from pygame import mixer
         if path:
             path = LocateTools.locate_file(path)
             mixer.music.load(path)

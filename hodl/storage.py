@@ -268,6 +268,49 @@ class AlarmRow:
         )
 
 
+@dataclass
+class QuoteLowHistoryRow:
+    broker: str
+    region: str
+    symbol: str
+    day: int
+    low_price: float
+    update_time: int
+    id: int = None
+
+    def save(self, con: sqlite3.Connection):
+        with con:
+            con.execute(
+                "REPLACE INTO `quote_low_history`(`broker`, `region`, `symbol`, `day`, `low_price`, `update_time`) "
+                "VALUES (?, ?, ?, ?, ?, ?);",
+                (
+                    self.broker,
+                    self.region,
+                    self.symbol,
+                    self.day,
+                    self.low_price,
+                    self.update_time,
+                ))
+
+    @classmethod
+    def query_by_symbol(
+            cls,
+            con: sqlite3.Connection,
+            broker: str,
+            region: str,
+            symbol: str,
+            begin_day: int,
+            end_day: int,
+    ) -> list['QuoteLowHistoryRow']:
+        cur = con.cursor()
+        cur.execute(
+            "SELECT `broker`, `region`, `symbol`, `day`, `low_price`, `update_time` FROM `quote_low_history` WHERE `broker` = ? AND `region` = ? AND `symbol` = ? AND `day` >= ? AND `day` < ? ORDER BY `day` DESC;",
+            (broker, region, symbol, begin_day, end_day, ))
+        items = cur.fetchall()
+        items = list(map(lambda item: QuoteLowHistoryRow(**item), items))
+        return items
+
+
 class LocalDb:
     def __init__(self, db_path):
         con = sqlite3.connect(db_path, check_same_thread=False, isolation_level=None)
@@ -334,6 +377,18 @@ class LocalDb:
                                         `update_time` INTEGER NOT NULL
                                         );''')
         cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_temp_base_price_main ON `temp_base_price` (`symbol`);')
+
+        cur.execute('''CREATE TABLE IF NOT EXISTS `quote_low_history` (
+                                                id INTEGER PRIMARY KEY,
+                                                `broker` TEXT NOT NULL,
+                                                `region` TEXT NOT NULL,
+                                                `symbol` TEXT NOT NULL,
+                                                `day` INTEGER NOT NULL,
+                                                `low_price` REAL NOT NULL,
+                                                `update_time` INTEGER NOT NULL
+                                                );''')
+        cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_quote_low_history_search ON `quote_low_history` (`broker`, `region`, `symbol`, `day`);')
+
         con.commit()
         self.conn = con
 
@@ -345,4 +400,5 @@ __all__ = [
     'OrderRow',
     'AlarmRow',
     'TempBasePriceRow',
+    'QuoteLowHistoryRow',
 ]
