@@ -24,6 +24,8 @@ direction = input('输入direction, 可以是BUY, SELL:\n')
 qty = int(input('输入订单数量qty:\n'))
 limit_price = float(input('输入订单限价, 0代表市价单:\n'))
 order_id = input('输入订单号/委托号/合同号:\n')
+filled_volume = input('(可选)输入已成交数量，不需要设置则直接回车:\n')
+filled_price = input('(可选)输入已成交均价，不需要设置则直接回车:\n')
 
 
 match broker:
@@ -48,8 +50,8 @@ order = Order.new_order(
     order_day=order_day,
 )
 order.order_id = order_id
-order.filled_qty = 0
-order.avg_price = 0
+order.filled_qty = int(filled_volume) if filled_volume else 0
+order.avg_price = float(filled_price) if filled_price else 0
 
 state_file = config.state_file_path
 assert state_file
