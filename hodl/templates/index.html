@@ -134,6 +134,12 @@
                                                                 距下次卖出 {{ FMT.factor_to_percent(row_tool.sell_percent, fmt="{:.1%}") }};
                                                             </span>
                                                             {% endif %}
+                                                            {% set cog = state.plan.cog(precision=store_config.precision) %}
+                                                            {% if cog is not none %}
+                                                            <span>
+                                                                卖出部分均价 {{ FMT.pretty_price(cog, config=store_config) }};
+                                                            </span>
+                                                            {% endif %}
                                                         </caption>
                                                         <thead>
                                                         <tr>

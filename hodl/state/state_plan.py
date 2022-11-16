@@ -331,6 +331,22 @@ class Plan(DictWrapper):
         buy_income = sum(order.filled_value for order in orders if order.is_buy)
         return int(sell_cost - buy_income)
 
+    def cog(self, precision: int) -> float | None:
+        """
+        卖出部分的质点价格
+        Returns
+        -------
+
+        """
+        orders = self.orders
+        sell_cost = sum(order.filled_value for order in orders if order.is_sell)
+        buy_income = sum(order.filled_value for order in orders if order.is_buy)
+        sell_value = sell_cost - buy_income
+        sell_volume = self.sell_volume - self.buy_volume
+        if sell_volume:
+            return FormatTool.adjust_precision(sell_value / sell_volume, precision)
+        return None
+
     @property
     def table_ready(self) -> bool:
         return not self.earning and self.base_price
