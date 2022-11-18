@@ -282,6 +282,11 @@ class StoreBase(ThreadMixin):
             tooltip += ', 上次买回价格'
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
 
+        if plan.base_price and not len(plan.orders):
+            anchor_content = '⚓'
+            tooltip = f'基准价格: {FormatTool.pretty_price(plan.base_price, config=config)}'
+            bar.append(BarElementDesc(content=anchor_content, tooltip=tooltip))
+
         if rework_price := state.plan.rework_price:
             rework_set = f'🔁'
             tooltip = f'已计划重置状态数据, 使套利持仓重新工作, 触发价格:{FormatTool.pretty_price(rework_price, config=config)}'

@@ -263,7 +263,6 @@ class Store(QuoteMixin, TradeMixin):
         symbol = store_config.symbol
         quote_pre_close = self.state.quote_pre_close
         low_price = self.state.quote_low_price
-        latest_price = self.state.quote_latest_price
         db = self.db
         match store_config.trade_strategy:
             case TradeStrategyEnum.HODL:
@@ -282,24 +281,24 @@ class Store(QuoteMixin, TradeMixin):
                 if store_config.base_price_day_low:
                     if low_price is not None:
                         price_list.append(low_price)
-                if store_config.base_price_day_low and store_config.base_price_tumble_protect:
-                    if db:
-                        end_day = TimeTools.us_time_now()
-                        begin_today = TimeTools.timedelta(end_day, days=-30)
-                        history_low = QuoteLowHistoryRow.query_by_symbol(
-                            con=db.conn,
-                            broker=store_config.broker,
-                            region=store_config.region,
-                            symbol=store_config.symbol,
-                            begin_day=int(TimeTools.date_to_ymd(begin_today, join=False)),
-                            end_day=int(TimeTools.date_to_ymd(end_day, join=False)),
-                        )
-                        if history_low:
-                            history_low = min(row.low_price for row in history_low)
-                            if latest_price < history_low:
-                                smaller = min(quote_pre_close, low_price)
-                                if smaller in price_list:
-                                    price_list.remove(smaller)
+                if store_config.base_price_day_low and store_config.base_price_tumble_protect and db and low_price:
+                    end_day = TimeTools.us_time_now()
+                    begin_today = TimeTools.timedelta(end_day, days=-30)
+                    history_low = QuoteLowHistoryRow.query_by_symbol(
+                        con=db.conn,
+                        broker=store_config.broker,
+                        region=store_config.region,
+                        symbol=store_config.symbol,
+                        begin_day=int(TimeTools.date_to_ymd(begin_today, join=False)),
+                        end_day=int(TimeTools.date_to_ymd(end_day, join=False)),
+                    )
+                    if history_low:
+                        last_day_low = history_low[-1].low_price
+                        history_low = min(row.low_price for row in history_low)
+                        if low_price <= history_low or last_day_low <= history_low:
+                            smaller = min(quote_pre_close, low_price)
+                            if smaller in price_list:
+                                price_list.remove(smaller)
                 price = min(price_list)
                 assert price > 0.0
                 return price
