@@ -283,7 +283,7 @@ class Store(QuoteMixin, TradeMixin):
                         price_list.append(low_price)
                 if store_config.base_price_day_low and store_config.base_price_tumble_protect and db and low_price:
                     end_day = TimeTools.us_time_now()
-                    begin_today = TimeTools.timedelta(end_day, days=-30)
+                    begin_today = TimeTools.timedelta(end_day, days=-store_config.tumble_protect_day_range)
                     history_low = QuoteLowHistoryRow.query_by_symbol(
                         con=db.conn,
                         broker=store_config.broker,
@@ -293,7 +293,7 @@ class Store(QuoteMixin, TradeMixin):
                         end_day=int(TimeTools.date_to_ymd(end_day, join=False)),
                     )
                     if history_low:
-                        last_day_low = history_low[-1].low_price
+                        last_day_low = history_low[0].low_price
                         history_low = min(row.low_price for row in history_low)
                         if low_price <= history_low or last_day_low <= history_low:
                             smaller = min(quote_pre_close, low_price)

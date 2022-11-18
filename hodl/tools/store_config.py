@@ -237,6 +237,10 @@ class StoreConfig(dict):
         return self.get('base_price_tumble_protect', False)
 
     @property
+    def tumble_protect_day_range(self) -> int:
+        return abs(self.get('tumble_protect_day_range', 30))
+
+    @property
     def lock_position(self) -> bool:
         """
         设置此项后，如果每日风控核对持仓数量不能跟配置 max_shares 一致，否则会触发风控异常

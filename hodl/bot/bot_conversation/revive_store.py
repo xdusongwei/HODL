@@ -79,6 +79,8 @@ class ReviveStore(TelegramBotBase):
                             f'已清除风控错误',
                             reply_markup=ReplyKeyboardRemove(),
                         )
+                    state.cash_day = None
+                    state.chip_day = None
                     store.start(name=f'Store([{region}]{symbol})')
                     update.message.reply_text(
                         f'已创建新线程',
