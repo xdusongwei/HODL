@@ -1,5 +1,4 @@
 import json
-import threading
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters
 from hodl.bot import TelegramBotBase
