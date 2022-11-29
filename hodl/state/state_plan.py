@@ -130,6 +130,15 @@ class Plan(DictWrapper):
         self.d['reworkPrice'] = v
 
     @property
+    def give_up_price(self):
+        return self.d.get('giveUpPrice', None)
+
+    @give_up_price.setter
+    def give_up_price(self, v: float):
+        assert v > 0.0
+        self.d['giveUpPrice'] = v
+
+    @property
     def orders(self) -> list[Order]:
         if 'orders' not in self.d:
             self.d['orders'] = list()
@@ -331,7 +340,7 @@ class Plan(DictWrapper):
         buy_income = sum(order.filled_value for order in orders if order.is_buy)
         return int(sell_cost - buy_income)
 
-    def cog(self, precision: int) -> float | None:
+    def cog(self, precision: int = None) -> float | None:
         """
         卖出部分的质点价格
         Returns
@@ -344,6 +353,8 @@ class Plan(DictWrapper):
         sell_value = sell_cost - buy_income
         sell_volume = self.sell_volume - self.buy_volume
         if sell_volume:
+            if precision is None:
+                precision = 3
             return FormatTool.adjust_precision(sell_value / sell_volume, precision)
         return None
 

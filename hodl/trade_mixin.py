@@ -340,10 +340,17 @@ class TradeMixin(StoreBase, ABC):
             higher = (1.0 + legal_rate) * base_price
         return lower <= target_price <= higher
 
+    @classmethod
+    def _buy_want(cls, buy_at: float, give_up_price) -> float:
+        if give_up_price:
+            return give_up_price
+        return buy_at
+
     def _buy_conditions_price_range(self, fire_state: StateFire):
         if not fire_state.enable_buy:
             return
         state = self.state
+        plan = state.plan
         store_config = self.store_config
         buy_order_rate = store_config.buy_order_rate
         legal_rate_daily = store_config.legal_rate_daily
@@ -352,15 +359,16 @@ class TradeMixin(StoreBase, ABC):
         latest_price = state.quote_latest_price
         profit_table = fire_state.profit_table
         row = profit_table.row_by_level(level=fire_state.new_buy_level)
+        want = self._buy_want(buy_at=row.buy_at, give_up_price=plan.give_up_price)
         limit_price = self._best_buy_price(
-            want=row.buy_at,
+            want=want,
             open_price=state.quote_open,
             latest_price=latest_price,
             is_earlier=fire_state.buy_open_earlier,
             precision=precision,
         )
         use_market_price = self._should_buy_market_price(
-            want=row.buy_at,
+            want=want,
             limit_price=limit_price,
             precision=precision,
             market_price_rate=fire_state.market_price_rate,

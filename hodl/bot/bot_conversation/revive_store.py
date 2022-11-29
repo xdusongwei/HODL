@@ -71,15 +71,16 @@ class ReviveStore(TelegramBotBase):
                     if state.risk_control_break:
                         state.risk_control_break = False
                         state.risk_control_detail = ''
-                        text = json.dumps(state, indent=4)
-                        with open(state_path, mode='w', encoding='utf8') as f:
-                            f.write(text)
+                        state.lsod = ''
                         update.message.reply_text(
                             f'已清除风控错误',
                             reply_markup=ReplyKeyboardRemove(),
                         )
                     state.cash_day = None
                     state.chip_day = None
+                    text = json.dumps(state, indent=4)
+                    with open(state_path, mode='w', encoding='utf8') as f:
+                        f.write(text)
                     store.start(name=f'Store([{region}]{symbol})')
                     update.message.reply_text(
                         f'已创建新线程',

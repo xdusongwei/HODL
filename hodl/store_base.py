@@ -273,14 +273,21 @@ class StoreBase(ThreadMixin):
             bar.append(BarElementDesc(content=lock_position, tooltip='持仓量核对已纳入风控，不可随时加仓'))
 
         factor_content = '☕'
+        tooltip = '超卖因子表，'
         if plan.prudent:
             factor_content = '🚀'
-        tooltip = '基准价格参考: 昨收价'
+            tooltip = '惜售因子表，'
+        tooltip += '基准价格参考: 昨收价'
         if config.base_price_day_low:
             tooltip += ', 当日最低价格'
         if config.base_price_last_buy:
             tooltip += ', 上次买回价格'
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
+
+        if price := plan.give_up_price:
+            factor_content = '🏳️'
+            tooltip = f'买回指定价格: {FormatTool.pretty_price(price, config=config)}'
+            bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
 
         if plan.base_price and not len(plan.orders):
             anchor_content = '⚓'

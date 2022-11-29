@@ -184,17 +184,19 @@ class TigerApi(BrokerApiBase):
             )
 
     @classmethod
-    def market_status(cls, client: QuoteClient) -> dict[str, str]:
-        market_status_list: list[MarketStatus] = client.get_market_status(Market.ALL)
-        result = {ms.market: ms.trading_status for ms in market_status_list}
-        return result
+    def _transform_trading_status(cls, status: str) -> str:
+        if status == 'EARLY_CLOSED':
+            return 'CLOSED'
+        return status
 
     def fetch_market_status(self) -> dict:
         client = self.quote_client
         with self.MARKET_STATUS_BUCKET:
             market_status_list: list[MarketStatus] = client.get_market_status(Market.ALL)
         return {
-            BrokerTradeType.STOCK.value: {ms.market: ms.trading_status for ms in market_status_list},
+            BrokerTradeType.STOCK.value: {
+                ms.market: self._transform_trading_status(ms.trading_status) for ms in market_status_list
+            },
         }
 
     def fetch_quote(self) -> Quote:
