@@ -59,9 +59,11 @@ class EarningRow:
         return item or 0
 
     @classmethod
-    def latest_earning_by_symbol(cls, con: sqlite3.Connection, symbol: str):
+    def latest_earning_by_symbol(cls, con: sqlite3.Connection, symbol: str, days: int = 14):
+        begin_date = TimeTools.utc_now() + timedelta(days=-days)
+        begin_day = int(begin_date.strftime('%Y%m%d'))
         cur = con.cursor()
-        cur.execute("SELECT * FROM `earning` WHERE `symbol` = ? AND `buyback_price` IS NOT NULL ORDER BY `day` DESC LIMIT 1;", (symbol, ))
+        cur.execute("SELECT * FROM `earning` WHERE `symbol` = ? AND `buyback_price` IS NOT NULL AND `day` >= ? ORDER BY `day` DESC LIMIT 1;", (symbol, begin_day, ))
         row = cur.fetchone()
         if row:
             item = EarningRow(**row)
