@@ -306,8 +306,13 @@ class StoreBase(ThreadMixin):
 
         if rate := config.get('marketPriceRate') or config.market_price_rate:
             market_price_set = '⚡'
-            market_price_set += FormatTool.factor_to_percent(rate)
-            bar.append(BarElementDesc(content=market_price_set, tooltip='市场价格偏离超过预期幅度触发市价单'))
+            tooltip = f'市场价格偏离超过预期幅度{FormatTool.factor_to_percent(rate)}触发市价单'
+            bar.append(BarElementDesc(content=market_price_set, tooltip=tooltip))
+
+        if rate := config.vix_tumble_protect:
+            content = '🛡️'
+            tooltip = f'VIX当日最高到达{FormatTool.pretty_usd(rate, precision=2)}时不会下达卖出#1订单'
+            bar.append(BarElementDesc(content=content, tooltip=tooltip))
 
         battery = '🔋'
         chips = plan.total_chips

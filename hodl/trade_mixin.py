@@ -170,6 +170,14 @@ class TradeMixin(StoreBase, ABC):
         if plan.all_today_sell_completed:
             fire_state.enable_sell = True
 
+        vix_limit = self.store_config.vix_tumble_protect
+        if fire_state.enable_sell and not plan.current_sell_level() and vix_limit is not None:
+            vix_quote = self.broker_proxy.query_vix()
+            if vix_quote is None:
+                fire_state.enable_sell = False
+            elif vix_quote.day_high >= vix_limit:
+                fire_state.enable_sell = False
+
     def _sell_conditions_check_qty(self, fire_state: StateFire):
         state = self.state
         plan = state.plan

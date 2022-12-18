@@ -11,6 +11,15 @@ class Quote:
     time: datetime
     status: str
     day_low: float = None
+    day_high: float = None
 
 
-__all__ = ['Quote', ]
+@dataclass
+class VixQuote:
+    latest_price: float
+    day_low: float
+    day_high: float
+    time: datetime
+
+
+__all__ = ['Quote', 'VixQuote', ]

@@ -94,7 +94,9 @@ class FormatTool:
         )
 
     @classmethod
-    def factor_to_percent(cls, v: None | int | float, fmt: str = '{:.0%}') -> str:
+    def factor_to_percent(cls, v: None | int | float, fmt: str = '{:.0%}', base_100: bool = True) -> str:
+        if v is not None and not base_100:
+            v -= 1.0
         s = humanize.clamp(v, format=fmt)
         if s is None:
             return '--%'

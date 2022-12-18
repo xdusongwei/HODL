@@ -38,6 +38,15 @@ class ProfitRow:
     def __repr__(self):
         return self.__str__()
 
+    def full_report(self):
+        return f'<' \
+               f'Level{self.level} ' \
+               f'sell@{FMT.pretty_usd(self.sell_at, unit="")} ' \
+               f'buy@{FMT.pretty_usd(self.buy_at, unit="")} ' \
+               f'float rate: {FMT.factor_to_percent(self.float_rate, fmt="{:.2%}", base_100=False)} ' \
+               f'total rate: {FMT.factor_to_percent(self.total_rate, fmt="{:.2%}", base_100=False)} ' \
+               f'shares:{self.shares:,}>'
+
 
 class ProfitTable(list):
     def __init__(self, *args, **kwargs):

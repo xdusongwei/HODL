@@ -284,7 +284,7 @@ class Store(QuoteMixin, TradeMixin):
                 if store_config.base_price_day_low and store_config.base_price_tumble_protect and db and low_price:
                     end_day = TimeTools.us_time_now()
                     begin_today = TimeTools.timedelta(end_day, days=-store_config.tumble_protect_day_range)
-                    history_low = QuoteLowHistoryRow.query_by_symbol(
+                    history_rows = QuoteLowHistoryRow.query_by_symbol(
                         con=db.conn,
                         broker=store_config.broker,
                         region=store_config.region,
@@ -292,13 +292,23 @@ class Store(QuoteMixin, TradeMixin):
                         begin_day=int(TimeTools.date_to_ymd(begin_today, join=False)),
                         end_day=int(TimeTools.date_to_ymd(end_day, join=False)),
                     )
-                    if history_low:
-                        last_day_low = history_low[0].low_price
-                        history_low = min(row.low_price for row in history_low)
-                        if low_price <= history_low or last_day_low <= history_low:
+
+                    # 取自今天到近2个交易日的最低价，即共计最多3日的每日最低价格
+                    # 如果其中有一天比近期历史最低价格接近
+                    # 则需要从参考基准价格中去除日低、昨收两项中较低的价格
+                    recent_low_price = [low_price, ]
+                    for offset in range(2):
+                        if len(history_rows) > offset:
+                            recent_low_price.append(history_rows[offset].low_price)
+                    if history_rows:
+                        history_low = min(row.low_price for row in history_rows)
+                        for price in recent_low_price:
+                            if price > history_low * 1.005:
+                                continue
                             smaller = min(quote_pre_close, low_price)
                             if smaller in price_list:
                                 price_list.remove(smaller)
+                            break
                 price = min(price_list)
                 assert price > 0.0
                 return price

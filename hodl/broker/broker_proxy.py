@@ -1,7 +1,7 @@
-from typing import Type
 import multiprocessing.pool
 from hodl.broker import *
 from hodl.exception_tools import *
+from hodl.quote import *
 from hodl.state import *
 from hodl.tools import *
 
@@ -62,23 +62,51 @@ class BrokerProxy:
             raise exc
         raise QuoteScheduleOver
 
+    @classmethod
+    def _market_status_thread(cls, b: BrokerApiBase) -> tuple[Type[BrokerApiBase], dict[str, dict[str, str]]]:
+        d = dict()
+        if any(meta for meta in b.META if meta.market_status_regions):
+            try:
+                d |= b.fetch_market_status()
+            except Exception as e:
+                d |= {
+                    '_marketStatusException': {
+                        'detail': str(e),
+                    },
+                }
+        if any(meta for meta in b.META if meta.vix_symbol):
+            vix_symbol = [meta.vix_symbol for meta in b.META if meta.vix_symbol][0]
+            try:
+                broker = type(b)(
+                    broker_config=b.broker_config,
+                    symbol=vix_symbol,
+                    name='VIX',
+                    logger=b.logger,
+                    session=b.http_session,
+                )
+                quote = broker.fetch_quote()
+                d |= {
+                    'vix': {
+                        'latest': quote.latest_price,
+                        'dayHigh': quote.day_high,
+                        'dayLow': quote.day_low,
+                        'time': quote.time.timestamp(),
+                    }
+                }
+            except Exception as e:
+                d |= {
+                    '_vixException': {
+                        'detail': str(e),
+                    },
+                }
+        return type(b), d
+
     def _pull_market_status(self):
         if not self.market_status_brokers:
             return None
 
-        def _work(b: BrokerApiBase) -> tuple[Type[BrokerApiBase], dict[str, dict[str, str]]]:
-            try:
-                return type(b), b.fetch_market_status()
-            except Exception as e:
-                d = {
-                    '_exception': {
-                        'detail': str(e),
-                    },
-                }
-                return type(b), d
-
         results: list[tuple[Type[BrokerApiBase], dict[str, dict[str, str]]]] = \
-            BrokerProxy.THREAD_POOL.map(_work, self.market_status_brokers)
+            BrokerProxy.THREAD_POOL.map(BrokerProxy._market_status_thread, self.market_status_brokers)
         all_status = dict(results)
         BrokerProxy.MARKET_STATUS = all_status
         return all_status
@@ -103,6 +131,31 @@ class BrokerProxy:
         else:
             raise BrokerMismatchError(f'配置的所有broker没有任何可支持该品种获取其对应的市场状态')
 
+    def _query_vix(self):
+        market_status_dict = self.MARKET_STATUS.copy()
+        store_config = self.store_config
+        for broker in self.market_status_brokers:
+            for meta in broker.META:
+                if meta.trade_type.value != store_config.trade_type:
+                    continue
+                if broker.BROKER_NAME != store_config.broker and not meta.share_market_state:
+                    continue
+                if store_config.region not in meta.market_status_regions:
+                    continue
+                d_vix = market_status_dict \
+                    .get(type(broker), dict()) \
+                    .get('vix', dict())
+                if d_vix:
+                    vix_quote = VixQuote(
+                        latest_price=float(d_vix['latest']),
+                        day_high=float(d_vix['dayHigh']),
+                        day_low=float(d_vix['dayLow']),
+                        time=TimeTools.from_timestamp(d_vix['time'], tz=TimeTools.region_to_tz(store_config.region)),
+                    )
+                    return vix_quote
+        else:
+            raise BrokerMismatchError(f'配置的所有broker没有VIX数据')
+
     # refresh all brokers market_status
     def pull_market_status(self):
         return self._pull_market_status()
@@ -113,6 +166,9 @@ class BrokerProxy:
 
     def query_market_status(self):
         return self._query_market_status()
+
+    def query_vix(self):
+        return self._query_vix()
 
     def place_order(self, order: Order):
         broker = self._find_trade_broker()
@@ -179,7 +235,7 @@ class BrokerProxy:
                 session=self.runtime_state.http_session,
             )
             for t, d in broker_info
-            if any(meta for meta in t.META if meta.market_status_regions)
+            if any(meta for meta in t.META if meta.market_status_regions or meta.vix_symbol)
         ]
         self.market_status_brokers = brokers
 

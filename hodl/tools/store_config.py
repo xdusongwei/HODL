@@ -241,6 +241,16 @@ class StoreConfig(dict):
         return abs(self.get('tumble_protect_day_range', 30))
 
     @property
+    def vix_tumble_protect(self) -> float:
+        """
+        根据vix上限设置保护持仓不被贱卖。
+        当持仓计划为空时，这里设定30，
+        表示当vix指数当日最高>=30时，不会开仓卖出。
+        这个功能仅在async_market_status开启时有效工作，否则会引起不能下单问题。
+        """
+        return self.get('vix_tumble_protect', None)
+
+    @property
     def lock_position(self) -> bool:
         """
         设置此项后，如果每日风控核对持仓数量不能跟配置 max_shares 一致，否则会触发风控异常

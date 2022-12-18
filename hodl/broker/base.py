@@ -29,6 +29,7 @@ class ApiMeta:
     允许的市场状态国家代码集合；
     允许的行情信息国家代码集合；
     允许的交易品种国家代码集合；
+    broker支持获取vix波动率的代码；
     """
     trade_type: BrokerTradeType = field(default=BrokerTradeType.STOCK)
     share_market_state: bool = field(default=False)
@@ -36,6 +37,7 @@ class ApiMeta:
     market_status_regions: set[str] = field(default_factory=set)
     quote_regions: set[str] = field(default_factory=set)
     trade_regions: set[str] = field(default_factory=set)
+    vix_symbol: str = field(default=None)
 
 
 class BrokerApiMixin(abc.ABC):
@@ -97,8 +99,9 @@ class BrokerApiMixin(abc.ABC):
     def on_init(self):
         """
         每当创建了一个持仓对象后，此方法会被调用。
-        这里的场景多用于执行券商的操作动作，比如必须有且只有一次去调用行情订阅接口；
+        这里的场景多用于执行券商的操作动作，比如正式使用前必须去调用行情订阅接口；
         而BrokerApiBase.__post_init__多用于构建对象的成员变量。
+        这两者不能混淆，例如测试时on_init通常不会触发，避免测试时接触到券商系统。
         """
         pass
 

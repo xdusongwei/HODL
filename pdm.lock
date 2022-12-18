@@ -414,7 +414,7 @@ dependencies = [
 
 [[package]]
 name = "python-telegram-bot"
-version = "13.14"
+version = "13.15"
 requires_python = ">=3.7"
 summary = "We have made you a wrapper you can't refuse"
 dependencies = [
@@ -546,7 +546,7 @@ dependencies = [
 
 [[package]]
 name = "tigeropen"
-version = "2.2.1"
+version = "2.2.6"
 summary = "TigerBrokers Open API"
 dependencies = [
     "cryptography==37.0.2",
@@ -659,7 +659,7 @@ dependencies = [
 ]
 
 [metadata]
-lock_version = "4.0"
+lock_version = "4.1"
 content_hash = "sha256:ee20f9e0445f02956bf92251de1d3c4f10cf3ef10825a6fe18aa80411679b885"
 
 [metadata.files]
@@ -1161,9 +1161,9 @@ content_hash = "sha256:ee20f9e0445f02956bf92251de1d3c4f10cf3ef10825a6fe18aa80411
     {url = "https://mirrors.aliyun.com/pypi/packages/36/7a/87837f39d0296e723bb9b62bbb257d0355c7f6128853c78955f57342a56d/python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
     {url = "https://mirrors.aliyun.com/pypi/packages/4c/c4/13b4776ea2d76c115c1d1b84579f3764ee6d57204f6be27119f13a61d0a9/python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
 ]
-"python-telegram-bot 13.14" = [
-    {url = "https://mirrors.aliyun.com/pypi/packages/4c/b1/748afa9e63427c8986b69a8dbbb75281c626191125b73826713092b30f3c/python_telegram_bot-13.14-py3-none-any.whl", hash = "sha256:79abc66355af2310bbaaf7f41746230b996434e287f21f27070c92978dc0964f"},
-    {url = "https://mirrors.aliyun.com/pypi/packages/7b/8a/b9d8cbeee87e0d98e23081b755253b59ab8fa7b3ef7bef6f111a82d20c81/python-telegram-bot-13.14.tar.gz", hash = "sha256:e9391d43eb1123de2677a9d24ea878a9d5327d65b2419afba653f476d26aecc3"},
+"python-telegram-bot 13.15" = [
+    {url = "https://mirrors.aliyun.com/pypi/packages/0d/bc/89cd44af162c3f5bf1bd50f4beb9f47353f027552e290899b55723746509/python-telegram-bot-13.15.tar.gz", hash = "sha256:b4047606b8081b62bbd6aa361f7ca1efe87fa8f1881ec9d932d35844bf57a154"},
+    {url = "https://mirrors.aliyun.com/pypi/packages/14/db/29356a2f43052af470993fdf2083ca8bf28da4586da836aa609de2d86a06/python_telegram_bot-13.15-py3-none-any.whl", hash = "sha256:06780c258d3f2a3c6c79a7aeb45714f4cd1dd6275941b7dc4628bba64fddd465"},
 ]
 "pytz 2022.1" = [
     {url = "https://mirrors.aliyun.com/pypi/packages/2f/5f/a0f653311adff905bbcaa6d3dfaf97edcf4d26138393c6ccd37a484851fb/pytz-2022.1.tar.gz", hash = "sha256:1e760e2fe6a8163bc0b3d9a19c4f84342afa0a2affebfaa84b01b978a02ecaa7"},
@@ -1292,8 +1292,8 @@ content_hash = "sha256:ee20f9e0445f02956bf92251de1d3c4f10cf3ef10825a6fe18aa80411
     {url = "https://mirrors.aliyun.com/pypi/packages/28/f7/4b9d17a2b53a46a95781106ffe29a7414dc8760d542bd430196d201d1a91/textual-0.1.18-py3-none-any.whl", hash = "sha256:59110935418c597c1c50876edfd6799ad5b59d51a91ca6744fc45e36eb89638e"},
     {url = "https://mirrors.aliyun.com/pypi/packages/8c/d1/c228993e8a21e24bb43a0376b2901b6f3f2033dae13e7f76d1103bb9b8a3/textual-0.1.18.tar.gz", hash = "sha256:b2883f8ed291de58b9aa73de6d24bbaae0174687487458a4eb2a7c188a2acf23"},
 ]
-"tigeropen 2.2.1" = [
-    {url = "https://mirrors.aliyun.com/pypi/packages/bb/f9/4b67c6b537d475b05a3bd5587e4cefc3053403c3a56f7f8da43de3012525/tigeropen-2.2.1.tar.gz", hash = "sha256:ed5c32c7bd7164d2060fb0bd554c3b919d720ea5e8a768c78522d7275c6a5d9d"},
+"tigeropen 2.2.6" = [
+    {url = "https://mirrors.aliyun.com/pypi/packages/0f/42/5168fd5d489ff43320e56f64a87d655844cfe1a04fa7719d5efd262fcb29/tigeropen-2.2.6.tar.gz", hash = "sha256:1bed3be7fb0f59c528a36f7c781132a6ff04848e07e5abbde247c66d5ec8579d"},
 ]
 "toml 0.10.2" = [
     {url = "https://mirrors.aliyun.com/pypi/packages/44/6f/7120676b6d73228c96e17f1f794d8ab046fc910d781c8d151120c3f1569e/toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},

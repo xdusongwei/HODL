@@ -97,6 +97,7 @@ class TigerApi(BrokerApiBase):
             market_status_regions={'US', 'HK', 'CN', },
             quote_regions={'US', 'HK', 'CN', },
             trade_regions={'US', 'HK', },
+            vix_symbol='VIX',
         ),
     ]
 
@@ -164,13 +165,22 @@ class TigerApi(BrokerApiBase):
             .dt.tz_localize('UTC') \
             .dt.tz_convert('US/Eastern')
         for index, row in pd.iterrows():
-            us_date, pre_close, open_price, latest_price, status, low_price = \
-                row['us_date'], row['pre_close'], row['open'], row['latest_price'], row['status'], row['low']
+            us_date, pre_close, open_price, latest_price, status, low_price, high_price = (
+                row['us_date'],
+                row['pre_close'],
+                row['open'],
+                row['latest_price'],
+                row['status'],
+                row['low'],
+                row['high'],
+            )
+
             try:
                 assert pre_close > 0.1
                 assert open_price > 0.1
                 assert latest_price > 0.1
                 assert low_price > 0.1
+                assert high_price > 0.1
             except Exception as e:
                 raise QuoteFieldError(e)
             return Quote(
@@ -181,6 +191,7 @@ class TigerApi(BrokerApiBase):
                 status=status,
                 time=us_date,
                 day_low=low_price,
+                day_high=high_price,
             )
 
     @classmethod
