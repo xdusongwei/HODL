@@ -396,6 +396,7 @@ class Manager(ThreadMixin):
     HTML_THREAD: Thread = None
     JSON_THREAD: Thread = None
     PSUTIL_THREAD: Thread = None
+    PACKAGE_LIST: list[dict] = list()
 
     @classmethod
     def monitor_alert(cls, stores: list[Store]):
@@ -456,6 +457,10 @@ class Manager(ThreadMixin):
         bar.append(BarElementDesc(content=f'os: {platform.system()}'))
         bar.append(BarElementDesc(content=f'arch: {platform.machine()}'))
         bar.append(BarElementDesc(content=f'python: {platform.python_version()}'))
+        for d in Manager.PACKAGE_LIST:
+            name = d['name']
+            version = d['version']
+            bar.append(BarElementDesc(content=f'{name}: {version}'))
         return bar
 
     def run(self):
@@ -551,5 +556,10 @@ class Manager(ThreadMixin):
                 return
 
 
-instance = Manager()
-instance.run()
+try:
+    import subprocess
+    j = subprocess.run(['pdm', 'list', '--json'], capture_output=True).stdout
+    Manager.PACKAGE_LIST = sorted(FormatTool.json_loads(j), key=lambda i: i['name'].lower())
+finally:
+    instance = Manager()
+    instance.run()

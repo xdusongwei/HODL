@@ -16,8 +16,15 @@ class BasePriceMixin(StoreBase, ABC):
         db = self.db
         match store_config.trade_strategy:
             case TradeStrategyEnum.HODL:
+                if db:
+                    con = db.conn
+                    base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
+                    if base_price_row and base_price_row.price > 0:
+                        return base_price_row.price
+
                 if state.ta_tumble_protect_alert_price is not None:
                     return state.ta_tumble_protect_alert_price
+
                 price_list = [quote_pre_close, ]
                 if db:
                     con = db.conn
