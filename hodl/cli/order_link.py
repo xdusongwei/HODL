@@ -3,7 +3,6 @@
 例如发出下单指令发生等待超时引发崩溃，事后人工核对该订单在券商系统中已提交，决定停服后使用该脚本补挂订单信息。
 需要填写基本的订单属性，这些待补充的信息一般在日志中会有事前记录可供查找，后面系统刷新订单时会自行补充其他字段信息。
 """
-import json
 from hodl.state import *
 from hodl.tools import *
 from hodl.broker import *
@@ -59,14 +58,14 @@ print('状态文件位置:', state_file)
 
 with open(state_file, 'r', encoding='utf8') as f:
     text = f.read()
-state = json.loads(text)
+state = FormatTool.json_loads(text)
 state = State(state)
 state.plan.append_order(order)
 
-print(json.dumps(state.plan.d, indent=2))
+print(FormatTool.json_dumps(state.plan.d))
 input('确认?')
 
-config_text = json.dumps(state, indent=4)
+config_text = FormatTool.json_dumps(state)
 with open(state_file, 'w', encoding='utf8') as f:
     f.write(config_text)
 

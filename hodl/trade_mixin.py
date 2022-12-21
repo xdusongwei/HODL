@@ -1,4 +1,3 @@
-import json
 from abc import ABC
 from datetime import time
 from expiringdict import ExpiringDict
@@ -22,7 +21,7 @@ class TradeMixin(StoreBase, ABC):
             self._get_order(order=order)
         if db := self.db:
             unique_id = order.unique_id
-            text = json.dumps(order.d, indent=4, sort_keys=True)
+            text = FormatTool.json_dumps(order.d)
             if self.__ORDER_DUMPS.get(unique_id) != text:
                 row = OrderRow(
                     unique_id=unique_id,
@@ -172,10 +171,10 @@ class TradeMixin(StoreBase, ABC):
 
         vix_limit = self.store_config.vix_tumble_protect
         if fire_state.enable_sell and not plan.current_sell_level() and vix_limit is not None:
-            vix_quote = self.broker_proxy.query_vix()
-            if vix_quote is None:
+            ta_vix_high = state.ta_vix_high
+            if ta_vix_high is None:
                 fire_state.enable_sell = False
-            elif vix_quote.day_high >= vix_limit:
+            elif ta_vix_high >= vix_limit:
                 fire_state.enable_sell = False
 
     def _sell_conditions_check_qty(self, fire_state: StateFire):

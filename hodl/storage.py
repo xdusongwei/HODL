@@ -1,4 +1,3 @@
-import json
 from datetime import timedelta
 from dataclasses import dataclass, field
 import sqlite3
@@ -140,7 +139,7 @@ class OrderRow:
     def summary(self) -> str:
         if not self.content:
             return f'空白订单 id={self.id}'
-        d: dict = json.loads(self.content)
+        d: dict = FormatTool.json_loads(self.content)
         order = Order(d)
         time_str = FormatTool.pretty_dt(
             v=order.create_timestamp,

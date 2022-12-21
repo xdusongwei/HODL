@@ -1,4 +1,5 @@
 import base58
+import orjson
 import xxhash
 from decimal import Decimal
 from datetime import datetime
@@ -118,6 +119,18 @@ class FormatTool:
             slice_key = slice_key.decode("utf8")
         key = "{}{}".format(prefix, slice_key)
         return key
+
+    @classmethod
+    def json_dumps(cls, d: list | dict, binary=False, default=None) -> bytes | str:
+        option = orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS
+        b = orjson.dumps(d, option=option, default=default)
+        if not binary:
+            return b.decode('utf8')
+        return b
+
+    @classmethod
+    def json_loads(cls, b: bytes | str) -> dict:
+        return orjson.loads(b)
 
 
 __all__ = ['FormatTool', ]

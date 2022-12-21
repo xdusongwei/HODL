@@ -1,5 +1,4 @@
 import os
-import json
 import threading
 import requests
 from hodl.risk_control import *
@@ -87,7 +86,7 @@ class StoreBase(ThreadMixin):
 
     @classmethod
     def read_state(cls, content: str):
-        state = json.loads(content)
+        state = FormatTool.json_loads(content)
         return State.new(state)
 
     def load_state(self):
@@ -110,7 +109,7 @@ class StoreBase(ThreadMixin):
         if not self.ENABLE_STATE_FILE:
             return
         runtime_state = self.runtime_state
-        text = json.dumps(self.state, indent=4, sort_keys=True)
+        text = FormatTool.json_dumps(self.state)
         day = TimeTools.us_time_now()
         today = TimeTools.date_to_ymd(day)
         if (today, text,) != runtime_state.state_compare:
@@ -292,6 +291,10 @@ class StoreBase(ThreadMixin):
         if plan.base_price and not len(plan.orders):
             anchor_content = '⚓'
             tooltip = f'基准价格: {FormatTool.pretty_price(plan.base_price, config=config)}'
+            if state.ta_tumble_protect_flag:
+                tooltip += f', 历史最低价格已触发暴跌保护'
+                tooltip += f', MA5{FormatTool.pretty_price(state.ta_tumble_protect_ma5, config=config)}'
+                tooltip += f', MA10{FormatTool.pretty_price(state.ta_tumble_protect_ma10, config=config)}'
             bar.append(BarElementDesc(content=anchor_content, tooltip=tooltip))
 
         if rework_price := state.plan.rework_price:
@@ -310,8 +313,10 @@ class StoreBase(ThreadMixin):
             bar.append(BarElementDesc(content=market_price_set, tooltip=tooltip))
 
         if rate := config.vix_tumble_protect:
+            vix_high = state.ta_vix_high
             content = '🛡️'
             tooltip = f'VIX当日最高到达{FormatTool.pretty_usd(rate, precision=2)}时不会下达卖出#1订单'
+            tooltip += f', VIX当日最高:{FormatTool.pretty_usd(vix_high, precision=2)}'
             bar.append(BarElementDesc(content=content, tooltip=tooltip))
 
         battery = '🔋'
@@ -404,7 +409,7 @@ class StoreBase(ThreadMixin):
             'recentEarnings': recent_earnings,
             'monthlyEarnings': monthly_list,
         }
-        file_body = json.dumps(file_dict, indent=2, sort_keys=True)
+        file_body = FormatTool.json_dumps(file_dict)
         with open(earning_json_path, mode='w', encoding='utf8') as f:
             f.write(file_body)
 

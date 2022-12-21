@@ -1,4 +1,4 @@
-import json
+from hodl.tools import FormatTool
 
 
 class DictWrapper:
@@ -8,11 +8,11 @@ class DictWrapper:
         self.d = d
 
     def copy(self):
-        d = json.loads(json.dumps(self.d))
+        d = FormatTool.json_loads(FormatTool.json_dumps(self.d))
         return self.__class__(d)
 
     def change_d(self, wrapper: 'DictWrapper'):
-        d = json.loads(json.dumps(wrapper.d))
+        d = FormatTool.json_loads(FormatTool.json_dumps(wrapper.d))
         self.d.clear()
         self.d.update(d)
 

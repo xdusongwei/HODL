@@ -5,7 +5,6 @@ https://www.okx.com/docs-v5/zh/#rest-api
 import base64
 import datetime
 import hmac
-import json
 from urllib.parse import urljoin
 import requests
 from hodl.broker.base import *
@@ -58,7 +57,7 @@ class OkxRestApi(BrokerApiBase):
         if data is None:
             data = ''
         elif isinstance(data, dict):
-            data = json.dumps(data, sort_keys=True, indent=2)
+            data = FormatTool.json_dumps(data)
         site = okx_config.get('site')
         url = urljoin(site, path)
         api_key = okx_config.get('api_key')

@@ -268,6 +268,46 @@ class State(dict):
             rate = round(latest / pre_close - 1.0, 4)
         return rate
 
+    @property
+    def ta_vix_high(self) -> float:
+        return self._get_snapshot('ta', 'vixHigh')
+
+    @ta_vix_high.setter
+    def ta_vix_high(self, v: float):
+        self._set_snapshot('ta', 'vixHigh', v)
+
+    @property
+    def ta_tumble_protect_flag(self) -> bool:
+        return self._get_snapshot('ta', 'tumbleProtectFlag')
+
+    @ta_tumble_protect_flag.setter
+    def ta_tumble_protect_flag(self, v: bool):
+        self._set_snapshot('ta', 'tumbleProtectFlag', v)
+
+    @property
+    def ta_tumble_protect_alert_price(self) -> float:
+        return self._get_snapshot('ta', 'tumbleProtectAlertPrice')
+
+    @ta_tumble_protect_alert_price.setter
+    def ta_tumble_protect_alert_price(self, v: float):
+        self._set_snapshot('ta', 'tumbleProtectAlertPrice', v)
+
+    @property
+    def ta_tumble_protect_ma5(self) -> float:
+        return self._get_snapshot('ta', 'tumbleProtectMa5')
+
+    @ta_tumble_protect_ma5.setter
+    def ta_tumble_protect_ma5(self, v: float):
+        self._set_snapshot('ta', 'tumbleProtectMa5', v)
+
+    @property
+    def ta_tumble_protect_ma10(self) -> float:
+        return self._get_snapshot('ta', 'tumbleProtectMa10')
+
+    @ta_tumble_protect_ma10.setter
+    def ta_tumble_protect_ma10(self, v: float):
+        self._set_snapshot('ta', 'tumbleProtectMa10', v)
+
 
 __all__ = [
     'State',

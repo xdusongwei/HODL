@@ -1,9 +1,9 @@
-import json
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters
 from hodl.bot import TelegramBotBase
 from hodl.state import *
 from hodl.thread_mixin import *
+from hodl.tools import *
 
 
 class ReviveStore(TelegramBotBase):
@@ -66,7 +66,7 @@ class ReviveStore(TelegramBotBase):
 
                     with open(state_path, mode='r', encoding='utf8') as f:
                         text = f.read()
-                        state = json.loads(text)
+                        state = FormatTool.json_loads(text)
                     state = State(state)
                     if state.risk_control_break:
                         state.risk_control_break = False
@@ -78,7 +78,7 @@ class ReviveStore(TelegramBotBase):
                         )
                     state.cash_day = None
                     state.chip_day = None
-                    text = json.dumps(state, indent=4)
+                    text = FormatTool.json_dumps(state)
                     with open(state_path, mode='w', encoding='utf8') as f:
                         f.write(text)
                     store.start(name=f'Store([{region}]{symbol})')

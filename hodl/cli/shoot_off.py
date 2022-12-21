@@ -3,7 +3,6 @@
 以换取比下单计划中较高的价格全部买回，
 达到在预测标的大幅上涨前尽快全部买回，使得下次卖出开仓的基准价格变高，防止未来剧烈波动全部卖飞或短期无法套利的目的。
 """
-import json
 from hodl.plan_calc import ProfitRow
 from hodl.state import *
 from hodl.store_base import StoreBase
@@ -27,7 +26,7 @@ print('状态文件路径:', state_file)
 
 with open(state_file, 'r', encoding='utf8') as f:
     text = f.read()
-state = json.loads(text)
+state = FormatTool.json_loads(text)
 state = State(state)
 
 plan = state.plan
@@ -86,7 +85,7 @@ for row in rows:
 
 input('确认?')
 
-config_text = json.dumps(state, indent=4)
+config_text = FormatTool.json_dumps(state)
 with open(state_file, 'w', encoding='utf8') as f:
     f.write(config_text)
 

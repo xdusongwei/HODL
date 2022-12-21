@@ -4,12 +4,13 @@ from hodl.state import *
 from hodl.risk_control import *
 from hodl.quote_mixin import *
 from hodl.trade_mixin import *
+from hodl.base_price_mixin import *
 from hodl.storage import *
 from hodl.exception_tools import *
 from hodl.tools import FormatTool as FMT
 
 
-class Store(QuoteMixin, TradeMixin):
+class Store(QuoteMixin, TradeMixin, BasePriceMixin):
     def booting_check(self):
         try:
             self.logger.info(f'检查券商系统对接')
@@ -247,7 +248,7 @@ class Store(QuoteMixin, TradeMixin):
                 rework_plan = Plan.new_plan(
                     store_config=store_config,
                 )
-                rework_plan.base_price = self._base_price()
+                rework_plan.base_price = self.calc_base_price()
                 row = self.current_table().row_by_level(level=level)
                 if row.sell_at > buyback_price:
                     price = row.sell_at
@@ -258,63 +259,6 @@ class Store(QuoteMixin, TradeMixin):
             except Exception as e:
                 self.logger.warning(f'设置reworkPrice出现错误: {e}')
 
-    def _base_price(self) -> float:
-        store_config = self.store_config
-        symbol = store_config.symbol
-        quote_pre_close = self.state.quote_pre_close
-        low_price = self.state.quote_low_price
-        db = self.db
-        match store_config.trade_strategy:
-            case TradeStrategyEnum.HODL:
-                price_list = [quote_pre_close, ]
-                if store_config.base_price_last_buy:
-                    if db:
-                        con = db.conn
-                        earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol)
-                        if earning_row and earning_row.buyback_price and earning_row.buyback_price > 0:
-                            price_list.append(earning_row.buyback_price)
-                if db:
-                    con = db.conn
-                    base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
-                    if base_price_row and base_price_row.price > 0:
-                        price_list.append(base_price_row.price)
-                if store_config.base_price_day_low:
-                    if low_price is not None:
-                        price_list.append(low_price)
-                if store_config.base_price_day_low and store_config.base_price_tumble_protect and db and low_price:
-                    end_day = TimeTools.us_time_now()
-                    begin_today = TimeTools.timedelta(end_day, days=-store_config.tumble_protect_day_range)
-                    history_rows = QuoteLowHistoryRow.query_by_symbol(
-                        con=db.conn,
-                        broker=store_config.broker,
-                        region=store_config.region,
-                        symbol=store_config.symbol,
-                        begin_day=int(TimeTools.date_to_ymd(begin_today, join=False)),
-                        end_day=int(TimeTools.date_to_ymd(end_day, join=False)),
-                    )
-
-                    # 取自今天到近2个交易日的最低价，即共计最多3日的每日最低价格
-                    # 如果其中有一天比近期历史最低价格接近
-                    # 则需要从参考基准价格中去除日低、昨收两项中较低的价格
-                    recent_low_price = [low_price, ]
-                    for offset in range(2):
-                        if len(history_rows) > offset:
-                            recent_low_price.append(history_rows[offset].low_price)
-                    if history_rows:
-                        history_low = min(row.low_price for row in history_rows)
-                        for price in recent_low_price:
-                            if price > history_low * 1.005:
-                                continue
-                            smaller = min(quote_pre_close, low_price)
-                            if smaller in price_list:
-                                price_list.remove(smaller)
-                            break
-                price = min(price_list)
-                assert price > 0.0
-                return price
-            case _:
-                raise NotImplementedError
-
     def try_fire_orders(self):
         state = self.state
         if state.plan.earning is not None:
@@ -322,8 +266,8 @@ class Store(QuoteMixin, TradeMixin):
                 store_config=self.store_config,
             )
         plan = state.plan
-        if not plan.base_price:
-            price = self._base_price()
+        if plan.base_price is None:
+            price = self.calc_base_price()
             self.state.plan.base_price = price
 
         profit_table = self.current_table()

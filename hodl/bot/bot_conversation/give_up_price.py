@@ -1,7 +1,5 @@
-import json
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters
-from hodl.storage import TempBasePriceRow
 from hodl.bot import TelegramBotBase
 from hodl.state import *
 from hodl.tools import *
@@ -85,7 +83,7 @@ class GiveUpPrice(TelegramBotBase):
 
                     with open(state_path, mode='r', encoding='utf8') as f:
                         text = f.read()
-                        state = json.loads(text)
+                        state = FormatTool.json_loads(text)
                     state = State(state)
                     plan = state.plan
                     if v := session.value:
@@ -97,7 +95,7 @@ class GiveUpPrice(TelegramBotBase):
                         plan.give_up_price = v
                     else:
                         plan.give_up_price = None
-                    text = json.dumps(state, indent=4)
+                    text = FormatTool.json_dumps(state)
                     with open(state_path, mode='w', encoding='utf8') as f:
                         f.write(text)
                     update.message.reply_text(

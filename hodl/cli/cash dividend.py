@@ -2,7 +2,6 @@
 除去正在进行交易(存在历史订单)的持仓的现金红利，
 将基准价格和所有订单价格统一去除现金红利。
 """
-import json
 from hodl.state import *
 from hodl.tools import *
 
@@ -23,7 +22,7 @@ assert state_file
 print('state file:', state_file)
 with open(state_file, 'r', encoding='utf8') as f:
     text = f.read()
-state = json.loads(text)
+state = FormatTool.json_loads(text)
 state = State(state)
 if not state.plan.base_price:
     raise ValueError(f'base_price not exists')
@@ -49,7 +48,7 @@ for order in orders:
     order.avg_price = new_price
 input('confirm?')
 
-config_text = json.dumps(state, indent=4)
+config_text = FormatTool.json_dumps(state)
 with open(state_file, 'w', encoding='utf8') as f:
     f.write(config_text)
 

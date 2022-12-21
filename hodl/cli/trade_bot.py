@@ -1,5 +1,4 @@
 import os
-import json
 import time
 import datetime
 import dataclasses
@@ -135,11 +134,12 @@ class HtmlWriterThread(ThreadMixin):
             base_value = (self.plan.total_chips or 0) * (self.plan.base_price or 0.0)
             return int(base_value * (rate - 1))
 
-    class _EnhancedJSONEncoder(json.JSONEncoder):
-        def default(self, o):
+    class _EnhancedJSONEncoder:
+        @staticmethod
+        def default(o):
             if dataclasses.is_dataclass(o):
                 return dataclasses.asdict(o)
-            return super().default(o)
+            raise TypeError
 
     def __init__(self, variable: VariableTools, db: LocalDb, template, stores: list[Store]):
         self.variable = variable
@@ -201,10 +201,7 @@ class HtmlWriterThread(ThreadMixin):
 
         order_times_ytd = [dict(date=k, v=v) for k, v in d.items()]
         order_times_ytd.sort(key=lambda i: i['date'])
-        return json.dumps(
-            order_times_ytd,
-            indent=2,
-        )
+        return FormatTool.json_dumps(order_times_ytd)
 
     @classmethod
     def store_value(cls, currency_list, store_list: list[Store]):
@@ -263,10 +260,9 @@ class HtmlWriterThread(ThreadMixin):
                 else:
                     self.recent_earnings = list()
                 self.earning_list = [self._earning_style(earning) for earning in self.recent_earnings[:20]]
-                self.earning_json = json.dumps(
+                self.earning_json = FormatTool.json_dumps(
                     self.recent_earnings,
-                    indent=2,
-                    cls=HtmlWriterThread._EnhancedJSONEncoder,
+                    default=HtmlWriterThread._EnhancedJSONEncoder.default,
                 )
                 create_time = int(TimeTools.us_time_now().timestamp())
                 self.total_earning = [
@@ -387,7 +383,7 @@ class JsonWriterThread(ThreadMixin):
                     }
                     for store in stores if store.state],
             }
-            body = json.dumps(d, indent=2, sort_keys=True).encode('utf8')
+            body = FormatTool.json_dumps(d, binary=True)
             with open(path, 'wb') as f:
                 f.write(body)
             self.total_write += len(body)
