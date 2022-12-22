@@ -55,8 +55,8 @@ class TimeTools:
         return cls.date_to_ymd(day)
 
     @classmethod
-    def timedelta(cls, date: datetime, days=0):
-        return date + timedelta(days=days)
+    def timedelta(cls, date: datetime, days=0, minutes=0):
+        return date + timedelta(days=days, minutes=minutes)
 
     @classmethod
     def from_timestamp(cls, timestamp, tz=None) -> datetime:

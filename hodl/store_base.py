@@ -292,7 +292,7 @@ class StoreBase(ThreadMixin):
             anchor_content = '⚓'
             tooltip = f'基准价格: {FormatTool.pretty_price(plan.base_price, config=config)}'
             if state.ta_tumble_protect_flag:
-                tooltip += f', 历史最低价格已触发暴跌保护'
+                tooltip += f', 近期最低价格已触发暴跌保护'
                 tooltip += f', MA5{FormatTool.pretty_price(state.ta_tumble_protect_ma5, config=config)}'
                 tooltip += f', MA10{FormatTool.pretty_price(state.ta_tumble_protect_ma10, config=config)}'
             bar.append(BarElementDesc(content=anchor_content, tooltip=tooltip))
@@ -319,6 +319,11 @@ class StoreBase(ThreadMixin):
             tooltip += f', VIX当日最高:{FormatTool.pretty_usd(vix_high, precision=2)}'
             bar.append(BarElementDesc(content=content, tooltip=tooltip))
 
+        if state.sleep_mode_active:
+            content = '💤'
+            tooltip = '非交易时段，休眠模式启动，持仓更新变慢'
+            bar.append(BarElementDesc(content=content, tooltip=tooltip))
+
         battery = '🔋'
         chips = plan.total_chips
         diff = plan.total_volume_not_active(assert_zero=False)
@@ -326,6 +331,8 @@ class StoreBase(ThreadMixin):
         if chips and (chips - diff) >= 0:
             remain = chips - diff
             remain_rate = remain / chips
+        if remain_rate is not None and remain_rate < 0.5:
+            battery = '🪫'
         battery += FormatTool.factor_to_percent(remain_rate)
         bar.append(BarElementDesc(content=battery, tooltip='剩余持仓占比'))
 

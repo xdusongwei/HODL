@@ -269,6 +269,14 @@ class State(dict):
         return rate
 
     @property
+    def sleep_mode_active(self):
+        return self.get('sleepModeActive', True)
+
+    @sleep_mode_active.setter
+    def sleep_mode_active(self, v: bool):
+        self['sleepModeActive'] = v
+
+    @property
     def ta_vix_high(self) -> float:
         return self._get_snapshot('ta', 'vixHigh')
 

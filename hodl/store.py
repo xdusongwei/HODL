@@ -5,12 +5,13 @@ from hodl.risk_control import *
 from hodl.quote_mixin import *
 from hodl.trade_mixin import *
 from hodl.base_price_mixin import *
+from hodl.sleep_mixin import *
 from hodl.storage import *
 from hodl.exception_tools import *
 from hodl.tools import FormatTool as FMT
 
 
-class Store(QuoteMixin, TradeMixin, BasePriceMixin):
+class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
     def booting_check(self):
         try:
             self.logger.info(f'检查券商系统对接')
@@ -353,7 +354,7 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin):
                     finally:
                         is_checked = True
 
-                TimeTools.sleep(self.runtime_state.sleep_secs)
+                self.sleep()
 
                 with self.thread_lock():
                     if not self.before_loop():

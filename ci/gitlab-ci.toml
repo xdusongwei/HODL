@@ -14,4 +14,4 @@ state_file_path = ''
 state_archive_folder = ''
 prudent = true
 base_price_last_buy = true
-
+sleep_mode = false

@@ -1,5 +1,7 @@
 import os
 import enum
+from functools import cached_property
+import exchange_calendars
 
 
 class TradeStrategyEnum(enum.Enum):
@@ -318,6 +320,26 @@ class StoreConfig(dict):
         同理如果市场价为9.3，计划买入下单价格为10.0，那么9.3 < 0.95 * 10.0，则下达市价买单。
         """
         return self.get('market_price_rate', None)
+
+    @property
+    def sleep_mode(self) -> bool:
+        return self.get('sleep_mode', True)
+
+    @cached_property
+    def trading_calendar(self) -> None | exchange_calendars.ExchangeCalendar:
+        """
+        通过日历判断是否开启休眠模式
+        """
+        match self.trade_type:
+            case 'stock':
+                match self.region:
+                    case 'US':
+                        return exchange_calendars.get_calendar('XNYS')
+                    case 'HK':
+                        return exchange_calendars.get_calendar('XHKG')
+                    case 'CN':
+                        return exchange_calendars.get_calendar('XSHG')
+        return None
 
 
 __all__ = ['TradeStrategyEnum', 'StoreConfig', ]
