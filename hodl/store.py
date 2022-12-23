@@ -76,6 +76,7 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         state.quote_pre_close = quote.pre_close
         state.quote_latest_price = quote.latest_price
         state.quote_low_price = quote.day_low
+        state.quote_high_price = quote.day_high
 
     def prepare_delete_state(self) -> int:
         orders = self.state.plan.orders

@@ -14,6 +14,7 @@ class StoreState(StoreStateBase):
     sleep_secs: int = field(default=12)
     state_compare: tuple[str, str] = field(default=('', '', ))
     low_price_compare: tuple[int, float] = field(default=(-1, 0.0, ))
+    high_price_compare: tuple[int, float] = field(default=(-1, 0.0, ))
 
     def __post_init__(self):
         store_config = self.store_config

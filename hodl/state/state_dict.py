@@ -161,6 +161,14 @@ class State(dict):
         self._set_snapshot('latestSnapshot', 'quoteLowPrice', v)
 
     @property
+    def quote_high_price(self):
+        return self._get_snapshot('latestSnapshot', 'quoteHighPrice')
+
+    @quote_high_price.setter
+    def quote_high_price(self, v: float):
+        self._set_snapshot('latestSnapshot', 'quoteHighPrice', v)
+
+    @property
     def market_status(self) -> str:
         return self._get_snapshot('latestSnapshot', 'marketStatus')
 
