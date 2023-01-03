@@ -53,14 +53,14 @@ class BasePriceMixin(StoreBase, ABC):
         if state.ta_tumble_protect_flag:
             state.ta_tumble_protect_alert_price = self._tumble_protect_alert_price()
 
-    def _query_history(self, days: int):
+    def _query_history(self, days: int, day_low=True):
         db = self.db
         if not db:
             return list()
         store_config = self.store_config
         end_day = TimeTools.us_time_now()
         begin_day = TimeTools.timedelta(end_day, days=-days)
-        history = QuoteLowHistoryRow.query_by_symbol(
+        args = dict(
             con=db.conn,
             broker=store_config.broker,
             region=store_config.region,
@@ -68,21 +68,25 @@ class BasePriceMixin(StoreBase, ABC):
             begin_day=int(TimeTools.date_to_ymd(begin_day, join=False)),
             end_day=int(TimeTools.date_to_ymd(end_day, join=False)),
         )
+        if day_low:
+            history = QuoteLowHistoryRow.query_by_symbol(**args)
+        else:
+            history = QuoteHighHistoryRow.query_by_symbol(**args)
         return history
 
     def _detect_lowest_days(self) -> bool:
         store_config = self.store_config
-        history = self._query_history(days=store_config.tumble_protect_day_range * 9)
+        history: list[QuoteLowHistoryRow] = self._query_history(days=store_config.tumble_protect_day_range * 9)
         if len(history) <= store_config.tumble_protect_day_range:
             return False
         recent = history[:store_config.tumble_protect_day_range]
         return min(day.low_price for day in history) * 1.01 >= min(day.low_price for day in recent)
 
     def _tumble_protect_alert_price(self):
-        ma5_days = self._query_history(days=5)
-        ma5_price_list = [day.low_price for day in ma5_days]
-        ma10_days = self._query_history(days=10)
-        ma10_price_list = [day.low_price for day in ma10_days]
+        ma5_days: list[QuoteHighHistoryRow] = self._query_history(days=5, day_low=False)
+        ma5_price_list = [day.high_price for day in ma5_days]
+        ma10_days: list[QuoteHighHistoryRow] = self._query_history(days=10, day_low=False)
+        ma10_price_list = [day.high_price for day in ma10_days]
         if not ma5_price_list or not ma10_price_list:
             return None
         ma5 = sum(ma5_price_list) / len(ma5_price_list)

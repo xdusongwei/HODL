@@ -16,7 +16,7 @@ class SleepMixin(StoreBase, ABC):
                 if calendar.is_trading_minute(utc_now) or calendar.is_trading_minute(utc_now_1):
                     pass
                 else:
-                    secs *= 2
+                    secs *= 4
                     sleep_mode_active = True
         self.state.sleep_mode_active = sleep_mode_active
         TimeTools.sleep(secs)
