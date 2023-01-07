@@ -22,9 +22,6 @@ class BasePriceMixin(StoreBase, ABC):
                     if base_price_row and base_price_row.price > 0:
                         return base_price_row.price
 
-                if state.ta_tumble_protect_alert_price is not None:
-                    return state.ta_tumble_protect_alert_price
-
                 price_list = [quote_pre_close, ]
                 if db:
                     con = db.conn
@@ -34,7 +31,12 @@ class BasePriceMixin(StoreBase, ABC):
                 if store_config.base_price_day_low:
                     if low_price is not None:
                         price_list.append(low_price)
-                price = min(price_list)
+                if state.ta_tumble_protect_alert_price is not None:
+                    price_list.append(state.ta_tumble_protect_alert_price)
+                    price = max(price_list)
+                else:
+                    price = min(price_list)
+
                 assert price > 0.0
                 return price
             case _:

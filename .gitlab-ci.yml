@@ -1,4 +1,4 @@
-image: python:3.11.1
+image: registry.cn-beijing.aliyuncs.com/kenny_ci/python-go:3.11-1.19
 stages:
   - test
   - build
@@ -7,20 +7,17 @@ cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
     - .cache/pip
+    - __pypackages__/
+    - venv/
 variables:
   PROJECT: 'hodl'
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 before_script:
-  - mkdir -p ~/.pip
   - mkdir -p ~/logs/hodl
   - mkdir -p ~/data/hodl
-  - cp ci/pip.conf ~/.pip/
   - cp ci/gitlab-ci.toml config.toml
-  - pip install -U pip setuptools wheel build twine
-  - pip install pdm
-  - export PATH="$HOME/.local/bin:$PATH"
-  - pdm config pypi.url "https://mirrors.aliyun.com/pypi/simple"
+  - pip install -U pdm
   - pdm install --prod  -G test --no-lock --no-editable
 
 test:
