@@ -50,6 +50,7 @@ class BasePriceMixin(StoreBase, ABC):
             vix_quote = self.broker_proxy.query_vix()
             if vix_quote:
                 state.ta_vix_high = vix_quote.day_high
+                state.ta_vix_time = vix_quote.time.timestamp()
         state.ta_tumble_protect_flag = self._detect_lowest_days()
         state.ta_tumble_protect_alert_price = None
         if state.ta_tumble_protect_flag:

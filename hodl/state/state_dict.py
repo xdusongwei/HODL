@@ -113,7 +113,7 @@ class State(dict):
         return self._get_snapshot('latestSnapshot', 'quoteTime')
 
     @quote_time.setter
-    def quote_time(self, v: int):
+    def quote_time(self, v: float):
         self._set_snapshot('latestSnapshot', 'quoteTime', v)
 
     @property
@@ -291,6 +291,14 @@ class State(dict):
     @ta_vix_high.setter
     def ta_vix_high(self, v: float):
         self._set_snapshot('ta', 'vixHigh', v)
+
+    @property
+    def ta_vix_time(self) -> float:
+        return self._get_snapshot('ta', 'vixTime')
+
+    @ta_vix_time.setter
+    def ta_vix_time(self, v: float):
+        self._set_snapshot('ta', 'vixTime', v)
 
     @property
     def ta_tumble_protect_flag(self) -> bool:

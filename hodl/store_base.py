@@ -331,7 +331,8 @@ class StoreBase(ThreadMixin):
             vix_high = state.ta_vix_high
             content = '🛡️'
             tooltip = f'VIX当日最高到达{FormatTool.pretty_usd(rate, precision=2)}时不会下达卖出#1订单'
-            tooltip += f', VIX当日最高:{FormatTool.pretty_usd(vix_high, precision=2)}'
+            if not len(plan.orders):
+                tooltip += f', VIX当日最高:{FormatTool.pretty_usd(vix_high, precision=2)}'
             bar.append(BarElementDesc(content=content, tooltip=tooltip))
 
         if state.sleep_mode_active:
