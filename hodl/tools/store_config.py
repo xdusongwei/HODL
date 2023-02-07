@@ -89,11 +89,12 @@ class StoreConfig(dict):
         """
         如果不考虑某些证券系统同证券代码会有多种标的，名称可以随便起。
         否则需要设置正式名称以便供有些证券系统去做重复项的匹配。
+        比如中信证券，可能存在同代码多个交易标的，那么设定的name可以用来找到真正的项。
         Returns
         -------
 
         """
-        return self.get('name')
+        return self.get('name', '--')
 
     @property
     def enable(self) -> bool:

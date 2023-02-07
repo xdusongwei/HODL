@@ -110,12 +110,13 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         broker = self.store_config.broker
         region = self.store_config.region
         symbol = self.store_config.symbol
+        name = self.store_config.name
         if self.broker_proxy.detect_plug_in():
-            text = f"""🔌交易券商[{broker}]管理标的[{region}]{symbol}连通已恢复"""
+            text = f"""🔌交易券商[{broker}]管理标的[{region}]{symbol}({name})连通已恢复"""
             self.state.is_plug_in = True
             self.bot.unset_alarm(AlertBot.K_TRADE_SERVICE, text=text)
         else:
-            text = f"""🔌交易券商[{broker}]管理标的[{region}]{symbol}连通测试失败"""
+            text = f"""🔌交易券商[{broker}]管理标的[{region}]{symbol}({name})连通测试失败"""
             self.state.is_plug_in = False
             self.bot.set_alarm(AlertBot.K_TRADE_SERVICE, text=text)
             raise PlugInError()
