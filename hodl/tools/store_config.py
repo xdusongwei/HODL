@@ -1,6 +1,5 @@
 import os
 import enum
-from functools import cached_property
 import exchange_calendars
 
 
@@ -348,7 +347,7 @@ class StoreConfig(dict):
         """
         return self.get('sleep_mode', True)
 
-    @cached_property
+    @property
     def trading_calendar(self) -> None | exchange_calendars.ExchangeCalendar:
         """
         通过日历判断是否开启休眠模式
