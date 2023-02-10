@@ -127,7 +127,11 @@ class StoreConfig(dict):
         """
         path: str = self.get('state_file_path')
         if path:
-            path = path.format(symbol=self.symbol)
+            path = path.format(
+                broker=self.broker,
+                region=self.region,
+                symbol=self.symbol,
+            )
             path = os.path.expanduser(path)
         return path
 
@@ -141,7 +145,11 @@ class StoreConfig(dict):
         """
         path: str = self.get('state_archive_folder')
         if path:
-            path = path.format(symbol=self.symbol)
+            path = path.format(
+                broker=self.broker,
+                region=self.region,
+                symbol=self.symbol,
+            )
             path = os.path.expanduser(path)
             os.makedirs(path, exist_ok=True)
         return path
