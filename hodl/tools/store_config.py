@@ -19,6 +19,7 @@ class StoreConfig(dict):
         HK
         地区代码的主要作用是：
         匹配正确的市场，找到对应的市场状态；
+        证券产品根据地区映射到对应交易所，从而可以判断交易所是否开市；
         规定了持仓的时间时区。
         :return:
         """
@@ -27,7 +28,8 @@ class StoreConfig(dict):
     @property
     def broker(self) -> str:
         """
-        使用的券商服务
+        使用的券商服务，其值参考BrokerApiBase的子类设定的BROKER_NAME成员，
+        例如可以是：
         tiger
         citics
         :return:
@@ -193,7 +195,7 @@ class StoreConfig(dict):
     @property
     def shares_per_unit(self) -> int:
         """
-        证券一手多少股
+        证券一手多少股，主要针对A股和港股
         :return:
         """
         return self.get('shares_per_unit', 1)
@@ -201,7 +203,7 @@ class StoreConfig(dict):
     @property
     def legal_rate_daily(self) -> None | float:
         """
-        对于有单日涨幅要求的证券，设置幅度因子
+        对于有单日涨幅要求的证券，设置幅度因子，主要针对A股。
         例如 0.1 则在昨收10%内的价格范围内可以进行下单
         :return:
         """
@@ -212,9 +214,13 @@ class StoreConfig(dict):
         """
         是否在持仓进程启动后开始做broker联通性检查。
         通常建议每个持仓都需要执行检查，保证市场状态/行情/持仓/资金可正常访问， 否则持仓线程中止。
-        但是有些持仓的broker联通方面可能需要其他的维护动作，例如服务不是24小时随时可用，如果在broker对应的下游系统并未准备好的情况下，
-        启动了本系统，该持仓的联通性检查会失败，导致持仓线程自杀，反而需要等到下游系统可用时，本系统进程方可启动, 搞得很复杂。
-        另外的，对于这类broker，建议完善 detect_plug_in 方法，在持仓线程循环里提前ping一下broker系统，不可用时不影响持仓线程存活。
+
+        注意：
+        有些持仓的broker联通方面可能需要其他的维护动作，例如服务不是24小时随时可用，如果在broker对应的下游系统并未准备好的情况下，
+        启动了本系统，该持仓的联通性检查会失败，导致持仓线程自杀；
+        反而需要等到下游系统可用时，本系统进程方可开始启动, 搞得很复杂，所以不需要启用这种检查。
+        另外的，对于这类broker，建议完善 detect_plug_in 方法，使得在持仓线程循环里提前ping一下broker系统，
+        如果不可用时不影响持仓线程存活，而是中止此次循环。
         Returns
         -------
 
@@ -332,6 +338,14 @@ class StoreConfig(dict):
 
     @property
     def sleep_mode(self) -> bool:
+        """
+        是否启用休眠模式，需要证券交易所开盘收盘时间表支持。
+        开启后，如果发现当前或者下一分钟在开市时间段内，持仓线程的循环睡眠时间正常，
+        否则会拉大持仓线程的循环睡眠时间，以节省计算机资源。
+        Returns
+        -------
+
+        """
         return self.get('sleep_mode', True)
 
     @cached_property
