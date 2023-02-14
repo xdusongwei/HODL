@@ -14,3 +14,10 @@ BROKERS: list[Type[BrokerApiBase]] = [
     BinanceApi,
     FutuApi,
 ]
+
+
+def broker_display(broker_name: str) -> str:
+    for broker in BROKERS:
+        if broker.BROKER_NAME == broker_name:
+            return broker.BROKER_DISPLAY
+    return broker_name or '--'

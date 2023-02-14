@@ -7,6 +7,7 @@ from hodl.broker.base import *
 
 class FutuApi(BrokerApiBase):
     BROKER_NAME = 'futu'
+    BROKER_DISPLAY = '富途证券'
     META = [
         ApiMeta(
             trade_type=BrokerTradeType.STOCK,

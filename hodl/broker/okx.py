@@ -15,6 +15,7 @@ from hodl.tools import *
 
 class OkxRestApi(BrokerApiBase):
     BROKER_NAME = 'okx'
+    BROKER_DISPLAY = 'OKX'
     META = [
         ApiMeta(
             trade_type=BrokerTradeType.CRYPTO,

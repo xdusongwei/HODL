@@ -5,6 +5,7 @@ from hodl.risk_control import *
 from hodl.tools import *
 from hodl.storage import *
 from hodl.bot import *
+from hodl.broker import broker_display
 from hodl.broker.broker_proxy import *
 from hodl.thread_mixin import *
 from hodl.state import *
@@ -59,6 +60,10 @@ class StoreBase(ThreadMixin):
     @broker_proxy.setter
     def broker_proxy(self, v: BrokerProxy):
         setattr(self, '_broker_proxy', v)
+
+    @property
+    def broker_display(self):
+        return broker_display(self.store_config.broker)
 
     @property
     def risk_control(self) -> RiskControl:

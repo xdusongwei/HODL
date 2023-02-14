@@ -108,6 +108,7 @@ class BrokerApiMixin(abc.ABC):
 
 class BrokerApiBase(BrokerApiMixin):
     BROKER_NAME = 'unknown'
+    BROKER_DISPLAY = '未知'
     META: list[ApiMeta] = []
 
     def __init__(

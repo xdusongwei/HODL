@@ -10,6 +10,7 @@ from hodl.tools import *
 
 class BinanceApi(BrokerApiBase):
     BROKER_NAME = 'binance'
+    BROKER_DISPLAY = '币安'
     META = [
         ApiMeta(
             trade_type=BrokerTradeType.CRYPTO,

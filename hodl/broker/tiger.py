@@ -89,6 +89,7 @@ class SpeedupTradeClient(TradeClient, _SpeedupMixin):
 
 class TigerApi(BrokerApiBase):
     BROKER_NAME = 'tiger'
+    BROKER_DISPLAY = '老虎国际'
     META = [
         ApiMeta(
             trade_type=BrokerTradeType.STOCK,
