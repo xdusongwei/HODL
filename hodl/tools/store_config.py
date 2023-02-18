@@ -363,5 +363,9 @@ class StoreConfig(dict):
                         return exchange_calendars.get_calendar('XSHG')
         return None
 
+    @property
+    def full_name(self) -> str:
+        return f'[{self.broker}.{self.region}]{self.symbol}({self.name})'
+
 
 __all__ = ['TradeStrategyEnum', 'StoreConfig', ]

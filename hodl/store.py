@@ -186,7 +186,6 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
 
     def set_up_earning(self) -> float:
         store_config = self.store_config
-        region = store_config.region
         symbol = store_config.symbol
         plan = self.state.plan
         earning = plan.calc_earning()
@@ -203,7 +202,7 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         speed = FMT.pretty_price(speed, config=store_config, only_int=True)
         buyback_text = FMT.pretty_price(buyback_price, store_config)
 
-        earning_text = f'💰[{region}]{symbol}在{day_now}收益{cash}, 买回价:{buyback_text}'
+        earning_text = f'💰{store_config.full_name}在{day_now}收益{cash}, 买回价:{buyback_text}'
         if days > 1:
             earning_text += f', 持续{days}天, 平均日收益{speed}'
         self.logger.info(earning_text)
