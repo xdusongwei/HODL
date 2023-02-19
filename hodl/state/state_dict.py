@@ -332,6 +332,48 @@ class State(dict):
     def ta_tumble_protect_ma10(self, v: float):
         self._set_snapshot('ta', 'tumbleProtectMa10', v)
 
+    @property
+    def ta_tumble_protect_rsi(self) -> float:
+        """
+        如果盘中实时分析时触发了rsi低点阈值，这里记录rsi暴跌保护下解锁交易需要的rsi高点阈值
+        Returns
+        -------
+
+        """
+        return self._get_snapshot('ta', 'tumbleProtectRsi')
+
+    @ta_tumble_protect_rsi.setter
+    def ta_tumble_protect_rsi(self, v: float):
+        self._set_snapshot('ta', 'tumbleProtectRsi', v)
+
+    @property
+    def ta_tumble_protect_rsi_period(self) -> int:
+        """
+        记录rsi指标的周期天数
+        Returns
+        -------
+
+        """
+        return self._get_snapshot('ta', 'tumbleProtectRsiPeriod')
+
+    @ta_tumble_protect_rsi_period.setter
+    def ta_tumble_protect_rsi_period(self, v: int):
+        self._set_snapshot('ta', 'tumbleProtectRsiPeriod', v)
+
+    @property
+    def ta_tumble_protect_rsi_day(self) -> int:
+        """
+        记录触发rsi暴跌保护的交易日
+        Returns
+        -------
+
+        """
+        return self._get_snapshot('ta', 'tumbleProtectRsiDay')
+
+    @ta_tumble_protect_rsi_day.setter
+    def ta_tumble_protect_rsi_day(self, v: int):
+        self._set_snapshot('ta', 'tumbleProtectRsiDay', v)
+
 
 __all__ = [
     'State',

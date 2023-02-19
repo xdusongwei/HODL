@@ -36,6 +36,10 @@ class OrderOutdatedError(PrepareError):
     pass
 
 
+class BasePriceCalcError(PrepareError):
+    pass
+
+
 class TradingError(BotError):
     pass
 
@@ -64,6 +68,7 @@ __all__ = [
     'QuoteFieldError',
     'QuoteScheduleOver',
     'OrderOutdatedError',
+    'BasePriceCalcError',
     'TradingError',
     'CiticsError',
     'RiskControlError',

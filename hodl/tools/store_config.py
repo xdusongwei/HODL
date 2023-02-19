@@ -267,6 +267,52 @@ class StoreConfig(dict):
         return self.get('vix_tumble_protect', None)
 
     @property
+    def tumble_protect_rsi(self) -> bool:
+        """
+        是否启用RSI暴跌保护机制。
+        Returns
+        -------
+
+        """
+        return self.get('tumble_protect_rsi', False)
+
+    @property
+    def tumble_protect_rsi_period(self) -> int:
+        """
+        RSI暴跌保护的指标周期，默认RSI6
+        Returns
+        -------
+
+        """
+        period = self.get('tumble_protect_rsi_period', 6)
+        assert 2 <= period < 120
+        return period
+
+    @property
+    def tumble_protect_rsi_lock_limit(self) -> int:
+        """
+        盘中若为空执行计划时，若RSI低于此限制值，将启用RSI暴跌保护锁定
+        Returns
+        -------
+
+        """
+        limit = self.get('tumble_protect_rsi_lock_limit', 20)
+        assert 0 <= limit <= 100
+        return limit
+
+    @property
+    def tumble_protect_rsi_unlock_limit(self) -> int:
+        """
+        RSI暴跌保护锁定后，若历史盘中RSI到达过此限制值以上，将解除RSI暴跌保护锁定
+        Returns
+        -------
+
+        """
+        limit = self.get('tumble_protect_rsi_unlock_limit', 80)
+        assert 0 <= limit <= 100
+        return limit
+
+    @property
     def lock_position(self) -> bool:
         """
         设置此项后，如果每日风控核对持仓数量不能跟配置 max_shares 一致，否则会触发风控异常
