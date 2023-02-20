@@ -177,6 +177,10 @@ class TradeMixin(StoreBase, ABC):
             elif ta_vix_high >= vix_limit:
                 fire_state.enable_sell = False
 
+        rsi_limit = self.state.ta_tumble_protect_rsi
+        if fire_state.enable_sell and rsi_limit:
+            fire_state.enable_sell = False
+
     def _sell_conditions_check_qty(self, fire_state: StateFire):
         state = self.state
         plan = state.plan

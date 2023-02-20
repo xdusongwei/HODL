@@ -2,7 +2,6 @@ from abc import ABC
 from hodl.store_base import *
 from hodl.storage import *
 from hodl.tools import *
-from hodl.exception_tools import *
 
 
 class BasePriceMixin(StoreBase, ABC):
@@ -34,9 +33,6 @@ class BasePriceMixin(StoreBase, ABC):
                     base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
                     if base_price_row and base_price_row.price > 0:
                         return base_price_row.price
-
-                if state.ta_tumble_protect_rsi is not None:
-                    raise BasePriceCalcError(f'RSI暴跌保护已执行，锁定值: {state.ta_tumble_protect_rsi}')
 
                 price_list = [quote_pre_close, ]
                 if db:

@@ -439,8 +439,6 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
 
                     if self.ENABLE_LOG_ALIVE:
                         self.alive_logger.debug(f'循环执行结束')
-            except BasePriceCalcError:
-                pass
             except RiskControlError as e:
                 self.logger.error(f'触发风控异常: {e}')
                 self.state.risk_control_break = True
