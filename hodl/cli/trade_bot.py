@@ -454,7 +454,7 @@ class Manager(ThreadMixin):
 
     def secondary_bar(self) -> list[BarElementDesc]:
         bar = list()
-        bar.append(BarElementDesc(content=f'🖥️os: {platform.system()}'))
+        bar.append(BarElementDesc(content=f'🖥os: {platform.system()}'))
         bar.append(BarElementDesc(content=f'🏗️arch: {platform.machine()}'))
         bar.append(BarElementDesc(content=f'🐍python: {platform.python_version()}'))
         for d in Manager.PACKAGE_LIST:

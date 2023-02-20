@@ -374,6 +374,20 @@ class State(dict):
     def ta_tumble_protect_rsi_day(self, v: int):
         self._set_snapshot('ta', 'tumbleProtectRsiDay', v)
 
+    @property
+    def ta_tumble_protect_rsi_current(self) -> float:
+        """
+        记录当前RSI的值
+        Returns
+        -------
+
+        """
+        return self._get_snapshot('ta', 'tumbleProtectRsiCurrent')
+
+    @ta_tumble_protect_rsi_current.setter
+    def ta_tumble_protect_rsi_current(self, v: float):
+        self._set_snapshot('ta', 'tumbleProtectRsiCurrent', v)
+
 
 __all__ = [
     'State',

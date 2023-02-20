@@ -332,12 +332,26 @@ class StoreBase(ThreadMixin):
             tooltip = f'市场价格偏离超过预期幅度{FormatTool.factor_to_percent(rate)}触发市价单'
             bar.append(BarElementDesc(content=market_price_set, tooltip=tooltip))
 
+        show_tp_elem = False
+        content = '🛡️'
+        tooltip = ''
         if rate := config.vix_tumble_protect:
+            show_tp_elem = True
             vix_high = state.ta_vix_high
-            content = '🛡️'
-            tooltip = f'VIX当日最高到达{FormatTool.pretty_usd(rate, precision=2)}时不会下达卖出#1订单'
+
+            tooltip += f'VIX当日最高到达{FormatTool.pretty_usd(rate, precision=2)}时不会下达卖出#1订单'
             if not len(plan.orders):
-                tooltip += f', VIX当日最高:{FormatTool.pretty_usd(vix_high, precision=2)}'
+                tooltip += f', VIX当日最高:{FormatTool.pretty_usd(vix_high, precision=2)}.'
+        if config.tumble_protect_rsi:
+            show_tp_elem = True
+            tooltip += f'RSI暴跌保护已开启，'
+            tooltip += f'盘中RSI{config.tumble_protect_rsi_period}低于{config.tumble_protect_rsi_lock_limit}将停止卖出计划.'
+        if limit := state.ta_tumble_protect_rsi:
+            show_tp_elem = True
+            tooltip += f'RSI{state.ta_tumble_protect_rsi_period}需要高于{limit}恢复卖出计划.'
+        if current := state.ta_tumble_protect_rsi_current:
+            tooltip += f'当前RSI{state.ta_tumble_protect_rsi_period}为{current}.'
+        if show_tp_elem:
             bar.append(BarElementDesc(content=content, tooltip=tooltip))
 
         if state.sleep_mode_active:

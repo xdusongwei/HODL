@@ -86,6 +86,7 @@ class BasePriceMixin(StoreBase, ABC):
         state = self.state
         state.ta_tumble_protect_flag = self._detect_lowest_days()
         state.ta_tumble_protect_alert_price = None
+        state.ta_tumble_protect_rsi_current = None
         if state.ta_tumble_protect_flag:
             state.ta_tumble_protect_alert_price = self._tumble_protect_alert_price()
         if store_config.tumble_protect_rsi:
@@ -96,13 +97,15 @@ class BasePriceMixin(StoreBase, ABC):
                 assert state.ta_tumble_protect_rsi_period
                 rsi_period = state.ta_tumble_protect_rsi_period
                 rsi_day = state.ta_tumble_protect_rsi_day
-                history: list[QuoteHighHistoryRow] = self._query_history(days=rsi_period * 20, day_low=False, asc=True)
+                history: list[QuoteHighHistoryRow] = self._query_history(days=rsi_period * 20, asc=True)
                 points = [(i.day, i.high_price,) for i in history]
                 rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
                 if any(point for point in rsi_points if point[0] > rsi_day and point[1] >= unlock_limit):
                     state.ta_tumble_protect_rsi = None
                     state.ta_tumble_protect_rsi_day = None
                     state.ta_tumble_protect_rsi_period = None
+                if rsi_points:
+                    state.ta_tumble_protect_rsi_current = rsi_points[-1][1]
             else:
                 # RSI TP unlocked
                 rsi_period = store_config.tumble_protect_rsi_period
@@ -119,6 +122,8 @@ class BasePriceMixin(StoreBase, ABC):
                         state.ta_tumble_protect_rsi = unlock_limit
                         state.ta_tumble_protect_rsi_period = rsi_period
                         state.ta_tumble_protect_rsi_day = rsi_day
+                if rsi_points:
+                    state.ta_tumble_protect_rsi_current = rsi_points[-1][1]
 
     def _query_history(self, days: int, day_low=True, asc=False):
         db = self.db
@@ -169,33 +174,56 @@ class BasePriceMixin(StoreBase, ABC):
     @classmethod
     def _rsi(cls, points: list[tuple[int, float]], period: int = 6) -> list[tuple[int, float]]:
         init_value = 0.5
-        sma_points: list[tuple[int, float]] = list()
-        if len(points) < 2:
+        rsi_points: list[tuple[int, float]] = list()
+        if len(points) < period:
             for day, _ in points:
-                sma_points.append((day, init_value, ))
-            return cls._transform_rsi_rate(sma_points)
+                rsi_points.append((day, init_value, ))
+            return cls._transform_rsi_rate(rsi_points)
+        t_max = cls._rsi_t(points, period=period, t_max=True)
+        t_abs = cls._rsi_t(points, period=period, t_max=False)
+        assert len(t_max) == len(t_abs)
+        for idx in range(len(t_max)):
+            max_item = t_max[idx]
+            abs_item = t_abs[idx]
+            max_value = max_item[1]
+            abs_value = abs_item[1]
+            assert max_item[0] == abs_item[0]
+            if abs_value:
+                rsi_point = (max_item[0], max_value / abs_value,)
+                rsi_points.append(rsi_point)
+            else:
+                rsi_point = (max_item[0], init_value,)
+                rsi_points.append(rsi_point)
+        return cls._transform_rsi_rate(rsi_points)
+
+    @classmethod
+    def _rsi_t(cls, points: list[tuple[int, float]], period: int = 6, t_max=True) -> list[tuple[int, float]]:
+        sma_points: list[tuple[int, float]] = list()
         # 返回一个由后一日期，和后一日价格减去前一日价格的二元组列表
-        diff_points = [(n[0], n[1] - p[1], ) for p, n in zip(points[:-1], points[1:])]
+        diff_points = [(n[0], n[1] - p[1],) for p, n in zip(points[:-1], points[1:])]
         for idx in range(len(diff_points)):
             day = diff_points[idx][0]
             diff = diff_points[idx][1]
-            if not diff_points[idx][0]:
+            if not diff:
                 if idx:
                     last_sma_point = sma_points[-1]
-                    sma_point = (day, last_sma_point[1], )
+                    sma_point = (day, last_sma_point[1],)
                     sma_points.append(sma_point)
                 else:
-                    sma_point = (day, init_value,)
+                    sma_point = (day, 0,)
                     sma_points.append(sma_point)
                 continue
-            t1 = max(0.0, diff)
-            s = t1
+            if t_max:
+                t = max(0.0, diff)
+            else:
+                t = abs(diff)
+            s = t
             if idx:
                 last_sma_point = sma_points[-1]
                 s += last_sma_point[1] * (period - 1)
-            sma_point = (day, s / period, )
+            sma_point = (day, s / period,)
             sma_points.append(sma_point)
-        return cls._transform_rsi_rate(sma_points)
+        return sma_points
 
     @classmethod
     def _transform_rsi_rate(cls, sma_points: list[tuple[int, float]]) -> list[tuple[int, float]]:
