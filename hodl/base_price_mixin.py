@@ -63,12 +63,53 @@ class BasePriceMixin(StoreBase, ABC):
         """
         state = self.state
         store_config = self.store_config
+
         state.ta_vix_high = None
         if store_config.vix_tumble_protect is not None:
             vix_quote = self.broker_proxy.query_vix()
             if vix_quote:
                 state.ta_vix_high = vix_quote.day_high
                 state.ta_vix_time = vix_quote.time.timestamp()
+
+        state.ta_tumble_protect_rsi_current = None
+        if state.ta_tumble_protect_rsi is not None:
+            # RSI TP locked
+            unlock_limit = state.ta_tumble_protect_rsi
+            assert state.ta_tumble_protect_rsi_day
+            assert state.ta_tumble_protect_rsi_period
+            rsi_period = state.ta_tumble_protect_rsi_period
+            rsi_day = state.ta_tumble_protect_rsi_day
+            history: list[QuoteHighHistoryRow] = self._query_history(days=rsi_period * 20, asc=True)
+            points = [(i.day, i.high_price,) for i in history]
+            rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
+            if any(point for point in rsi_points if point[0] > rsi_day and point[1] >= unlock_limit):
+                state.ta_tumble_protect_rsi = None
+                state.ta_tumble_protect_rsi_day = None
+                state.ta_tumble_protect_rsi_period = None
+            if rsi_points:
+                state.ta_tumble_protect_rsi_current = rsi_points[-1][1]
+        elif store_config.tumble_protect_rsi:
+            # RSI TP unlocked
+            rsi_period = store_config.tumble_protect_rsi_period
+            history: list[QuoteLowHistoryRow] = self._query_history(days=rsi_period * 20, asc=True)
+            points = [(i.day, i.low_price,) for i in history]
+            rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
+            if rsi_points:
+                rsi_day = rsi_points[-1][0]
+                rsi = rsi_points[-1][1]
+                lock_limit = store_config.tumble_protect_rsi_lock_limit
+                unlock_limit = store_config.tumble_protect_rsi_unlock_limit
+                assert lock_limit < unlock_limit
+                if rsi <= lock_limit:
+                    state.ta_tumble_protect_rsi = unlock_limit
+                    state.ta_tumble_protect_rsi_period = rsi_period
+                    state.ta_tumble_protect_rsi_day = rsi_day
+            if rsi_points:
+                state.ta_tumble_protect_rsi_current = rsi_points[-1][1]
+        else:
+            state.ta_tumble_protect_rsi = None
+            state.ta_tumble_protect_rsi_day = None
+            state.ta_tumble_protect_rsi_period = None
 
     def _set_up_base_price_ta_info(self):
         """
@@ -78,48 +119,11 @@ class BasePriceMixin(StoreBase, ABC):
         -------
 
         """
-        store_config = self.store_config
         state = self.state
         state.ta_tumble_protect_flag = self._detect_lowest_days()
         state.ta_tumble_protect_alert_price = None
-        state.ta_tumble_protect_rsi_current = None
         if state.ta_tumble_protect_flag:
             state.ta_tumble_protect_alert_price = self._tumble_protect_alert_price()
-        if store_config.tumble_protect_rsi:
-            if state.ta_tumble_protect_rsi is not None:
-                # RSI TP locked
-                unlock_limit = state.ta_tumble_protect_rsi
-                assert state.ta_tumble_protect_rsi_day
-                assert state.ta_tumble_protect_rsi_period
-                rsi_period = state.ta_tumble_protect_rsi_period
-                rsi_day = state.ta_tumble_protect_rsi_day
-                history: list[QuoteHighHistoryRow] = self._query_history(days=rsi_period * 20, asc=True)
-                points = [(i.day, i.high_price,) for i in history]
-                rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
-                if any(point for point in rsi_points if point[0] > rsi_day and point[1] >= unlock_limit):
-                    state.ta_tumble_protect_rsi = None
-                    state.ta_tumble_protect_rsi_day = None
-                    state.ta_tumble_protect_rsi_period = None
-                if rsi_points:
-                    state.ta_tumble_protect_rsi_current = rsi_points[-1][1]
-            else:
-                # RSI TP unlocked
-                rsi_period = store_config.tumble_protect_rsi_period
-                history: list[QuoteLowHistoryRow] = self._query_history(days=rsi_period * 20, asc=True)
-                points = [(i.day, i.low_price, ) for i in history]
-                rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
-                if rsi_points:
-                    rsi_day = rsi_points[-1][0]
-                    rsi = rsi_points[-1][1]
-                    lock_limit = store_config.tumble_protect_rsi_lock_limit
-                    unlock_limit = store_config.tumble_protect_rsi_unlock_limit
-                    assert lock_limit < unlock_limit
-                    if rsi <= lock_limit:
-                        state.ta_tumble_protect_rsi = unlock_limit
-                        state.ta_tumble_protect_rsi_period = rsi_period
-                        state.ta_tumble_protect_rsi_day = rsi_day
-                if rsi_points:
-                    state.ta_tumble_protect_rsi_current = rsi_points[-1][1]
 
     def _query_history(self, days: int, day_low=True, asc=False):
         db = self.db
