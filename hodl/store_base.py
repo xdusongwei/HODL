@@ -350,7 +350,7 @@ class StoreBase(ThreadMixin):
             show_tp_elem = True
             tooltip += f'RSI{state.ta_tumble_protect_rsi_period}需要高于{limit}恢复卖出计划. '
         if current := state.ta_tumble_protect_rsi_current:
-            tooltip += f'当前RSI{state.ta_tumble_protect_rsi_period}为{current}. '
+            tooltip += f'当前RSI{config.tumble_protect_rsi_period}为{current}. '
         if show_tp_elem:
             bar.append(BarElementDesc(content=content, tooltip=tooltip))
 
