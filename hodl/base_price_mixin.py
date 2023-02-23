@@ -1,4 +1,5 @@
 from abc import ABC
+from collections import defaultdict
 from hodl.store_base import *
 from hodl.storage import *
 from hodl.tools import *
@@ -79,8 +80,7 @@ class BasePriceMixin(StoreBase, ABC):
             assert state.ta_tumble_protect_rsi_period
             rsi_period = state.ta_tumble_protect_rsi_period
             rsi_day = state.ta_tumble_protect_rsi_day
-            history: list[QuoteHighHistoryRow] = self._query_history(days=rsi_period * 20, asc=True)
-            points = [(i.day, i.high_price,) for i in history]
+            points = self._query_day_avg(days=rsi_period * 20, asc=True)
             rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
             if any(point for point in rsi_points if point[0] > rsi_day and point[1] >= unlock_limit):
                 state.ta_tumble_protect_rsi = None
@@ -91,8 +91,7 @@ class BasePriceMixin(StoreBase, ABC):
         elif store_config.tumble_protect_rsi:
             # RSI TP unlocked
             rsi_period = store_config.tumble_protect_rsi_period
-            history: list[QuoteLowHistoryRow] = self._query_history(days=rsi_period * 20, asc=True)
-            points = [(i.day, i.low_price,) for i in history]
+            points = self._query_day_avg(days=rsi_period * 20, asc=True)
             rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
             if rsi_points:
                 rsi_day = rsi_points[-1][0]
@@ -147,6 +146,18 @@ class BasePriceMixin(StoreBase, ABC):
         if asc:
             history = history[::-1]
         return history
+
+    def _query_day_avg(self, days: int, asc=True):
+        low_his: list[QuoteLowHistoryRow] = self._query_history(days=days, day_low=True, asc=True)
+        high_his: list[QuoteHighHistoryRow] = self._query_history(days=days, day_low=False, asc=True)
+        d: dict[int, list[float]] = defaultdict(list)
+        for item in low_his:
+            d[item.day].append(item.low_price)
+        for item in high_his:
+            d[item.day].append(item.high_price)
+        result = [(day, sum(nums) / len(nums), ) for day, nums in d.items() if len(nums) > 1]
+        result = sorted(result, key=lambda i: i[0], reverse=not asc)
+        return result
 
     def _detect_lowest_days(self) -> bool:
         store_config = self.store_config
