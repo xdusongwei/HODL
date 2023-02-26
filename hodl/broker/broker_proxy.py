@@ -1,66 +1,36 @@
 import multiprocessing.pool
+from requests import Session
 from hodl.broker import *
-from hodl.exception_tools import *
 from hodl.quote import *
 from hodl.state import *
 from hodl.tools import *
+from hodl.exception_tools import *
 
 
-class BrokerProxy:
-    """
-    Broker代理中介了BrokerApiBase接口调用
+def sort_brokers(var: VariableTools, prefer_list: list[str] = None) -> list[tuple[Type[BrokerApiBase], dict]]:
+    brokers = BROKERS.copy()
+    prefer_list = prefer_list or list()
+    prefer_list = prefer_list.copy()
+    prefer_list.reverse()
 
-    下单和账户资产类方法直接寻找对应broker类型的对象
-    市场状态和行情因为可以共享给多个持仓，需要中介多个broker的结果
-    行情方法请求时，根据broker的顺序列表逐个拉取，直至获取成功
-    市场状态需要定时统一一次性全部broker触发拉取，按Broker种类汇总保存到 MARKET_STATUS
-    特定持仓需要市场状态时，根据broker顺序列表从 MARKET_STATUS 尝试取特定交易品种特定region的状态
-    """
+    def _key(item: Type[BrokerApiBase]) -> tuple[int, str]:
+        rank = 0
+        if item.BROKER_NAME in prefer_list:
+            rank = prefer_list.index(item.BROKER_NAME) + 1
+        return rank, item.BROKER_NAME,
+
+    ordered_brokers = sorted(brokers, key=_key, reverse=True)
+    ordered_brokers = [
+        (broker, var.broker_config_dict(name=broker.BROKER_NAME),)
+        for broker in ordered_brokers
+        if var.broker_config_dict(name=broker.BROKER_NAME)
+    ]
+    return ordered_brokers
+
+
+class MarketStatusProxy:
     THREAD_POOL = multiprocessing.pool.ThreadPool()
     MARKET_STATUS: dict[Type[BrokerApiBase], dict[str, dict[str, str]]] = dict()
-
-    @classmethod
-    def _sort_brokers(cls, var: VariableTools, prefer_list: list[str] = None) -> list[tuple[Type[BrokerApiBase], dict]]:
-        brokers = BROKERS.copy()
-        prefer_list = prefer_list or list()
-        prefer_list = prefer_list.copy()
-        prefer_list.reverse()
-
-        def _sort(item: Type[BrokerApiBase]):
-            rank = 0
-            if item.BROKER_NAME in prefer_list:
-                rank = prefer_list.index(item.BROKER_NAME) + 1
-            return rank, item.BROKER_NAME
-
-        ordered_brokers = sorted(brokers, key=_sort, reverse=True)
-        ordered_brokers = [
-            (broker, var.broker_config_dict(name=broker.BROKER_NAME), )
-            for broker in ordered_brokers
-            if var.broker_config_dict(name=broker.BROKER_NAME)
-        ]
-        return ordered_brokers
-
-    def _query_quote(self):
-        exc = None
-        store_config = self.store_config
-        for broker in self.quote_brokers:
-            for meta in broker.META:
-                if meta.trade_type.value != store_config.trade_type:
-                    continue
-                if broker.BROKER_NAME != store_config.broker and not meta.share_quote:
-                    continue
-                if store_config.region not in meta.quote_regions:
-                    continue
-                quote = None
-                try:
-                    quote = broker.fetch_quote()
-                except Exception as e:
-                    exc = e
-                if quote:
-                    return quote
-        if exc:
-            raise exc
-        raise QuoteScheduleOver
 
     @classmethod
     def _market_status_thread(cls, b: BrokerApiBase) -> tuple[Type[BrokerApiBase], dict[str, dict[str, str]]]:
@@ -101,20 +71,36 @@ class BrokerProxy:
                 }
         return type(b), d
 
-    def _pull_market_status(self):
+    def pull_market_status(self):
         if not self.market_status_brokers:
             return None
 
         results: list[tuple[Type[BrokerApiBase], dict[str, dict[str, str]]]] = \
-            BrokerProxy.THREAD_POOL.map(BrokerProxy._market_status_thread, self.market_status_brokers)
+            MarketStatusProxy.THREAD_POOL.map(MarketStatusProxy._market_status_thread, self.market_status_brokers)
         all_status = dict(results)
-        BrokerProxy.MARKET_STATUS = all_status
+        MarketStatusProxy.MARKET_STATUS = all_status
         return all_status
 
-    def _query_market_status(self):
-        market_status_dict = self.MARKET_STATUS.copy()
-        store_config = self.store_config
-        for broker in self.market_status_brokers:
+    def __init__(self, var: VariableTools, session: Session = None):
+        self.market_status_brokers: list[BrokerApiBase] = list()
+        prefer_list = var.prefer_market_state_brokers
+        broker_info = sort_brokers(var=var, prefer_list=prefer_list)
+        brokers = [
+            t(
+                broker_config=d,
+                symbol=None,
+                name='MarketStatus',
+                logger=None,
+                session=session,
+            )
+            for t, d in broker_info
+            if any(meta for meta in t.META if meta.market_status_regions or meta.vix_symbol)
+        ]
+        self.market_status_brokers = brokers
+
+    def query_status(self, store_config: StoreConfig) -> str:
+        market_status_dict = self.all_status
+        for broker in self.brokers:
             for meta in broker.META:
                 if meta.trade_type.value != store_config.trade_type:
                     continue
@@ -131,10 +117,9 @@ class BrokerProxy:
         else:
             raise BrokerMismatchError(f'配置的所有broker没有任何可支持该品种获取其对应的市场状态')
 
-    def _query_vix(self):
-        market_status_dict = self.MARKET_STATUS.copy()
-        store_config = self.store_config
-        for broker in self.market_status_brokers:
+    def query_vix(self, store_config: StoreConfig):
+        market_status_dict = self.all_status
+        for broker in self.brokers:
             for meta in broker.META:
                 if meta.trade_type.value != store_config.trade_type:
                     continue
@@ -146,29 +131,62 @@ class BrokerProxy:
                     .get(type(broker), dict()) \
                     .get('vix', dict())
                 if d_vix:
+                    tz = TimeTools.region_to_tz(store_config.region)
                     vix_quote = VixQuote(
                         latest_price=float(d_vix['latest']),
                         day_high=float(d_vix['dayHigh']),
                         day_low=float(d_vix['dayLow']),
-                        time=TimeTools.from_timestamp(d_vix['time'], tz=TimeTools.region_to_tz(store_config.region)),
+                        time=TimeTools.from_timestamp(d_vix['time'], tz=tz),
                     )
                     return vix_quote
         else:
             raise BrokerMismatchError(f'配置的所有broker没有VIX数据')
 
-    # refresh all brokers market_status
-    def pull_market_status(self):
-        return self._pull_market_status()
+    @property
+    def all_status(self):
+        return MarketStatusProxy.MARKET_STATUS.copy()
+
+    @property
+    def brokers(self):
+        return self.market_status_brokers.copy()
+
+
+class BrokerProxy:
+    """
+    Broker代理中介了BrokerApiBase接口调用
+
+    下单和账户资产类方法直接寻找对应broker类型的对象
+    市场状态和行情因为可以共享给多个持仓，需要中介多个broker的结果
+    行情方法请求时，根据broker的顺序列表逐个拉取，直至获取成功
+    市场状态需要定时统一一次性全部broker触发拉取，按Broker种类汇总保存到 MARKET_STATUS
+    特定持仓需要市场状态时，根据broker顺序列表从 MARKET_STATUS 尝试取特定交易品种特定region的状态
+    """
+
+    def _query_quote(self):
+        exc = None
+        store_config = self.store_config
+        for broker in self.quote_brokers:
+            for meta in broker.META:
+                if meta.trade_type.value != store_config.trade_type:
+                    continue
+                if broker.BROKER_NAME != store_config.broker and not meta.share_quote:
+                    continue
+                if store_config.region not in meta.quote_regions:
+                    continue
+                quote = None
+                try:
+                    quote = broker.fetch_quote()
+                except Exception as e:
+                    exc = e
+                if quote:
+                    return quote
+        if exc:
+            raise exc
+        raise QuoteScheduleOver
 
     # proxy APIs begin
     def query_quote(self):
         return self._query_quote()
-
-    def query_market_status(self):
-        return self._query_market_status()
-
-    def query_vix(self):
-        return self._query_vix()
 
     def place_order(self, order: Order):
         broker = self._find_trade_broker()
@@ -209,7 +227,7 @@ class BrokerProxy:
         self.store_config = store_config
         self.quote_brokers: list[BrokerApiBase] = list()
         prefer_list = var.prefer_quote_brokers
-        broker_info = self._sort_brokers(var=var, prefer_list=prefer_list)
+        broker_info = sort_brokers(var=var, prefer_list=prefer_list)
         brokers = [
             t(
                 broker_config=d,
@@ -223,24 +241,8 @@ class BrokerProxy:
         ]
         self.quote_brokers = brokers
 
-        self.market_status_brokers: list[BrokerApiBase] = list()
-        prefer_list = var.prefer_market_state_brokers
-        broker_info = self._sort_brokers(var=var, prefer_list=prefer_list)
-        brokers = [
-            t(
-                broker_config=d,
-                symbol=store_config.symbol,
-                name=store_config.name,
-                logger=self.runtime_state.log.logger(),
-                session=self.runtime_state.http_session,
-            )
-            for t, d in broker_info
-            if any(meta for meta in t.META if meta.market_status_regions or meta.vix_symbol)
-        ]
-        self.market_status_brokers = brokers
-
         self.trade_brokers = list()
-        broker_info = self._sort_brokers(var=var)
+        broker_info = sort_brokers(var=var)
         brokers = [
             t(
                 broker_config=d,
@@ -274,5 +276,6 @@ class BrokerProxy:
 
 
 __all__ = [
+    'MarketStatusProxy',
     'BrokerProxy',
 ]

@@ -5,6 +5,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.locate import LocateTools
 from hodl.tools.store_config import StoreConfig
 from hodl.tools.tui_config import TuiConfig
+from hodl.tools.p2p_config import P2pConfig
 
 
 class VariableTools:
@@ -54,6 +55,16 @@ class VariableTools:
         """
         store_config_list = [StoreConfig(d) for d in self._config.get('store', dict()).values()]
         return {store_config.symbol: store_config for store_config in store_config_list}
+
+    @property
+    def p2p_config(self) -> P2pConfig:
+        """
+        交易机器人的P2P网络设定
+        Returns
+        -------
+
+        """
+        return P2pConfig(self._config.get('p2p', dict()))
 
     def broker_config_dict(self, name):
         """

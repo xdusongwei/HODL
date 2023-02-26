@@ -17,9 +17,17 @@ from hodl.broker.broker_proxy import *
 from hodl.tools import *
 
 
+class P2pThread(ThreadMixin):
+    def __init__(self):
+        pass
+
+    def run(self):
+        pass
+
+
 class MarketStatusThread(ThreadMixin):
-    def __init__(self, broker_proxy: BrokerProxy):
-        self.broker_proxy = broker_proxy
+    def __init__(self, ms_proxy: MarketStatusProxy):
+        self.ms_proxy = ms_proxy
         self.ok_counter = defaultdict(int)
         self.error_counter = defaultdict(int)
         self.latest_time = dict()
@@ -28,15 +36,15 @@ class MarketStatusThread(ThreadMixin):
 
     def prepare(self):
         print(f'开启异步线程拉取市场状态')
-        self.broker_proxy.pull_market_status()
+        self.ms_proxy.pull_market_status()
         print(f'预拉取市场状态结束')
 
     def run(self):
         super(MarketStatusThread, self).run()
         while True:
-            ms = self.broker_proxy.pull_market_status()
+            ms = self.ms_proxy.pull_market_status()
             if not ms:
-                continue
+                break
             for t_broker, d in ms.items():
                 broker_name = t_broker.BROKER_NAME
                 self.broker_names.add(broker_name)
@@ -304,10 +312,11 @@ class HtmlWriterThread(ThreadMixin):
 
 
 class JsonWriterThread(ThreadMixin):
-    def __init__(self, sleep_secs: int, stores: list[Store]):
+    def __init__(self, sleep_secs: int, stores: list[Store], ms_proxy: MarketStatusProxy):
         self.sleep_secs = sleep_secs
         self.stores = stores
         self.total_write = 0
+        self.market_status_proxy = ms_proxy
 
     def primary_bar(self) -> list[BarElementDesc]:
         bar = [
@@ -322,16 +331,17 @@ class JsonWriterThread(ThreadMixin):
         super(JsonWriterThread, self).run()
         sleep_secs = self.sleep_secs
         stores = self.stores
+        pid = os.getpid()
         while True:
             time.sleep(4)
             path = VariableTools().manager_state_path
             if not path:
                 return
-            ms = BrokerProxy.MARKET_STATUS or dict()
+            ms = self.market_status_proxy.all_status or dict()
             ms = {broker_type.BROKER_NAME: detail for broker_type, detail in ms.items()}
             d = {
                 'type': 'manager',
-                'pid': os.getpid(),
+                'pid': pid,
                 'time': TimeTools.us_time_now().timestamp(),
                 'storeSleepSecs': sleep_secs,
                 'marketStatus': ms,
@@ -491,8 +501,12 @@ class Manager(ThreadMixin):
                 db.conn.close()
             raise e
 
+        ms_proxy = MarketStatusProxy(
+            var=var,
+            session=Store.SESSION,
+        )
         if var.async_market_status:
-            mkt_thread = MarketStatusThread(broker_proxy=stores[0].broker_proxy)
+            mkt_thread = MarketStatusThread(ms_proxy)
             mkt_thread.prepare()
 
             Manager.MARKET_STATUS_THREAD = mkt_thread.start(
@@ -514,6 +528,7 @@ class Manager(ThreadMixin):
         Manager.JSON_THREAD = JsonWriterThread(
             sleep_secs=var.sleep_limit,
             stores=stores,
+            ms_proxy=ms_proxy,
         ).start(
             name='jsonWriter',
         )

@@ -114,8 +114,8 @@ class BrokerApiBase(BrokerApiMixin):
     def __init__(
             self,
             broker_config: dict,
-            symbol: str,
-            name: str,
+            symbol: None | str,
+            name: None | str,
             logger: LoggerWrapper = None,
             session: requests.Session = None,
     ):

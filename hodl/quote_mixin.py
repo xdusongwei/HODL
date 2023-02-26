@@ -22,15 +22,15 @@ class QuoteMixin(StoreBase, ABC):
         if QuoteMixin.CACHE_MARKET_STATUS:
             with QuoteMixin.CACHE_LOCK:
                 if TimeTools.us_time_now().timestamp() - QuoteMixin.LAST_TIMESTAMP > QuoteMixin.CACHE_TTL:
-                    self.broker_proxy.pull_market_status()
+                    self.market_status_proxy.pull_market_status()
                     QuoteMixin.LAST_TIMESTAMP = TimeTools.us_time_now().timestamp()
         else:
-            self.broker_proxy.pull_market_status()
+            self.market_status_proxy.pull_market_status()
 
     def current_market_status(self) -> str:
         if not self.runtime_state.variable.async_market_status:
             self._pull_market_status()
-        return self.broker_proxy.query_market_status()
+        return self.market_status_proxy.query_status(self.store_config)
 
     def current_quote(self) -> Quote:
         state = self.state

@@ -67,7 +67,7 @@ class BasePriceMixin(StoreBase, ABC):
 
         state.ta_vix_high = None
         if store_config.vix_tumble_protect is not None:
-            vix_quote = self.broker_proxy.query_vix()
+            vix_quote = self.market_status_proxy.query_vix(store_config)
             if vix_quote:
                 state.ta_vix_high = vix_quote.day_high
                 state.ta_vix_time = vix_quote.time.timestamp()

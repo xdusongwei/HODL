@@ -54,6 +54,14 @@ class StoreBase(ThreadMixin):
             raise e
 
     @property
+    def market_status_proxy(self) -> MarketStatusProxy:
+        return getattr(self, '_market_status_proxy', None)
+
+    @market_status_proxy.setter
+    def market_status_proxy(self, v: MarketStatusProxy):
+        setattr(self, '_market_status_proxy', v)
+
+    @property
     def broker_proxy(self) -> BrokerProxy:
         return getattr(self, '_broker_proxy', None)
 
@@ -231,6 +239,10 @@ class StoreBase(ThreadMixin):
         self.broker_proxy = BrokerProxy(
             store_config=self.store_config,
             runtime_state=self.runtime_state,
+        )
+        self.market_status_proxy = MarketStatusProxy(
+            var=self.runtime_state.variable,
+            session=self.runtime_state.http_session,
         )
         self.broker_proxy.on_init()
 
