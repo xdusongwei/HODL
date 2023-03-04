@@ -12,7 +12,6 @@ dependencies = [
     "concurrent-log-handler>=0.9.20",
     "json-log-formatter>=0.5.1",
     "toml>=0.10.2",
-    "textual==0.1.18",
     "httpx>=0.22.0",
     "h2>=4.1.0",
     "requests>=2.27.1",
@@ -27,9 +26,11 @@ dependencies = [
     "psutil>=5.9.3",
     "orjson>=3.8.3",
     "exchange-calendars>=4.2.4",
+    "textual==0.1.18",
+    "libp2p-go==0.1.4",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 
 [project.urls]
@@ -37,7 +38,7 @@ homepage = "https://github.com/xdusongwei/HODL"
 
 [project.optional-dependencies]
 tui = [
-    "pygame>=2.1.2",
+    "pygame==2.2.0",
     "win10toast>=0.9; sys_platform == 'win32'",
 ]
 test = [

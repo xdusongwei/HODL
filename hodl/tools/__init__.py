@@ -8,6 +8,7 @@ from hodl.tools.tui_config import TuiConfig
 from hodl.tools.store_state_base import StoreStateBase
 from hodl.tools.dict_wrapper import DictWrapper
 from hodl.tools.leaky_bucket import LeakyBucket
+from hodl.tools.p2p_config import P2pConfig
 
 
 __all__ = [
@@ -23,4 +24,5 @@ __all__ = [
     'StoreStateBase',
     'DictWrapper',
     'LeakyBucket',
+    'P2pConfig',
 ]
