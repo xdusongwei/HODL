@@ -89,6 +89,7 @@ class P2pThread(ThreadMixin):
             connect_list=None,
             cid=None,
     ):
+        dht = None
         if self.config.secret_key:
             sk = PrivKey.unmarshal(sk)
         else:
@@ -114,16 +115,18 @@ class P2pThread(ThreadMixin):
                 *dht_opts,
             )
             await dht.bootstrap()
-            await asyncio.sleep(0.5)
             host = RoutedHost(host, dht)
-            if cid:
-                await dht.provide(cid, brdcst=True)
         if dht_bootstrap or connect_list:
             for address in (dht_bootstrap or list()) + (connect_list or list()):
                 try:
                     await host.connect(address)
                 except Exception as e:
                     print(f"connect {address.id} error: {e}")
+        if dht and cid:
+            try:
+                await dht.provide(cid, brdcst=True)
+            except Exception as e:
+                print(f'注册Cid资源失败:{e}')
         self.host = host
         self.ps = await PubSub.new_gossip(host)
         self.topic = await self.ps.join(self.config.topic)
