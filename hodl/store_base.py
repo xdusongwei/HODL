@@ -176,7 +176,7 @@ class StoreBase(ThreadMixin):
                     row.save(con=db.conn)
         for cb in self.on_state_changed:
             try:
-                cb(self.state)
+                cb(self)
             except Exception as e:
                 self.logger.exception(f'回调状态文件变更时遇到异常{e}')
 
