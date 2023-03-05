@@ -20,6 +20,10 @@ class P2pConfig(dict):
         return self.get('listen', list())
 
     @property
+    def protocol_prefix(self) -> str:
+        return self.get('protocol_prefix', None)
+
+    @property
     def master_pks(self) -> list[str]:
         return self.get('master_pks', list())
 
@@ -41,8 +45,8 @@ class P2pConfig(dict):
 
     @property
     def cid(self) -> None | Cid:
-        code = self.get('cid_code', None)
-        key = self.get('cid_key', None)
+        code: int = self.get('cid_code', None)
+        key: str = self.get('cid_key', None)
         if code and key:
             return Cid(codec_type=code, key=key.encode('utf8'))
         return None

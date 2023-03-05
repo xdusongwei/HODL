@@ -11,7 +11,8 @@ class JsonWriterThread(ThreadMixin):
     def __init__(
             self,
             sleep_secs: int,
-            stores: list[Store], ms_proxy: MarketStatusProxy,
+            stores: list[Store],
+            ms_proxy: MarketStatusProxy,
             html_thread: threading.Thread,
             ms_thread: threading.Thread,
     ):

@@ -36,6 +36,7 @@ class StoreBase(ThreadMixin):
         self.state: State = State.new()
         self.db = db
         self.lock = threading.Lock()
+        self.on_state_changed = set()
 
         variable = self.runtime_state.variable
         self.bot = AlertBot(
@@ -173,6 +174,11 @@ class StoreBase(ThreadMixin):
                         update_time=int(TimeTools.us_time_now().timestamp()),
                     )
                     row.save(con=db.conn)
+        for cb in self.on_state_changed:
+            try:
+                cb(self.state)
+            except Exception as e:
+                self.logger.exception(f'回调状态文件变更时遇到异常{e}')
 
     @property
     def logger(self):
