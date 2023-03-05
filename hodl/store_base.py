@@ -126,7 +126,8 @@ class StoreBase(ThreadMixin):
         text = FormatTool.json_dumps(self.state)
         day = TimeTools.us_time_now()
         today = TimeTools.date_to_ymd(day)
-        if (today, text,) != runtime_state.state_compare:
+        changed = (today, text,) != runtime_state.state_compare
+        if changed:
             if self.state_file:
                 with open(self.state_file, 'w', encoding='utf8') as f:
                     f.write(text)
@@ -175,6 +176,8 @@ class StoreBase(ThreadMixin):
                     )
                     row.save(con=db.conn)
         for cb in self.on_state_changed:
+            if not changed:
+                continue
             try:
                 cb(self)
             except Exception as e:
