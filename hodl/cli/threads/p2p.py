@@ -1,15 +1,123 @@
 import json
 import zlib
+import struct
 import asyncio
+from typing import Self, Type
+import msgpack
+from Crypto.Cipher import AES
 from libp2p import *
 from libp2p.crypto import *
 from libp2p.data_store import *
 from libp2p.dht import *
+from libp2p.peer import *
 from libp2p.routed_host import *
 from libp2p.pubsub import *
 from hodl.store import *
 from hodl.thread_mixin import *
 from hodl.tools import *
+
+
+class MpMessage(dict):
+    @property
+    def compressed(self) -> bool:
+        return self.get('compressed', False)
+
+    @property
+    def encrypted(self) -> bool:
+        return self.get('encrypted', False)
+
+    def verify(self, peer_id: str = None) -> bool:
+        pk = PubKey.unmarshal(self.pk)
+        if peer_id:
+            peer_from_pk = Peer.from_public_key(pk).string
+            if peer_from_pk != peer_id:
+                return False
+        return pk.verify(self.bytes, self.sign)
+
+    @property
+    def sign(self) -> bytes:
+        return self.get('sign')
+
+    @property
+    def pk(self) -> bytes:
+        return self.get('pk')
+
+    @property
+    def bytes(self) -> bytes:
+        return self.get('content')
+
+    def unwrap(
+            self,
+            t: Type[dict] = dict,
+            aes_key: bytes = None,
+    ) -> dict:
+        b = self.bytes
+        if self.encrypted:
+            if not aes_key:
+                raise ValueError(f'加密数据需要设定密钥用来解密')
+            if len(b) <= 32:
+                raise ValueError(f'加密数据长度无效')
+            nonce, tag, cipher_text = b[0:16], b[16:32], b[32:]
+            cipher = AES.new(aes_key, AES.MODE_EAX, nonce)
+            b = cipher.decrypt_and_verify(cipher_text, tag)
+        if self.compressed:
+            b = zlib.decompress(b)
+        d = msgpack.loads(b)
+        return t(d)
+
+    @classmethod
+    async def read_from_stream(cls, s: Stream) -> Self:
+        _, length = await s.read_bytes(4)
+        length: int = struct.unpack('<L', length)[0]
+        _, b = await s.read_bytes(length)
+        msg = cls.read_from_bytes(b, peer_id=s.id)
+        return msg
+
+    @classmethod
+    async def write_to_stream(cls, b: bytes, s: Stream):
+        length = struct.pack('<L', len(b))
+        await s.write(length)
+        await s.write(b)
+
+    @classmethod
+    def read_from_bytes(
+            cls,
+            b: bytes,
+            peer_id: str = None,
+    ) -> Self:
+        d = msgpack.loads(b)
+        msg = MpMessage(d)
+        if not msg.verify(peer_id=peer_id):
+            raise ValueError(f'签名验证失败')
+        return msg
+
+    @classmethod
+    def make_message(
+            cls,
+            d: dict,
+            sk: PrivKey,
+            pk: PubKey,
+            aes_key: bytes = None,
+            *,
+            compress: bool = False,
+    ) -> bytes:
+        b = msgpack.dumps(d)
+        if compress:
+            b = zlib.compress(b)
+        if aes_key:
+            cipher = AES.new(aes_key, AES.MODE_EAX)
+            cipher_text, tag = cipher.encrypt_and_digest(b)
+            nonce = cipher.nonce
+            b = nonce + tag + cipher_text
+        sign = sk.sign(b)
+        d = {
+            'compressed': bool(compress),
+            'encrypted': bool(aes_key),
+            'sign': sign,
+            'pk': pk.marshal(),
+            'content': b,
+        }
+        return msgpack.dumps(d)
 
 
 class P2pThread(ThreadMixin):
@@ -23,22 +131,26 @@ class P2pThread(ThreadMixin):
         self.stores = stores
         self.loop = asyncio.new_event_loop()
         self.topic_reset_minutes = 15
-        self.pk = '--'
+        self.sk: PrivKey = None
+        self.pk: PubKey = None
         self.pub_sum = 0
+        self.aes_key = None
         asyncio.set_event_loop(self.loop)
 
     def primary_bar(self) -> list[BarElementDesc]:
+        key_type = self.pk.type.name if self.pk else '--'
+        peer_id = self.host.id if self.host else '--'
         bar = [
             BarElementDesc(
-                content=f'🔑{self.pk}',
-                tooltip=f'节点ID',
+                content=f'🔑{key_type}',
+                tooltip=f'节点ID: {peer_id}',
             ),
         ]
         if self.topic:
             bar.append(
                 BarElementDesc(
                     content=f'📻{self.config.topic}',
-                    tooltip=f'Topic名称',
+                    tooltip=f'topic名称',
                 ),
             )
         return bar
@@ -47,13 +159,15 @@ class P2pThread(ThreadMixin):
         bar = [
             BarElementDesc(
                 content=f'🎞️{FormatTool.number_to_size(self.pub_sum)}',
-                tooltip=f'Topic累计发送量',
+                tooltip=f'topic累计发送量',
             )
         ]
         return bar
 
     def prepare(self):
         super().prepare()
+        self.topic_reset_minutes = self.config.topic_reset_minutes
+        self.aes_key = self.config.aes_key
 
     def run(self):
         super().run()
@@ -128,9 +242,59 @@ class P2pThread(ThreadMixin):
             except Exception as e:
                 print(f'注册Cid资源失败:{e}')
         self.host = host
+        self.sk = sk
+        self.pk = sk.get_public
         self.ps = await PubSub.new_gossip(host)
         self.topic = await self.ps.join(self.config.topic)
-        self.pk = host.id.string
+        self.host.set_stream_handler('/hodl/admin', self.admin)
+
+    async def admin(self, s: Stream):
+        if self.config.master_pks and s.id not in self.config.master_pks:
+            resp = MpMessage.make_message(
+                {
+                    'type': 'unknown',
+                    'code': 403,
+                    'result': False,
+                },
+                sk=self.sk,
+                pk=self.pk,
+                aes_key=self.aes_key,
+                compress=True,
+            )
+            await MpMessage.write_to_stream(resp, s)
+            await s.close()
+            return
+        req = await MpMessage.read_from_stream(s)
+        d: dict = req.unwrap(dict, aes_key=self.aes_key)
+        match d.get('type'):
+            case 'status':
+                resp = MpMessage.make_message(
+                    {
+                        'type': d.get('type'),
+                        'code': 200,
+                        'result': True,
+                        'storeCount': len(self.stores),
+                    },
+                    sk=self.sk,
+                    pk=self.pk,
+                    aes_key=self.aes_key,
+                    compress=True,
+                )
+                await MpMessage.write_to_stream(resp, s)
+            case _:
+                resp = MpMessage.make_message(
+                    {
+                        'type': 'unknown',
+                        'code': 404,
+                        'result': False,
+                    },
+                    sk=self.sk,
+                    pk=self.pk,
+                    aes_key=self.aes_key,
+                    compress=True,
+                )
+                await MpMessage.write_to_stream(resp, s)
+        await s.close()
 
     async def publish(self, d: dict):
         if not self.topic:
@@ -151,4 +315,7 @@ class P2pThread(ThreadMixin):
         self.pub_sum += len(b)
 
 
-__all__ = ['P2pThread', ]
+__all__ = [
+    'MpMessage',
+    'P2pThread',
+]

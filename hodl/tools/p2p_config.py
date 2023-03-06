@@ -16,6 +16,14 @@ class P2pConfig(dict):
         return None
 
     @property
+    def aes_key(self) -> None | bytes:
+        key: str = self.get('aes_key', None)
+        if not key:
+            return None
+        key: bytes = bytes.fromhex(key)
+        return key
+
+    @property
     def listen(self) -> list[str]:
         return self.get('listen', list())
 
@@ -42,6 +50,12 @@ class P2pConfig(dict):
     @property
     def topic(self) -> str:
         return self.get('topic', None)
+
+    @property
+    def topic_reset_minutes(self) -> int:
+        minutes = self.get('topic_reset_minutes', 1)
+        assert minutes > 0
+        return minutes
 
     @property
     def cid(self) -> None | Cid:
