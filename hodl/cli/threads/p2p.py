@@ -139,7 +139,7 @@ class P2pThread(ThreadMixin):
 
     def primary_bar(self) -> list[BarElementDesc]:
         key_type = self.pk.type.name if self.pk else '--'
-        peer_id = self.host.id if self.host else '--'
+        peer_id = self.host.id.string if self.host else '--'
         bar = [
             BarElementDesc(
                 content=f'🔑{key_type}',

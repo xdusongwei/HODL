@@ -175,8 +175,10 @@ class BasePriceMixin(StoreBase, ABC):
         if not ma5_price_list or not ma10_price_list:
             return None
         ma5 = sum(ma5_price_list) / len(ma5_price_list)
+        ma5 = FormatTool.adjust_precision(ma5, precision=self.store_config.precision)
         self.state.ta_tumble_protect_ma5 = ma5
         ma10 = sum(ma10_price_list) / len(ma10_price_list)
+        ma10 = FormatTool.adjust_precision(ma10, precision=self.store_config.precision)
         self.state.ta_tumble_protect_ma10 = ma10
         assert ma5 > 0
         assert ma10 > 0
