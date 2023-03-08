@@ -367,10 +367,12 @@ class StoreBase(ThreadMixin):
         if config.tumble_protect_rsi:
             show_tp_elem = True
             tooltip += f'RSI暴跌保护已开启，'
-            tooltip += f'盘中RSI{config.tumble_protect_rsi_period}低于{config.tumble_protect_rsi_lock_limit}将阻止卖出计划. '
+            rsi_name = f'RSI{config.tumble_protect_rsi_period}'
+            tooltip += f'盘中{rsi_name}低于{config.tumble_protect_rsi_lock_limit}将阻止卖出计划. '
         if limit := state.ta_tumble_protect_rsi:
             show_tp_elem = True
-            tooltip += f'RSI{state.ta_tumble_protect_rsi_period}需要高于{limit}恢复卖出计划. '
+            rsi_name = f'RSI{config.tumble_protect_rsi_period}'
+            tooltip += f'注意，在{state.ta_tumble_protect_rsi_day}当日触及保护阈值，目前{rsi_name}需要高于{limit}恢复卖出计划. '
         if current := state.ta_tumble_protect_rsi_current:
             tooltip += f'当前RSI{config.tumble_protect_rsi_period}为{current}. '
         if show_tp_elem:
