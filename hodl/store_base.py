@@ -350,32 +350,50 @@ class StoreBase(ThreadMixin):
             bar.append(BarElementDesc(content=market_price_set, tooltip=tooltip))
 
         show_tp_elem = False
+        tp_alarm_mode = False
         content = '🛡️'
         tooltip = ''
 
-        if state.ta_tumble_protect_flag:
+        if config.base_price_tumble_protect:
             show_tp_elem = True
-            tooltip += f'近期最低价格已触发暴跌保护, 基准价格将参考如下指标: '
-            tooltip += f'MA5{FormatTool.pretty_price(state.ta_tumble_protect_ma5, config=config)}, '
-            tooltip += f'MA10{FormatTool.pretty_price(state.ta_tumble_protect_ma10, config=config)}. '
+            tooltip += f'启用MA暴跌保护.'
         if rate := config.vix_tumble_protect:
             show_tp_elem = True
+            tooltip += f'启用VIX暴跌保护.'
             vix_high = state.ta_vix_high
             tooltip += f'VIX当日最高到达{FormatTool.pretty_usd(rate, precision=2)}时将阻止卖出订单. '
-            if not len(plan.orders):
-                tooltip += f'VIX当日最高:{FormatTool.pretty_usd(vix_high, precision=2)}.'
+            tooltip += f'VIX当日最高:{FormatTool.pretty_usd(vix_high, precision=2)}.'
         if config.tumble_protect_rsi:
             show_tp_elem = True
-            tooltip += f'RSI暴跌保护已开启，'
+            tooltip += f'启用RSI暴跌保护.'
             rsi_name = f'RSI{config.tumble_protect_rsi_period}'
             tooltip += f'盘中{rsi_name}低于{config.tumble_protect_rsi_lock_limit}将阻止卖出计划. '
+            if rsi_current := state.ta_tumble_protect_rsi_current:
+                tooltip += f'当前{rsi_name}为{rsi_current}. '
+        if show_tp_elem:
+            tooltip += '\n'
+
+        if state.ta_tumble_protect_flag:
+            show_tp_elem = True
+            tp_alarm_mode = True
+            tooltip += f'注意, 近期最低价格已触发暴跌保护, 基准价格将参考如下指标: \n'
+            ma5 = FormatTool.pretty_price(state.ta_tumble_protect_ma5, config=config)
+            ma10 = FormatTool.pretty_price(state.ta_tumble_protect_ma10, config=config)
+            tooltip += f'MA5: {ma5}, \n'
+            tooltip += f'MA10: {ma10}. \n'
+        if state.ta_vix_high and config.vix_tumble_protect and state.ta_vix_high >= config.vix_tumble_protect:
+            show_tp_elem = True
+            tp_alarm_mode = True
+            tooltip += f'注意, 当日VIX最高价已触发VIX暴跌保护.\n'
         if limit := state.ta_tumble_protect_rsi:
             show_tp_elem = True
+            tp_alarm_mode = True
             rsi_name = f'RSI{config.tumble_protect_rsi_period}'
-            tooltip += f'注意，在{state.ta_tumble_protect_rsi_day}当日触及保护阈值，目前{rsi_name}需要高于{limit}恢复卖出计划. '
-        if current := state.ta_tumble_protect_rsi_current:
-            tooltip += f'当前RSI{config.tumble_protect_rsi_period}为{current}. '
+            rsi_day = state.ta_tumble_protect_rsi_day
+            tooltip += f'注意，在{rsi_day}触及到保护阈值，目前{rsi_name}需要高于{limit}恢复卖出计划.\n'
         if show_tp_elem:
+            if tp_alarm_mode:
+                content = '🚨'
             bar.append(BarElementDesc(content=content, tooltip=tooltip))
 
         if state.sleep_mode_active:
