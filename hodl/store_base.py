@@ -376,21 +376,12 @@ class StoreBase(ThreadMixin):
         if state.ta_tumble_protect_flag:
             show_tp_elem = True
             tp_alarm_mode = True
-            tooltip += f'注意, 近期最低价格已触发暴跌保护, 基准价格将参考如下指标: \n'
-            ma5 = FormatTool.pretty_price(state.ta_tumble_protect_ma5, config=config)
-            ma10 = FormatTool.pretty_price(state.ta_tumble_protect_ma10, config=config)
-            tooltip += f'MA5: {ma5}, \n'
-            tooltip += f'MA10: {ma10}. \n'
         if state.ta_vix_high and config.vix_tumble_protect and state.ta_vix_high >= config.vix_tumble_protect:
             show_tp_elem = True
             tp_alarm_mode = True
-            tooltip += f'注意, 当日VIX最高价已触发VIX暴跌保护.\n'
-        if limit := state.ta_tumble_protect_rsi:
+        if state.ta_tumble_protect_rsi:
             show_tp_elem = True
             tp_alarm_mode = True
-            rsi_name = f'RSI{config.tumble_protect_rsi_period}'
-            rsi_day = state.ta_tumble_protect_rsi_day
-            tooltip += f'注意，在{rsi_day}触及到保护阈值，目前{rsi_name}需要高于{limit}恢复卖出计划.\n'
         if show_tp_elem:
             if tp_alarm_mode:
                 content = '🚨'
@@ -440,6 +431,22 @@ class StoreBase(ThreadMixin):
             state=self.state,
             process_time=self.process_time,
         )
+
+    def warning_alert_bar(self) -> list[str]:
+        result = list()
+        config = self.store_config
+        state = self.state
+        if state.ta_tumble_protect_flag:
+            ma5 = FormatTool.pretty_price(state.ta_tumble_protect_ma5, config=config)
+            ma10 = FormatTool.pretty_price(state.ta_tumble_protect_ma10, config=config)
+            result.append(f'近期最低价格已触发MA暴跌保护, 基准价格将参考\nMA5({ma5}) MA10({ma10}).')
+        if state.ta_vix_high and config.vix_tumble_protect and state.ta_vix_high >= config.vix_tumble_protect:
+            result.append(f'当日VIX最高价已触发VIX暴跌保护.')
+        if limit := state.ta_tumble_protect_rsi:
+            rsi_name = f'RSI{config.tumble_protect_rsi_period}'
+            rsi_day = state.ta_tumble_protect_rsi_day
+            result.append(f'{rsi_day}盘中触及到RSI暴跌保护，{rsi_name}高于{limit}时恢复卖出计划.')
+        return result
 
     def thread_lock(self) -> threading.Lock:
         return self.lock

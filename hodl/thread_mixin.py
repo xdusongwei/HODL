@@ -35,6 +35,9 @@ class ThreadMixin:
     def secondary_bar(self) -> list[BarElementDesc]:
         return list()
 
+    def warning_alert_bar(self) -> list[str]:
+        return list()
+
     def prepare(self):
         pass
 

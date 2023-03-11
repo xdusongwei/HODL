@@ -113,6 +113,12 @@
                                             <span class="badge bg-secondary" {{ bar.tooltip_attr|safe }}>{{ bar.content }}</span>
                                             {% endfor %}
                                         </p>
+                                        {% for bar in store.warning_alert_bar() %}
+                                            <div class="alert alert-warning" role="alert">
+                                              ⚠️{{ bar }}
+                                            </div>
+                                            <span class="badge bg-secondary" {{ bar.tooltip_attr|safe }}>{{ bar.content }}</span>
+                                        {% endfor %}
                                         <p>
                                             {% if row_tool.has_table %}
                                                 <a class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse"
