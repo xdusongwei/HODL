@@ -114,8 +114,8 @@
                                             {% endfor %}
                                         </p>
                                         {% for bar in store.warning_alert_bar() %}
-                                            <div class="alert alert-warning" role="alert">
-                                              ⚠️{{ bar }}
+                                            <div class="alert alert-warning" role="alert" style="padding: 4px;">
+                                              🚫{{ bar }}
                                             </div>
                                             <span class="badge bg-secondary" {{ bar.tooltip_attr|safe }}>{{ bar.content }}</span>
                                         {% endfor %}
