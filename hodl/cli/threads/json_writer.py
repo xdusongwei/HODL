@@ -91,6 +91,7 @@ class JsonWriterThread(ThreadMixin):
                             'currency': store.store_config.currency,
                             'reworkLevel': store.store_config.rework_level,
                             'marketPriceRate': store.store_config.market_price_rate,
+                            'visible': store.store_config.visible,
                         },
                         'broker': {
                             'tradeBroker': str(store.broker_proxy.trade_broker),

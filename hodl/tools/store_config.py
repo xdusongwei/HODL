@@ -413,5 +413,12 @@ class StoreConfig(dict):
     def full_name(self) -> str:
         return f'[{self.broker}.{self.region}]{self.symbol}({self.name})'
 
+    @property
+    def visible(self) -> bool:
+        """
+        是否展示在html或者tui文件中
+        """
+        return self.get('visible', True)
+
 
 __all__ = ['TradeStrategyEnum', 'StoreConfig', ]

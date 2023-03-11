@@ -152,7 +152,7 @@ class HtmlWriterThread(ThreadMixin):
             html_file_path = self.variable.html_file_path
             template = self.template
             db = self.db
-            store_list: list[Store] = self.stores.copy()
+            store_list: list[Store] = [store for store in self.stores if store.store_config.visible]
             new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
             if self.current_hash != new_hash:
                 if db:
