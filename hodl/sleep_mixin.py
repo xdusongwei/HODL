@@ -18,6 +18,8 @@ class SleepMixin(StoreBase, ABC):
                 else:
                     secs *= 4
                     sleep_mode_active = True
+            if not config.visible:
+                secs *= 4
         self.state.sleep_mode_active = sleep_mode_active
         TimeTools.sleep(secs)
 

@@ -416,7 +416,7 @@ class StoreConfig(dict):
     @property
     def visible(self) -> bool:
         """
-        是否展示在html或者tui文件中
+        是否展示在html或者tui中
         """
         return self.get('visible', True)
 
