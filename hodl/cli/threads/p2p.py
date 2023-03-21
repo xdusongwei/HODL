@@ -135,6 +135,7 @@ class P2pThread(ThreadMixin):
         self.pk: PubKey = None
         self.pub_sum = 0
         self.aes_key = None
+        self.pinned_addrs: list[AddrInfo] = list()
         asyncio.set_event_loop(self.loop)
 
     def primary_bar(self) -> list[BarElementDesc]:
@@ -144,6 +145,10 @@ class P2pThread(ThreadMixin):
             BarElementDesc(
                 content=f'🔑{key_type}',
                 tooltip=f'节点ID: {peer_id}',
+            ),
+            BarElementDesc(
+                content=f'👂{len(self.host.addrs)}',
+                tooltip=', '.join(self.host.addrs),
             ),
         ]
         if self.topic:
@@ -231,8 +236,12 @@ class P2pThread(ThreadMixin):
             await dht.bootstrap()
             host = RoutedHost(host, dht)
         if dht_bootstrap or connect_list:
-            for address in (dht_bootstrap or list()) + (connect_list or list()):
+            peer_store = host.peer_store
+            self.pinned_addrs = (dht_bootstrap or list()) + (connect_list or list())
+            for address in self.pinned_addrs:
                 try:
+                    address: AddrInfo = address
+                    peer_store.add_addrs(address.id, address.addrs, PeerStore.PermanentAddrTTL)
                     await host.connect(address)
                 except Exception as e:
                     print(f"connect {address.id} error: {e}")
@@ -310,6 +319,12 @@ class P2pThread(ThreadMixin):
             self.pub_create_time = now
             if self.topic:
                 await self.topic.close()
+                for address in self.pinned_addrs:
+                    try:
+                        address: AddrInfo = address
+                        await self.host.connect(address)
+                    except Exception as e:
+                        print(f"connect {address.id} error: {e}")
                 self.topic = await self.ps.join(self.config.topic)
         await self.topic.publish(b)
         self.pub_sum += len(b)

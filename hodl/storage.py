@@ -59,7 +59,7 @@ class EarningRow:
 
     @classmethod
     def latest_earning_by_symbol(cls, con: sqlite3.Connection, symbol: str, days: int = 14):
-        begin_date = TimeTools.utc_now() + timedelta(days=-days)
+        begin_date = TimeTools.timedelta(TimeTools.utc_now(), days=-days)
         begin_day = int(begin_date.strftime('%Y%m%d'))
         cur = con.cursor()
         cur.execute("SELECT * FROM `earning` WHERE `symbol` = ? AND `buyback_price` IS NOT NULL AND `day` >= ? ORDER BY `day` DESC LIMIT 1;", (symbol, begin_day, ))
@@ -305,7 +305,7 @@ class QuoteLowHistoryRow:
     ) -> list['QuoteLowHistoryRow']:
         cur = con.cursor()
         cur.execute(
-            "SELECT `broker`, `region`, `symbol`, `day`, `low_price`, `update_time` FROM `quote_low_history` WHERE `broker` = ? AND `region` = ? AND `symbol` = ? AND `day` >= ? AND `day` < ? ORDER BY `day` DESC;",
+            "SELECT `broker`, `region`, `symbol`, `day`, `low_price`, `update_time` FROM `quote_low_history` WHERE `broker` = ? AND `region` = ? AND `symbol` = ? AND `day` >= ? AND `day` <= ? ORDER BY `day` DESC;",
             (broker, region, symbol, begin_day, end_day, ))
         items = cur.fetchall()
         items = list(map(lambda item: QuoteLowHistoryRow(**item), items))
@@ -348,7 +348,7 @@ class QuoteHighHistoryRow:
     ) -> list['QuoteHighHistoryRow']:
         cur = con.cursor()
         cur.execute(
-            "SELECT `broker`, `region`, `symbol`, `day`, `high_price`, `update_time` FROM `quote_high_history` WHERE `broker` = ? AND `region` = ? AND `symbol` = ? AND `day` >= ? AND `day` < ? ORDER BY `day` DESC;",
+            "SELECT `broker`, `region`, `symbol`, `day`, `high_price`, `update_time` FROM `quote_high_history` WHERE `broker` = ? AND `region` = ? AND `symbol` = ? AND `day` >= ? AND `day` <= ? ORDER BY `day` DESC;",
             (broker, region, symbol, begin_day, end_day, ))
         items = cur.fetchall()
         items = list(map(lambda item: QuoteHighHistoryRow(**item), items))

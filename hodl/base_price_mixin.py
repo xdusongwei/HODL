@@ -36,11 +36,12 @@ class BasePriceMixin(StoreBase, ABC):
                         return base_price_row.price
 
                 price_list = [quote_pre_close, ]
-                if db:
+                if db and store_config.base_price_last_buy:
                     con = db.conn
-                    base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
-                    if base_price_row and base_price_row.price > 0:
-                        price_list.append(base_price_row.price)
+                    days = store_config.base_price_last_buy_days
+                    earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol, days=days)
+                    if earning_row and earning_row.buyback_price and earning_row.buyback_price > 0:
+                        price_list.append(earning_row.buyback_price)
                 if store_config.base_price_day_low:
                     if low_price is not None:
                         price_list.append(low_price)
@@ -82,6 +83,9 @@ class BasePriceMixin(StoreBase, ABC):
             rsi_day = state.ta_tumble_protect_rsi_day
             points = self._query_day_avg(days=rsi_period * 20, asc=True)
             rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
+            if store_config.tumble_protect_rsi:
+                # 可以随时更新上限阈值
+                state.ta_tumble_protect_rsi = store_config.tumble_protect_rsi
             if any(point for point in rsi_points if point[0] > rsi_day and point[1] >= unlock_limit):
                 state.ta_tumble_protect_rsi = None
                 state.ta_tumble_protect_rsi_day = None

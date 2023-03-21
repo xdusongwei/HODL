@@ -235,6 +235,15 @@ class StoreConfig(dict):
         return self.get('base_price_last_buy', False)
 
     @property
+    def base_price_last_buy_days(self) -> int:
+        """
+        上次买回价格的有效天数，比如这里设定14，那么早于(超过)14天前的买回记录将失效
+        """
+        days = self.get('base_price_last_buy_days', 9)
+        assert days > 0
+        return days
+
+    @property
     def base_price_day_low(self) -> bool:
         """
         设置此项后， 当日最低价也可以是 base_price 的参考选项
@@ -308,7 +317,7 @@ class StoreConfig(dict):
         -------
 
         """
-        limit = self.get('tumble_protect_rsi_unlock_limit', 80)
+        limit = self.get('tumble_protect_rsi_unlock_limit', 75)
         assert 0 <= limit <= 100
         return limit
 

@@ -321,7 +321,7 @@ class StoreBase(ThreadMixin):
         if config.base_price_day_low:
             tooltip += ', 当日最低价格'
         if config.base_price_last_buy:
-            tooltip += ', 上次买回价格'
+            tooltip += f', 上次买回价格({config.base_price_last_buy_days}自然天内)'
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
 
         if price := plan.give_up_price:
@@ -436,16 +436,18 @@ class StoreBase(ThreadMixin):
         result = list()
         config = self.store_config
         state = self.state
+        if not state.is_plug_in:
+            result.append(f'🔌券商系统需要恢复联通')
         if state.ta_tumble_protect_flag:
             ma5 = FormatTool.pretty_price(state.ta_tumble_protect_ma5, config=config)
             ma10 = FormatTool.pretty_price(state.ta_tumble_protect_ma10, config=config)
-            result.append(f'近期最低价格已触发MA暴跌保护, 基准价格将参考\nMA5({ma5}) MA10({ma10}).')
+            result.append(f'🚫近期最低价格已触发MA暴跌保护, 基准价格将参考\nMA5({ma5}) MA10({ma10}).')
         if state.ta_vix_high and config.vix_tumble_protect and state.ta_vix_high >= config.vix_tumble_protect:
-            result.append(f'当日VIX最高价已触发VIX暴跌保护.')
+            result.append(f'🚫当日VIX最高价已触发VIX暴跌保护.')
         if limit := state.ta_tumble_protect_rsi:
             rsi_name = f'RSI{config.tumble_protect_rsi_period}'
             rsi_day = state.ta_tumble_protect_rsi_day
-            result.append(f'{rsi_day}盘中触及到RSI暴跌保护，{rsi_name}高于{limit}时恢复卖出计划.')
+            result.append(f'🚫{rsi_day}盘中触及到RSI暴跌保护，{rsi_name}高于{limit}时恢复卖出计划.')
         return result
 
     def thread_lock(self) -> threading.Lock:

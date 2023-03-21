@@ -11,7 +11,8 @@ class Settings(TelegramBotBase):
             last_buyback_price = ''
             temp_base_price = ''
             if db := self.DB:
-                row = EarningRow.latest_earning_by_symbol(con=db.conn, symbol=item.symbol)
+                days = item.config.base_price_last_buy_days
+                row = EarningRow.latest_earning_by_symbol(con=db.conn, symbol=item.symbol, days=days)
                 if row and row.buyback_price:
                     last_buyback_price = FormatTool.pretty_price(row.buyback_price, config=item.config)
                 row = TempBasePriceRow.query_by_symbol(con=db.conn, symbol=item.symbol)
