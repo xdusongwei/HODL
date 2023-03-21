@@ -83,9 +83,9 @@ class BasePriceMixin(StoreBase, ABC):
             rsi_day = state.ta_tumble_protect_rsi_day
             points = self._query_day_avg(days=rsi_period * 20, asc=True)
             rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
-            if store_config.tumble_protect_rsi:
+            if store_config.tumble_protect_rsi_unlock_limit:
                 # 可以随时更新上限阈值
-                state.ta_tumble_protect_rsi = store_config.tumble_protect_rsi
+                state.ta_tumble_protect_rsi = store_config.tumble_protect_rsi_unlock_limit
             if any(point for point in rsi_points if point[0] > rsi_day and point[1] >= unlock_limit):
                 state.ta_tumble_protect_rsi = None
                 state.ta_tumble_protect_rsi_day = None
