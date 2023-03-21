@@ -97,7 +97,7 @@ class JsonWriterThread(ThreadMixin):
                             'tradeBroker': str(store.broker_proxy.trade_broker),
                         } if store.broker_proxy else {},
                     }
-                    for store in stores if store.state],
+                    for store in stores if store.state and store.store_config.visible],
             }
             body = FormatTool.json_dumps(d, binary=True)
             with open(path, 'wb') as f:
