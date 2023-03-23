@@ -244,6 +244,11 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         store_config = self.store_config
         plan = self.state.plan
         buyback_price = plan.buy_back_price
+        level = store_config.rework_level
+        if not level:
+            return
+        if not self.enable_rework:
+            return
         if level := store_config.rework_level:
             self.logger.info(f'设定清除持仓状态的价格等级为{level}')
             try:

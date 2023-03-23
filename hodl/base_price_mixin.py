@@ -6,6 +6,13 @@ from hodl.tools import *
 
 
 class BasePriceMixin(StoreBase, ABC):
+    @property
+    def enable_rework(self) -> bool:
+        return not self.is_rsi_tp
+
+    @property
+    def is_rsi_tp(self) -> bool:
+        return bool(self.state.ta_tumble_protect_rsi)
 
     def prepare_ta(self):
         self._set_up_ta_info()
