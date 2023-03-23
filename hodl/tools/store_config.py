@@ -420,7 +420,7 @@ class StoreConfig(dict):
 
     @property
     def full_name(self) -> str:
-        return f'[{self.broker}.{self.region}]{self.symbol}({self.name})'
+        return f'[{self.broker}][{self.region}]{self.symbol}({self.name})'
 
     @property
     def visible(self) -> bool:
