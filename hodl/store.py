@@ -350,20 +350,20 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         self.clear_error()
 
         while True:
-            try:
-                if self.store_config.booting_check and not is_checked:
-                    try:
-                        self.booting_check()
-                    except Exception as e:
-                        self.logger.exception('对接失败')
-                        self.exception = e
-                        return
-                    finally:
-                        is_checked = True
+            if self.store_config.booting_check and not is_checked:
+                try:
+                    self.booting_check()
+                except Exception as e:
+                    self.logger.exception('对接失败')
+                    self.exception = e
+                    return
+                finally:
+                    is_checked = True
 
-                self.sleep()
+            self.sleep()
 
-                with self.thread_lock():
+            with self.thread_lock():
+                try:
                     if not self.before_loop():
                         logger.warning(f'循环开始前的检查要求退出')
                         break
@@ -444,26 +444,26 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
 
                     if self.ENABLE_LOG_ALIVE:
                         self.alive_logger.debug(f'循环执行结束')
-            except RiskControlError as e:
-                self.logger.error(f'触发风控异常: {e}')
-                self.state.risk_control_break = True
-                self.state.risk_control_detail = str(e)
-                self.exception = e
-                break
-            except BotError as e:
-                if e.thread_killer:
-                    self.logger.exception(f'特定异常终止了执行: {e}')
+                except RiskControlError as e:
+                    self.logger.error(f'触发风控异常: {e}')
+                    self.state.risk_control_break = True
+                    self.state.risk_control_detail = str(e)
                     self.exception = e
                     break
-                else:
-                    self.logger.warning(f'流程异常: {e}')
-            except Exception as e:
-                self.logger.exception(f'异常终止了执行: {e}')
-                self.exception = e
-                break
-            finally:
-                self.risk_control = None
-                self.after_loop()
+                except BotError as e:
+                    if e.thread_killer:
+                        self.logger.exception(f'特定异常终止了执行: {e}')
+                        self.exception = e
+                        break
+                    else:
+                        self.logger.warning(f'流程异常: {e}')
+                except Exception as e:
+                    self.logger.exception(f'异常终止了执行: {e}')
+                    self.exception = e
+                    break
+                finally:
+                    self.risk_control = None
+                    self.after_loop()
         self.logger.info('退出处理循环，程序结束')
 
 
