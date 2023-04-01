@@ -9,17 +9,19 @@ class SleepMixin(StoreBase, ABC):
         config = self.store_config
         sleep_mode_active = False
         if config.sleep_mode:
-            calendar = config.trading_calendar
-            if calendar:
-                utc_now = TimeTools.utc_now()
-                utc_now_1 = TimeTools.timedelta(utc_now, minutes=1)
-                if calendar.is_trading_minute(utc_now) or calendar.is_trading_minute(utc_now_1):
-                    pass
-                else:
-                    secs *= 4
-                    sleep_mode_active = True
-            if not config.visible:
-                secs *= 4
+            state = self.state
+            if state.market_status != 'TRADING':
+                calendar = config.trading_calendar
+                if calendar:
+                    utc_now = TimeTools.utc_now()
+                    utc_now_1 = TimeTools.timedelta(utc_now, minutes=1)
+                    if calendar.is_trading_minute(utc_now) or calendar.is_trading_minute(utc_now_1):
+                        pass
+                    else:
+                        secs *= 4
+                        sleep_mode_active = True
+        if not config.visible:
+            secs *= 4
         self.state.sleep_mode_active = sleep_mode_active
         TimeTools.sleep(secs)
 
