@@ -182,7 +182,7 @@ class Manager(ThreadMixin):
                             current_config = store.runtime_state.store_config
                             if current_config != new_config:
                                 store.runtime_state.store_config = new_config
-                                store.runtime_state.variable = variable
+                            store.runtime_state.variable = variable
                     else:
                         print(f'找不到标的{symbol}的持仓配置信息')
                         return

@@ -45,7 +45,7 @@ class HtmlWriterThread(ThreadMixin):
 
     def __init__(self, variable: VariableTools, db: LocalDb, template, stores: list[Store]):
         self.variable = variable
-        self. db = db
+        self.db = db
         self.template = template
         self.stores = stores
         self.total_write = 0
