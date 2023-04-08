@@ -1,5 +1,9 @@
 
 
+class ConfigReadError(ValueError):
+    pass
+
+
 class BotError(ValueError):
     @property
     def thread_killer(self) -> bool:
@@ -57,6 +61,7 @@ class BrokerMismatchError(BotError):
 
 
 __all__ = [
+    'ConfigReadError',
     'BotError',
     'PrepareError',
     'PlugInError',

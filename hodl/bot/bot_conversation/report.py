@@ -37,7 +37,7 @@ class Report(TelegramBotBase):
 
         row = StateRow.query_by_symbol_latest(con=self.DB.conn, symbol=position.symbol)
         if row and row.content:
-            d = FormatTool.json_dumps(row.content)
+            d = FormatTool.json_loads(row.content)
             state = State(d)
             plan = state.plan
             if plan.table_ready:

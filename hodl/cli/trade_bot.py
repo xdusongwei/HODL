@@ -9,6 +9,7 @@ from hodl.quote_mixin import QuoteMixin
 from hodl.thread_mixin import *
 from hodl.broker.broker_proxy import *
 from hodl.tools import *
+from hodl.exception_tools import *
 from hodl.cli.threads.market_status import *
 from hodl.cli.threads.ps_util import *
 from hodl.cli.threads.html_writer import *
@@ -168,7 +169,10 @@ class Manager(ThreadMixin):
         while True:
             try:
                 time.sleep(4)
-                variable = VariableTools()
+                try:
+                    variable = VariableTools()
+                except Exception as e:
+                    raise ConfigReadError(e)
                 sleep_secs = variable.sleep_limit
                 store_configs = variable.store_configs
                 if len(store_configs) != len(stores):
@@ -200,6 +204,8 @@ class Manager(ThreadMixin):
                 if updater := Manager.CONVERSATION_BOT.updater:
                     updater.stop()
                 return
+            except ConfigReadError as e:
+                print(f'读取配置文件出错: {e}')
 
 
 try:
