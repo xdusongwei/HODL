@@ -10,6 +10,32 @@ class Order(DictWrapper):
     }
 
     @classmethod
+    def new_config_order(
+            cls,
+            store_config: StoreConfig,
+            level: int,
+            direction: str,
+            qty: int,
+            limit_price: float | None,
+            create_timestamp: float = None,
+            order_day: str = None,
+    ):
+        return cls.new_order(
+            symbol=store_config.symbol,
+            region=store_config.region,
+            broker=store_config.broker,
+            currency=store_config.currency,
+            level=level,
+            direction=direction,
+            qty=qty,
+            limit_price=limit_price,
+            precision=store_config.precision,
+            spread=store_config.buy_spread if direction == 'BUY' else store_config.sell_spread,
+            create_timestamp=create_timestamp,
+            order_day=order_day,
+        )
+
+    @classmethod
     def new_order(
             cls,
             symbol: str,

@@ -34,17 +34,12 @@ match broker:
 limit_price = limit_price if limit_price > 0 else None
 spread = config.buy_spread if direction == 'BUY' else config.sell_spread
 
-order = Order.new_order(
-    symbol=symbol,
-    region=region,
-    broker=broker,
-    currency=currency,
+order = Order.new_config_order(
+    store_config=config,
     level=level,
     direction=direction,
     qty=qty,
     limit_price=limit_price,
-    precision=config.precision,
-    spread=spread,
     create_timestamp=TimeTools.us_time_now().timestamp(),
     order_day=order_day,
 )

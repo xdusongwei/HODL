@@ -143,7 +143,7 @@ def start_simulation():
         quote_mock(store.quote_mock),
         market_status_mock(store.market_status_mock),
         cancel_order_mock(store.cancel_fake_order),
-        create_order_mock(store.create_fake_order),
+        submit_order_mock(store.create_fake_order),
         refresh_order_mock(store.refresh_fake_order),
         chip_count_mock(store.current_chip_mock),
         cash_amount_mock(store.current_cash_mock),

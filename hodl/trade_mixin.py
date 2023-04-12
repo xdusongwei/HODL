@@ -56,10 +56,10 @@ class TradeMixin(StoreBase, ABC):
             assert order.is_canceled
         order.is_canceled = True
 
-    def _create_order(self, order: Order):
+    def _submit_order(self, order: Order):
         self.broker_proxy.place_order(order=order)
 
-    def create_order(self, order: Order, wait=False):
+    def submit_order(self, order: Order, wait=False):
         assert order.qty > 0
         order.region = self.store_config.region
         order.broker = self.store_config.broker
@@ -73,7 +73,7 @@ class TradeMixin(StoreBase, ABC):
         order.avg_price = None
 
         def _wrap():
-            self._create_order(order=order)
+            self._submit_order(order=order)
 
         self.risk_control.place_order_check(
             order=order,
@@ -289,19 +289,14 @@ class TradeMixin(StoreBase, ABC):
                 f'参考当前等级规则设定设定卖出价:{FMT.pretty_price(row.sell_at, config=self.store_config)}, '
                 f'实际下单价格:{FMT.pretty_price(limit_price, config=self.store_config)}'
             )
-        order = Order.new_order(
-            symbol=self.store_config.symbol,
-            region=self.store_config.region,
-            broker=self.store_config.broker,
-            currency=self.store_config.currency,
+        order = Order.new_config_order(
+            store_config=self.store_config,
             level=fire_state.new_sell_level,
             direction='SELL',
             qty=qty,
             limit_price=limit_price,
-            precision=self.store_config.precision,
-            spread=self.store_config.sell_spread,
         )
-        self.create_order(
+        self.submit_order(
             order=order,
         )
         self.logger.info(f'下新卖单成功,订单:{order}')
@@ -426,19 +421,14 @@ class TradeMixin(StoreBase, ABC):
         else:
             self.logger.info(f'买单实际下单价格{FMT.pretty_price(limit_price, config=self.store_config)}')
         self.logger.info(f'买单下单数量{volume}')
-        order = Order.new_order(
-            symbol=self.store_config.symbol,
-            region=self.store_config.region,
-            broker=self.store_config.broker,
-            currency=self.store_config.currency,
+        order = Order.new_config_order(
+            store_config=self.store_config,
             level=fire_state.new_buy_level,
             direction='BUY',
             qty=volume,
             limit_price=limit_price,
-            precision=self.store_config.precision,
-            spread=self.store_config.buy_spread,
         )
-        self.create_order(
+        self.submit_order(
             order=order,
         )
         self.logger.info(f'买单指令完成，订单:{order}')

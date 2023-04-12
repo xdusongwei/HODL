@@ -37,8 +37,8 @@ def cancel_order_mock(function):
     return basic_mock(Store, '_cancel_order', side_effect=function)
 
 
-def create_order_mock(function):
-    return basic_mock(Store, '_create_order', side_effect=function)
+def submit_order_mock(function):
+    return basic_mock(Store, '_submit_order', side_effect=function)
 
 
 def cash_amount_mock(function):
@@ -56,7 +56,7 @@ __all__ =[
     'market_status_mock',
     'refresh_order_mock',
     'cancel_order_mock',
-    'create_order_mock',
+    'submit_order_mock',
     'cash_amount_mock',
     'chip_count_mock',
 ]

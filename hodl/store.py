@@ -162,19 +162,14 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         if volume < 0:
             raise ValueError(f'清盘计算相差股数:{volume}为负，可能因为多买')
         if volume:
-            order = Order.new_order(
-                symbol=self.store_config.symbol,
-                region=self.store_config.region,
-                broker=self.store_config.broker,
-                currency=self.store_config.currency,
+            order = Order.new_config_order(
+                store_config=self.store_config,
                 level=0,
                 direction='BUY',
                 qty=volume,
                 limit_price=None,
-                precision=self.store_config.precision,
-                spread=self.store_config.buy_spread,
             )
-            self.create_order(
+            self.submit_order(
                 order=order,
                 wait=True,
             )
