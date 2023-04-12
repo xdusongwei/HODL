@@ -1,11 +1,13 @@
+from typing import Self, Generator
 from datetime import datetime
 from collections import defaultdict
 from pprint import pprint
+from hodl.storage import *
 from tigeropen.common.consts import OrderStatus
 from tigeropen.trade.domain.order import Order as TigerOrder
 from hodl.quote import Quote
 from hodl.quote_mixin import QuoteMixin
-from hodl.tools import TimeTools, VariableTools
+from hodl.tools import *
 from hodl.store import Store
 from hodl.state import *
 from hodl.plan_calc import ProfitRow
@@ -19,13 +21,31 @@ class SimulationStore(Store):
     ORDER_SEQ = 1
     TIGER_ORDER_POOL: dict[int, TigerOrder] = dict()
     ORDER_POOL: dict[int, Order] = dict()
-    HISTORY_QUOTE = generate_quote()
     FAKE_QUOTE: FakeQuote = None
     ENABLE_LOG_ALIVE = False
     ENABLE_BROKER = False
     ENABLE_STATE_FILE = False
     ENABLE_PROCESS_TIME = False
     PLAN = None
+
+    @classmethod
+    def new(
+            cls,
+            store_config: StoreConfig,
+            quote_csv: str,
+            db: LocalDb = None,
+            quote_length: int = 0,
+    ) -> Self:
+        store = SimulationStore(
+            store_config=store_config,
+            db=db,
+        )
+        setattr(store, '_quote_iter', generate_quote(quote_csv, limit=quote_length))
+        return store
+
+    @property
+    def history_quote(self) -> Generator[FakeQuote]:
+        return getattr(self, '_quote_iter')
 
     def cancel_fake_order(self, order: Order):
         order_id = order.order_id
@@ -57,7 +77,7 @@ class SimulationStore(Store):
     def before_loop(self):
         super(SimulationStore, self).before_loop()
         try:
-            self.FAKE_QUOTE = self.HISTORY_QUOTE.__next__()
+            self.FAKE_QUOTE = self.history_quote.__next__()
         except StopIteration:
             return False
         else:
@@ -128,11 +148,13 @@ class SimulationStore(Store):
         SimulationStore.TIMES_PER_LEVEL[level] += 1
 
 
-def start_simulation():
+def start_simulation(symbol: str, quote_csv: str, quote_length: int = 0):
     var = VariableTools()
-    store_config = var.store_configs['TIGR']
-    store = SimulationStore(
+    store_config = var.store_configs[symbol]
+    store = SimulationStore.new(
         store_config=store_config,
+        quote_csv=quote_csv,
+        quote_length=quote_length,
     )
 
     QuoteMixin.CACHE_MARKET_STATUS = False

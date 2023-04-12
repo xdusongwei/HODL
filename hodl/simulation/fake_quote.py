@@ -19,11 +19,12 @@ def _build_item(time: datetime, price: float, market_status: str, open: float, p
     )
 
 
-def generate_quote(coin=None):
-    csv_path = LocateTools.locate_file('data/tigr.csv')
+def generate_quote(csv_path, coin=None, limit: int = 0):
     with open(csv_path, newline='') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
-        for row in spamreader:
+        for idx, row in enumerate(spamreader):
+            if limit and limit <= idx:
+                break
             timestamp, o, h, l, c, pc = row
             date = TimeTools.from_timestamp(int(timestamp) / 1000.0)
             o = float(o)
