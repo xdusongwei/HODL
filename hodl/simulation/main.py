@@ -1,4 +1,4 @@
-from typing import Self, Generator
+from typing import Self, Generator, Any
 from datetime import datetime
 from collections import defaultdict
 from pprint import pprint
@@ -44,7 +44,7 @@ class SimulationStore(Store):
         return store
 
     @property
-    def history_quote(self) -> Generator[FakeQuote]:
+    def history_quote(self) -> Generator[FakeQuote, Any, None]:
         return getattr(self, '_quote_iter')
 
     def cancel_fake_order(self, order: Order):
