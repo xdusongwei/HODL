@@ -59,9 +59,9 @@ class State(dict):
     def version(self, v: str):
         self['version'] = v
 
-    def _get_snapshot(self, snapshot: str, key: str):
+    def _get_snapshot(self, snapshot: str, key: str, default=None):
         snapshot_d = self.get(snapshot, dict())
-        return snapshot_d.get(key)
+        return snapshot_d.get(key, default)
 
     def _set_snapshot(self, snapshot: str, key: str, v):
         snapshot_d = self.get(snapshot, dict())
@@ -387,6 +387,22 @@ class State(dict):
     @ta_tumble_protect_rsi_current.setter
     def ta_tumble_protect_rsi_current(self, v: float):
         self._set_snapshot('ta', 'tumbleProtectRsiCurrent', v)
+
+    @property
+    def bp_function_day(self) -> str:
+        return self._get_snapshot('basePrice', 'functionDay', '')
+
+    @bp_function_day.setter
+    def bp_function_day(self, v: str):
+        self._set_snapshot('basePrice', 'functionDay', v)
+
+    @property
+    def bp_function(self) -> str:
+        return self._get_snapshot('basePrice', 'function', 'min')
+
+    @bp_function.setter
+    def bp_function(self, v: str):
+        self._set_snapshot('basePrice', 'function', v)
 
 
 __all__ = [

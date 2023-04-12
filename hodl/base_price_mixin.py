@@ -14,7 +14,35 @@ class BasePriceMixin(StoreBase, ABC):
     def is_rsi_tp(self) -> bool:
         return bool(self.state.ta_tumble_protect_rsi)
 
+    def _try_reset_bp_function(self):
+        date = TimeTools.date_to_ymd(TimeTools.us_time_now())
+        state = self.state
+        if state.bp_function_day == date:
+            return
+        state.bp_function = 'min'
+        state.bp_function_day = date
+
+    def _set_bp_function(self, func_name: str):
+        date = TimeTools.date_to_ymd(TimeTools.us_time_now())
+        state = self.state
+        if state.bp_function_day != date:
+            return
+        state.bp_function = func_name
+
+    def _get_bp_function(self):
+        date = TimeTools.date_to_ymd(TimeTools.us_time_now())
+        state = self.state
+        if state.bp_function_day != date:
+            return min
+        if state.bp_function == 'max':
+            return max
+        elif state.bp_function == 'min':
+            return min
+        else:
+            return min
+
     def prepare_ta(self):
+        self._try_reset_bp_function()
         self._set_up_ta_info()
 
     def calc_base_price(self) -> float:
@@ -54,9 +82,9 @@ class BasePriceMixin(StoreBase, ABC):
                         price_list.append(low_price)
                 if state.ta_tumble_protect_alert_price is not None:
                     price_list.append(state.ta_tumble_protect_alert_price)
-                    price = max(price_list)
-                else:
-                    price = min(price_list)
+
+                func = self._get_bp_function()
+                price = func(price_list)
 
                 assert price > 0.0
                 return price
@@ -74,15 +102,19 @@ class BasePriceMixin(StoreBase, ABC):
         store_config = self.store_config
 
         state.ta_vix_high = None
-        if store_config.vix_tumble_protect is not None:
+        vix_limit = store_config.vix_tumble_protect
+        if vix_limit is not None:
             vix_quote = self.market_status_proxy.query_vix(store_config)
             if vix_quote:
                 state.ta_vix_high = vix_quote.day_high
                 state.ta_vix_time = vix_quote.time.timestamp()
+                if state.ta_vix_high >= vix_limit:
+                    self._set_bp_function('max')
 
         state.ta_tumble_protect_rsi_current = None
         if state.ta_tumble_protect_rsi is not None:
             # RSI TP locked
+            self._set_bp_function('max')
             unlock_limit = state.ta_tumble_protect_rsi
             assert state.ta_tumble_protect_rsi_day
             assert state.ta_tumble_protect_rsi_period
@@ -134,6 +166,7 @@ class BasePriceMixin(StoreBase, ABC):
         state.ta_tumble_protect_alert_price = None
         if state.ta_tumble_protect_flag:
             state.ta_tumble_protect_alert_price = self._tumble_protect_alert_price()
+            self._set_bp_function('max')
 
     def _query_history(self, days: int, day_low=True, asc=False):
         db = self.db
