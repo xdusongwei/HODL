@@ -9,6 +9,7 @@ cache:
     - .cache/pip
     - __pypackages__/
     - venv/
+    - .venv/lib/
 variables:
   PROJECT: 'hodl'
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -19,7 +20,9 @@ before_script:
   - mkdir -p ~/data/hodl
   - cp ci/gitlab-ci.toml config.toml
   - pip install -U pdm
-  - pdm install --prod  -G test --no-lock --no-editable
+  - pdm install --prod -G test --no-lock --no-editable
+  - pdm sync
+  - pdm cache info
 
 test:
   stage: test
