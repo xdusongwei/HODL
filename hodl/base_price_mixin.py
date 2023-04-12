@@ -98,6 +98,29 @@ class BasePriceMixin(StoreBase, ABC):
         -------
 
         """
+        self._vix_tp_check()
+        self._rsi_tp_check()
+
+    def _set_up_base_price_ta_info(self):
+        """
+        当基准价格字段无效时触发的技术分析计算,
+        这个过程要晚于_set_up_ta_info方法被调用。
+        Returns
+        -------
+
+        """
+        self._ma_tp_check()
+
+    def _ma_tp_check(self):
+        state = self.state
+        state.ta_tumble_protect_flag = self._detect_lowest_days()
+        state.ta_tumble_protect_alert_price = None
+        if not state.ta_tumble_protect_flag:
+            return
+        state.ta_tumble_protect_alert_price = self._tumble_protect_alert_price()
+        self._set_bp_function('max')
+
+    def _vix_tp_check(self):
         state = self.state
         store_config = self.store_config
 
@@ -110,6 +133,10 @@ class BasePriceMixin(StoreBase, ABC):
                 state.ta_vix_time = vix_quote.time.timestamp()
                 if state.ta_vix_high >= vix_limit:
                     self._set_bp_function('max')
+
+    def _rsi_tp_check(self):
+        state = self.state
+        store_config = self.store_config
 
         state.ta_tumble_protect_rsi_current = None
         if state.ta_tumble_protect_rsi is not None:
@@ -152,21 +179,6 @@ class BasePriceMixin(StoreBase, ABC):
             state.ta_tumble_protect_rsi = None
             state.ta_tumble_protect_rsi_day = None
             state.ta_tumble_protect_rsi_period = None
-
-    def _set_up_base_price_ta_info(self):
-        """
-        当基准价格字段无效时触发的技术分析计算,
-        这个过程要晚于_set_up_ta_info方法被调用。
-        Returns
-        -------
-
-        """
-        state = self.state
-        state.ta_tumble_protect_flag = self._detect_lowest_days()
-        state.ta_tumble_protect_alert_price = None
-        if state.ta_tumble_protect_flag:
-            state.ta_tumble_protect_alert_price = self._tumble_protect_alert_price()
-            self._set_bp_function('max')
 
     def _query_history(self, days: int, day_low=True, asc=False):
         db = self.db

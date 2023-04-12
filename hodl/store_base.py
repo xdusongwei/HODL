@@ -321,7 +321,8 @@ class StoreBase(ThreadMixin):
         if config.base_price_day_low:
             tooltip += ', 当日最低价格'
         if config.base_price_last_buy:
-            tooltip += f', 上次买回价格({config.base_price_last_buy_days}自然天内)'
+            tooltip += f', 上次买回价格({config.base_price_last_buy_days}个自然天内). '
+        tooltip += f'价格比较函数: {state.bp_function}.'
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
 
         if price := plan.give_up_price:
