@@ -21,6 +21,8 @@ class StoreBase(ThreadMixin):
     ENABLE_STATE_FILE = True
     ENABLE_PROCESS_TIME = True
 
+    SHOW_EXCEPTION_DETAIL = False
+
     SESSION = requests.Session()
 
     def __init__(

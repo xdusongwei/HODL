@@ -2,21 +2,56 @@ import csv
 import random
 from decimal import Decimal
 from collections import namedtuple
+from dataclasses import *
 from datetime import timedelta, datetime
-from hodl.tools import TimeTools, LocateTools
+from hodl.tools import TimeTools
 
 
-FakeQuote = namedtuple('FakeQuote', ['time', 'price', 'market_status', 'open', 'pre_close', ])
+FakeQuote = namedtuple('FakeQuote', ['time', 'price', 'market_status', 'open', 'pre_close', 'quote_status', ])
 
 
-def _build_item(time: datetime, price: float, market_status: str, open: float, pre_close: float):
+def _build_item(
+        time: datetime,
+        price: float,
+        market_status: str,
+        open: float,
+        pre_close: float,
+        quote_status: str = 'NORMAL',
+):
     return FakeQuote(
         time=time,
         price=float(Decimal(price).quantize(Decimal("0.00"))),
         market_status=market_status,
         open=open,
         pre_close=pre_close,
+        quote_status=quote_status,
     )
+
+
+@dataclass
+class Ticket:
+    day: str = field()
+    pre_close: float = field()
+    open: float = field()
+    latest: float = field()
+    ms: str = field(default='TRADING')
+    qs: str = field(default='NORMAL')
+
+    def to_fake_quote(self) -> FakeQuote:
+        time = datetime.fromisoformat(self.day)
+        return _build_item(
+            time=time,
+            price=self.latest,
+            market_status=self.ms,
+            open=self.open,
+            pre_close=self.pre_close,
+            quote_status=self.qs,
+        )
+
+
+def generate_from_tickets(tickets: list[Ticket]):
+    for ticket in tickets:
+        yield ticket.to_fake_quote()
 
 
 def generate_quote(csv_path, coin=None, limit: int = 0):
@@ -108,4 +143,9 @@ def generate_quote(csv_path, coin=None, limit: int = 0):
                 yield fake_quote
 
 
-__all__ = ['generate_quote', 'FakeQuote', ]
+__all__ = [
+    'generate_quote',
+    'generate_from_tickets',
+    'FakeQuote',
+    'Ticket',
+]

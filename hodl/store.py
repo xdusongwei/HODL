@@ -356,7 +356,7 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
             with self.thread_lock():
                 try:
                     if not self.before_loop():
-                        logger.warning(f'循环开始前的检查要求退出')
+                        logger.info(f'循环开始前的检查要求退出')
                         break
                     if self.state.risk_control_break:
                         logger.error(f'风控标记系统禁止运行: {self.state.risk_control_detail}')
@@ -448,6 +448,8 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
                         break
                     else:
                         self.logger.warning(f'流程异常: {e}')
+                        if self.SHOW_EXCEPTION_DETAIL:
+                            self.logger.exception(f'流程异常: {e}')
                 except Exception as e:
                     self.logger.exception(f'异常终止了执行: {e}')
                     self.exception = e

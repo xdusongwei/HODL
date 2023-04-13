@@ -15,3 +15,20 @@ state_archive_folder = ''
 prudent = true
 base_price_last_buy = true
 sleep_mode = false
+
+[store.TEST]
+broker = 'tiger'
+symbol = 'TEST'
+currency = 'USD'
+region = 'US'
+trade_type = 'stock'
+enable = true
+max_shares = 100_000
+log_root = ''
+state_file_path = ''
+state_archive_folder = ''
+prudent = true
+base_price_last_buy = true
+sleep_mode = false
+buy_spread = 0.0
+sell_spread = 0.0

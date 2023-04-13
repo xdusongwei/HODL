@@ -32,9 +32,13 @@ class QuoteMixin(StoreBase, ABC):
             self._pull_market_status()
         return self.market_status_proxy.query_status(self.store_config)
 
+    def _query_quote(self) -> Quote:
+        quote = self.broker_proxy.query_quote()
+        return quote
+
     def current_quote(self) -> Quote:
         state = self.state
-        quote = self.broker_proxy.query_quote()
+        quote = self._query_quote()
         if state.quote_time:
             if TimeTools.from_timestamp(state.quote_time) > quote.time:
                 raise QuoteOutdatedError(f'系统存储的行情({TimeTools.from_timestamp(state.quote_time)})'

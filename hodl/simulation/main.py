@@ -1,7 +1,8 @@
-from typing import Self, Generator, Any
+from typing import Generator, Any
 from datetime import datetime
 from collections import defaultdict
 from pprint import pprint
+from hodl.risk_control import *
 from hodl.storage import *
 from tigeropen.common.consts import OrderStatus
 from tigeropen.trade.domain.order import Order as TigerOrder
@@ -11,7 +12,7 @@ from hodl.tools import *
 from hodl.store import Store
 from hodl.state import *
 from hodl.plan_calc import ProfitRow
-from hodl.simulation.fake_quote import generate_quote, FakeQuote
+from hodl.simulation.fake_quote import *
 from hodl.unit_test import *
 
 
@@ -20,16 +21,19 @@ class SimulationStore(Store):
     ENABLE_BROKER = False
     ENABLE_STATE_FILE = False
     ENABLE_PROCESS_TIME = False
+    SHOW_EXCEPTION_DETAIL = True
 
     def __init__(
             self,
             store_config: StoreConfig,
             quote_csv: str,
+            tickets: list[Ticket] = None,
             db: LocalDb = None,
             quote_length: int = 0,
     ):
         super().__init__(store_config=store_config, db=db)
-        self.history_quote: Generator[FakeQuote, Any, None] = generate_quote(quote_csv, limit=quote_length)
+        self.history_quote: Generator[FakeQuote, Any, None] = \
+            generate_quote(quote_csv, limit=quote_length) if quote_csv else generate_from_tickets(tickets)
         self.tiger_order_pool: dict[int, TigerOrder] = dict()
         self.order_pool: dict[int, Order] = dict()
         self.current_fake_quote: FakeQuote = None
@@ -134,16 +138,25 @@ class SimulationStore(Store):
                 last_order = order
         assert last_order.avg_price
         level = plan.current_sell_level_filled()
-        print(f"earning({TimeTools.us_day_now()} Lv{level}): ${plan.earning}, buyback:${last_order.avg_price}")
         self.earning += plan.earning
         self.times_per_level[level] += 1
 
 
-def start_simulation(symbol: str, quote_csv: str, quote_length: int = 0):
+def start_simulation(
+        symbol: str,
+        tickets: list[Ticket] = None,
+        quote_csv: str = None,
+        quote_length: int = 0,
+        show_plan_table: bool = False,
+):
+    if tickets is None and quote_csv is None:
+        raise ValueError(f'测试报价数据来源需要指定')
+
     var = VariableTools()
     store_config = var.store_configs[symbol]
     store = SimulationStore(
         store_config=store_config,
+        tickets=tickets,
         quote_csv=quote_csv,
         quote_length=quote_length,
     )
@@ -164,13 +177,15 @@ def start_simulation(symbol: str, quote_csv: str, quote_length: int = 0):
     for mock in mocks:
         mock.start()
     try:
-        plan = Plan.new_plan(store_config)
-        plan.base_price = 10.0
-        store.state.plan = plan
-        table = SimulationStore.build_table(store_config=store_config, plan=plan)
-        for row in table:
-            row: ProfitRow = row
-            print(f'表格项: {row} totalRate:{row.total_rate}')
+        if show_plan_table:
+            plan = Plan.new_plan(store_config)
+            plan.base_price = 10.0
+            store.state.plan = plan
+            table = SimulationStore.build_table(store_config=store_config, plan=plan)
+            for row in table:
+                row: ProfitRow = row
+                print(f'表格项: {row} totalRate:{row.total_rate}')
+        RiskControl.ORDER_DICT = dict()
         store.run()
         if store.exception:
             raise store.exception

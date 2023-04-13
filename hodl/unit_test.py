@@ -22,7 +22,7 @@ def sleep_mock(new_function):
 
 
 def quote_mock(new_function):
-    return basic_mock(QuoteMixin, 'current_quote', side_effect=new_function)
+    return basic_mock(QuoteMixin, '_query_quote', side_effect=new_function)
 
 
 def market_status_mock(new_function):

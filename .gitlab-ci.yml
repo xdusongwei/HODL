@@ -15,13 +15,9 @@ variables:
   TEST_FULL_DATA: 'brief'
 
 before_script:
-  - mkdir -p ~/logs/hodl
-  - mkdir -p ~/data/hodl
-  - cp ci/gitlab-ci.toml config.toml
+  - mkdir -p ~/logs/hodl && mkdir -p ~/data/hodl && cp ci/gitlab-ci.toml config.toml
   - pip install -U pdm
-  - pdm config python.use_venv false
-  - pdm install --prod -G test --no-lock --no-editable
-  - pdm sync
+  - pdm config python.use_venv false && pdm install --prod -G test --no-lock --no-editable && pdm sync
 
 test:
   stage: test
