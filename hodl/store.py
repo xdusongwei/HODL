@@ -59,7 +59,7 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         if time_str := self.store_config.closing_time:
             now_time_str = TimeTools.us_time_now().strftime('%H:%M:%S')
             if now_time_str >= time_str:
-                return 'CLOSING'
+                market_status = 'CLOSING'
         state.market_status = market_status
 
     def prepare_quote(self):

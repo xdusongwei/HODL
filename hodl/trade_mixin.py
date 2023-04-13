@@ -163,14 +163,14 @@ class TradeMixin(StoreBase, ABC):
         plan = state.plan
         fire_state.open_earlier = False
         fire_state.enable_sell = False
-        if config.trade_type == 'stock' and config.region in {'CN', 'US', }:
-            if plan.today_not_contain_sell_order:
-                fire_state.enable_sell = True
-                open_time_begin, open_time_end = time(hour=9, minute=30, second=30), time(hour=9, minute=32)
-                if open_time_begin <= us_date.time() <= open_time_end:
-                    fire_state.open_earlier = True
+        if plan.today_not_contain_sell_order:
+            fire_state.enable_sell = True
         if plan.all_today_sell_completed:
             fire_state.enable_sell = True
+        if config.trade_type == 'stock' and config.region in {'CN', 'US', }:
+            open_time_begin, open_time_end = time(hour=9, minute=30, second=30), time(hour=9, minute=32)
+            if open_time_begin <= us_date.time() <= open_time_end:
+                fire_state.open_earlier = True
 
         vix_limit = self.store_config.vix_tumble_protect
         if fire_state.enable_sell and not plan.current_sell_level() and vix_limit is not None:

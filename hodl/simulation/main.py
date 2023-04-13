@@ -32,6 +32,7 @@ class SimulationStore(Store):
             quote_length: int = 0,
     ):
         super().__init__(store_config=store_config, db=db)
+        self.mocks = list()
         self.history_quote: Generator[FakeQuote, Any, None] = \
             generate_quote(quote_csv, limit=quote_length) if quote_csv else generate_from_tickets(tickets)
         self.tiger_order_pool: dict[int, TigerOrder] = dict()
@@ -41,6 +42,9 @@ class SimulationStore(Store):
 
         self.earning = 0.0
         self.times_per_level = defaultdict(int)
+
+    def reset_tickets(self, tickets: list[Ticket]):
+        self.history_quote = generate_from_tickets(tickets)
 
     def cancel_fake_order(self, order: Order):
         order_id = order.order_id
@@ -141,60 +145,78 @@ class SimulationStore(Store):
         self.earning += plan.earning
         self.times_per_level[level] += 1
 
+    def run(self, output_state: bool = True):
+        try:
+            super().run()
+            if self.exception:
+                raise self.exception
+        except Exception as e:
+            if output_state:
+                pprint(self.state)
+            raise e
+
+    def __enter__(self):
+        QuoteMixin.CACHE_MARKET_STATUS = False
+        RiskControl.ORDER_DICT = dict()
+        for mock in self.mocks:
+            mock.start()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        for mock in self.mocks:
+            mock.stop()
+
 
 def start_simulation(
-        symbol: str,
+        symbol: str = None,
         tickets: list[Ticket] = None,
         quote_csv: str = None,
         quote_length: int = 0,
         show_plan_table: bool = False,
+        store: SimulationStore = None,
+        auto_run: bool = True,
 ):
     if tickets is None and quote_csv is None:
         raise ValueError(f'测试报价数据来源需要指定')
 
-    var = VariableTools()
-    store_config = var.store_configs[symbol]
-    store = SimulationStore(
-        store_config=store_config,
-        tickets=tickets,
-        quote_csv=quote_csv,
-        quote_length=quote_length,
-    )
+    if store is None:
+        if not symbol:
+            raise ValueError(f'创建持仓对象需要指定symbol')
+        var = VariableTools()
+        store_config = var.store_configs[symbol]
+        store = SimulationStore(
+            store_config=store_config,
+            tickets=tickets,
+            quote_csv=quote_csv,
+            quote_length=quote_length,
+        )
+        mocks = [
+            sleep_mock(store.sleep_mock),
+            now_mock(store.now_mock),
+            quote_mock(store.quote_mock),
+            market_status_mock(store.market_status_mock),
+            cancel_order_mock(store.cancel_fake_order),
+            submit_order_mock(store.create_fake_order),
+            refresh_order_mock(store.refresh_fake_order),
+            chip_count_mock(store.current_chip_mock),
+            cash_amount_mock(store.current_cash_mock),
+        ]
+        store.mocks = mocks
+    elif tickets:
+        store.reset_tickets(tickets)
 
-    QuoteMixin.CACHE_MARKET_STATUS = False
+    if show_plan_table:
+        store_config = store.store_config
+        plan = Plan.new_plan(store_config)
+        plan.base_price = 10.0
+        store.state.plan = plan
+        table = SimulationStore.build_table(store_config=store_config, plan=plan)
+        for row in table:
+            row: ProfitRow = row
+            print(f'表格项: {row} totalRate:{row.total_rate}')
 
-    mocks = [
-        sleep_mock(store.sleep_mock),
-        now_mock(store.now_mock),
-        quote_mock(store.quote_mock),
-        market_status_mock(store.market_status_mock),
-        cancel_order_mock(store.cancel_fake_order),
-        submit_order_mock(store.create_fake_order),
-        refresh_order_mock(store.refresh_fake_order),
-        chip_count_mock(store.current_chip_mock),
-        cash_amount_mock(store.current_cash_mock),
-    ]
-    for mock in mocks:
-        mock.start()
-    try:
-        if show_plan_table:
-            plan = Plan.new_plan(store_config)
-            plan.base_price = 10.0
-            store.state.plan = plan
-            table = SimulationStore.build_table(store_config=store_config, plan=plan)
-            for row in table:
-                row: ProfitRow = row
-                print(f'表格项: {row} totalRate:{row.total_rate}')
-        RiskControl.ORDER_DICT = dict()
-        store.run()
-        if store.exception:
-            raise store.exception
-    except Exception as e:
-        pprint(store.state)
-        raise e
-    finally:
-        for mock in mocks:
-            mock.stop()
+    if auto_run:
+        with store:
+            store.run()
     return store
 
 
