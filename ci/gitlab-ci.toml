@@ -32,3 +32,21 @@ base_price_last_buy = true
 sleep_mode = false
 buy_spread = 0.0
 sell_spread = 0.0
+
+[store.BTC]
+broker = 'okx'
+symbol = 'BTC'
+currency = 'USD'
+region = 'US'
+trade_type = 'crypto'
+enable = true
+max_shares = 300
+log_root = ''
+state_file_path = ''
+state_archive_folder = ''
+prudent = true
+base_price_last_buy = true
+sleep_mode = false
+buy_spread = 0.0
+sell_spread = 0.0
+closing_time = '23:00:00'
