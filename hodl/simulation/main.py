@@ -16,45 +16,36 @@ from hodl.unit_test import *
 
 
 class SimulationStore(Store):
-    TIMES_PER_LEVEL = defaultdict(int)
-    EARNING = 0
-    ORDER_SEQ = 1
-    TIGER_ORDER_POOL: dict[int, TigerOrder] = dict()
-    ORDER_POOL: dict[int, Order] = dict()
-    FAKE_QUOTE: FakeQuote = None
     ENABLE_LOG_ALIVE = False
     ENABLE_BROKER = False
     ENABLE_STATE_FILE = False
     ENABLE_PROCESS_TIME = False
-    PLAN = None
 
-    @classmethod
-    def new(
-            cls,
+    def __init__(
+            self,
             store_config: StoreConfig,
             quote_csv: str,
             db: LocalDb = None,
             quote_length: int = 0,
-    ) -> Self:
-        store = SimulationStore(
-            store_config=store_config,
-            db=db,
-        )
-        setattr(store, '_quote_iter', generate_quote(quote_csv, limit=quote_length))
-        return store
+    ):
+        super().__init__(store_config=store_config, db=db)
+        self.history_quote: Generator[FakeQuote, Any, None] = generate_quote(quote_csv, limit=quote_length)
+        self.tiger_order_pool: dict[int, TigerOrder] = dict()
+        self.order_pool: dict[int, Order] = dict()
+        self.current_fake_quote: FakeQuote = None
+        self.order_seq = 1
 
-    @property
-    def history_quote(self) -> Generator[FakeQuote, Any, None]:
-        return getattr(self, '_quote_iter')
+        self.earning = 0.0
+        self.times_per_level = defaultdict(int)
 
     def cancel_fake_order(self, order: Order):
         order_id = order.order_id
-        self.TIGER_ORDER_POOL[order_id].status = OrderStatus.CANCELLED
-        self.ORDER_POOL[order_id].is_canceled = True
+        self.tiger_order_pool[order_id].status = OrderStatus.CANCELLED
+        self.order_pool[order_id].is_canceled = True
 
     def create_fake_order(self, order: Order):
-        order_id = self.ORDER_SEQ
-        self.ORDER_SEQ += 1
+        order_id = self.order_seq
+        self.order_seq += 1
         tiger_order = TigerOrder(
             account=None,
             contract=None,
@@ -67,9 +58,9 @@ class SimulationStore(Store):
         tiger_order.filled = 0
         tiger_order.avg_fill_price = None
         tiger_order.status = OrderStatus.HELD
-        self.TIGER_ORDER_POOL[order_id] = tiger_order
+        self.tiger_order_pool[order_id] = tiger_order
         order.order_id = order_id
-        self.ORDER_POOL[order_id] = order
+        self.order_pool[order_id] = order
 
     def refresh_fake_order(self, order: Order):
         pass
@@ -77,7 +68,7 @@ class SimulationStore(Store):
     def before_loop(self):
         super(SimulationStore, self).before_loop()
         try:
-            self.FAKE_QUOTE = self.history_quote.__next__()
+            self.current_fake_quote = self.history_quote.__next__()
         except StopIteration:
             return False
         else:
@@ -85,16 +76,16 @@ class SimulationStore(Store):
             return True
 
     def now_mock(self):
-        return datetime.utcfromtimestamp(self.FAKE_QUOTE.time.timestamp())
+        return datetime.utcfromtimestamp(self.current_fake_quote.time.timestamp())
 
     def quote_mock(self):
         return Quote(
             symbol=self.store_config.symbol,
-            open=self.FAKE_QUOTE.open,
-            pre_close=self.FAKE_QUOTE.pre_close,
-            latest_price=self.FAKE_QUOTE.price,
+            open=self.current_fake_quote.open,
+            pre_close=self.current_fake_quote.pre_close,
+            latest_price=self.current_fake_quote.price,
             status='NORMAL',
-            time=self.FAKE_QUOTE.time,
+            time=self.current_fake_quote.time,
         )
 
     def sleep_mock(self, secs):
@@ -102,29 +93,29 @@ class SimulationStore(Store):
         for order in orders:
             if not order.is_waiting_filling:
                 continue
-            tiger_order = self.TIGER_ORDER_POOL[order.order_id]
+            tiger_order = self.tiger_order_pool[order.order_id]
             tiger_order.trade_time = TimeTools.us_time_now().timestamp() * 1000
-            pool_order = self.ORDER_POOL[order.order_id]
+            pool_order = self.order_pool[order.order_id]
             pool_order.trade_timestamp = TimeTools.us_time_now().timestamp()
             if order.limit_price:
-                if order.is_buy and order.limit_price >= self.FAKE_QUOTE.price:
-                    tiger_order.avg_fill_price = self.FAKE_QUOTE.price
+                if order.is_buy and order.limit_price >= self.current_fake_quote.price:
+                    tiger_order.avg_fill_price = self.current_fake_quote.price
                     tiger_order.filled = tiger_order.quantity
-                    pool_order.avg_price = self.FAKE_QUOTE.price
+                    pool_order.avg_price = self.current_fake_quote.price
                     pool_order.filled_qty = pool_order.qty
-                if order.is_sell and order.limit_price <= self.FAKE_QUOTE.price:
-                    tiger_order.avg_fill_price = self.FAKE_QUOTE.price
+                if order.is_sell and order.limit_price <= self.current_fake_quote.price:
+                    tiger_order.avg_fill_price = self.current_fake_quote.price
                     tiger_order.filled = tiger_order.quantity
-                    pool_order.avg_price = self.FAKE_QUOTE.price
+                    pool_order.avg_price = self.current_fake_quote.price
                     pool_order.filled_qty = pool_order.qty
             else:
-                tiger_order.avg_fill_price = self.FAKE_QUOTE.price
+                tiger_order.avg_fill_price = self.current_fake_quote.price
                 tiger_order.filled = tiger_order.quantity
-                pool_order.avg_price = self.FAKE_QUOTE.price
+                pool_order.avg_price = self.current_fake_quote.price
                 pool_order.filled_qty = pool_order.qty
 
     def market_status_mock(self):
-        return self.FAKE_QUOTE.market_status
+        return self.current_fake_quote.market_status
 
     def current_chip_mock(self) -> int:
         orders = self.state.plan.orders
@@ -144,14 +135,14 @@ class SimulationStore(Store):
         assert last_order.avg_price
         level = plan.current_sell_level_filled()
         print(f"earning({TimeTools.us_day_now()} Lv{level}): ${plan.earning}, buyback:${last_order.avg_price}")
-        SimulationStore.EARNING = SimulationStore.EARNING + plan.earning
-        SimulationStore.TIMES_PER_LEVEL[level] += 1
+        self.earning += plan.earning
+        self.times_per_level[level] += 1
 
 
 def start_simulation(symbol: str, quote_csv: str, quote_length: int = 0):
     var = VariableTools()
     store_config = var.store_configs[symbol]
-    store = SimulationStore.new(
+    store = SimulationStore(
         store_config=store_config,
         quote_csv=quote_csv,
         quote_length=quote_length,
@@ -180,7 +171,6 @@ def start_simulation(symbol: str, quote_csv: str, quote_length: int = 0):
         for row in table:
             row: ProfitRow = row
             print(f'表格项: {row} totalRate:{row.total_rate}')
-        SimulationStore.PLAN = table
         store.run()
         if store.exception:
             raise store.exception
@@ -190,6 +180,10 @@ def start_simulation(symbol: str, quote_csv: str, quote_length: int = 0):
     finally:
         for mock in mocks:
             mock.stop()
+    return store
 
 
-__all__ = ['start_simulation', ]
+__all__ = [
+    'start_simulation',
+    'SimulationStore',
+]

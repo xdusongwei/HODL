@@ -8,8 +8,6 @@ cache:
   paths:
     - .cache/pip
     - __pypackages__/
-    - venv/
-    - .venv/lib/
     - /root/.cache/pdm
 variables:
   PROJECT: 'hodl'
@@ -24,7 +22,6 @@ before_script:
   - pdm config python.use_venv false
   - pdm install --prod -G test --no-lock --no-editable
   - pdm sync
-  - pdm cache info
 
 test:
   stage: test

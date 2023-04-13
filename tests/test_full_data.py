@@ -1,11 +1,14 @@
 import os
 import unittest
-from hodl.plan_calc import ProfitRow
+from hodl.plan_calc import *
 from hodl.simulation.main import start_simulation, SimulationStore
+from hodl.state import *
 from hodl.tools import *
 
 
 class FullDataTestCase(unittest.TestCase):
+    STORE: SimulationStore = None
+
     def setUp(self):
         print('running setUp')
 
@@ -23,7 +26,7 @@ class FullDataTestCase(unittest.TestCase):
         elif full_test_mode == 'skip':
             return
         quote_csv = LocateTools.locate_file('data/tigr.csv')
-        start_simulation(symbol='TIGR', quote_csv=quote_csv, quote_length=quote_length)
+        self.STORE = start_simulation(symbol='TIGR', quote_csv=quote_csv, quote_length=quote_length)
 
     def tearDown(self):
         print('running tearDown')
@@ -32,11 +35,14 @@ class FullDataTestCase(unittest.TestCase):
         var = VariableTools()
         store_config = var.store_configs['TIGR']
         print(
-            'total earning: ', SimulationStore.EARNING,
+            'total earning: ', self.STORE.earning,
             'use prudent:', store_config.prudent,
             'base_price_last_buy:', store_config.base_price_last_buy,
             sep=' ',
         )
-        for lv, times in sorted(SimulationStore.TIMES_PER_LEVEL.items(), key=lambda i: i[0]):
-            level: ProfitRow = SimulationStore.PLAN[lv-1]
+        plan = Plan.new_plan(store_config)
+        plan.base_price = 10.0
+        table = SimulationStore.build_table(store_config=store_config, plan=plan)
+        for lv, times in sorted(self.STORE.times_per_level.items(), key=lambda i: i[0]):
+            level: ProfitRow = table[lv-1]
             print(lv, times, f'{((level.total_rate - 1) * 100 * times):+.2f}%')
