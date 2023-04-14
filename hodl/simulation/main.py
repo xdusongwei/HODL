@@ -1,4 +1,4 @@
-from typing import Generator, Any
+from typing import Generator, Any, Type
 from datetime import datetime
 from collections import defaultdict
 from pprint import pprint
@@ -174,6 +174,8 @@ def start_simulation(
         show_plan_table: bool = False,
         store: SimulationStore = None,
         auto_run: bool = True,
+        output_state: bool = True,
+        store_type: Type[SimulationStore] = SimulationStore,
 ):
     if tickets is None and quote_csv is None:
         raise ValueError(f'测试报价数据来源需要指定')
@@ -183,7 +185,7 @@ def start_simulation(
             raise ValueError(f'创建持仓对象需要指定symbol')
         var = VariableTools()
         store_config = var.store_configs[symbol]
-        store = SimulationStore(
+        store = store_type(
             store_config=store_config,
             tickets=tickets,
             quote_csv=quote_csv,
@@ -216,7 +218,7 @@ def start_simulation(
 
     if auto_run:
         with store:
-            store.run()
+            store.run(output_state=output_state)
     return store
 
 
