@@ -46,6 +46,7 @@ state_file_path = ''
 state_archive_folder = ''
 prudent = true
 base_price_last_buy = true
+base_price_day_low = true
 sleep_mode = false
 buy_spread = 0.0
 sell_spread = 0.0

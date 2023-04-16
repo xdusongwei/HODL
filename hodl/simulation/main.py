@@ -87,13 +87,16 @@ class SimulationStore(Store):
         return datetime.utcfromtimestamp(self.current_fake_quote.time.timestamp())
 
     def quote_mock(self):
+        fake_quote = self.current_fake_quote
         return Quote(
             symbol=self.store_config.symbol,
-            open=self.current_fake_quote.open,
-            pre_close=self.current_fake_quote.pre_close,
-            latest_price=self.current_fake_quote.price,
-            status='NORMAL',
-            time=self.current_fake_quote.time,
+            open=fake_quote.open,
+            pre_close=fake_quote.pre_close,
+            latest_price=fake_quote.price,
+            status=fake_quote.quote_status,
+            time=fake_quote.time,
+            day_low=fake_quote.day_low,
+            day_high=fake_quote.day_high,
         )
 
     def sleep_mock(self, secs):
@@ -176,6 +179,7 @@ def start_simulation(
         auto_run: bool = True,
         output_state: bool = True,
         store_type: Type[SimulationStore] = SimulationStore,
+        db: LocalDb = None,
 ):
     if tickets is None and quote_csv is None:
         raise ValueError(f'测试报价数据来源需要指定')
@@ -190,6 +194,7 @@ def start_simulation(
             tickets=tickets,
             quote_csv=quote_csv,
             quote_length=quote_length,
+            db=db,
         )
         mocks = [
             sleep_mock(store.sleep_mock),

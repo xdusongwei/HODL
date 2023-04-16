@@ -15,8 +15,8 @@ class RiskControlTestCase(unittest.TestCase):
         pc = 10.0
         p = pc * 1.03
         tickets = [
-            Ticket(day='2023-04-10T09:30:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:01-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:01-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         with pytest.raises(RiskControlError):
             start_simulation(symbol='LOCK', tickets=tickets, auto_run=True, store_type=_Store, output_state=False)
@@ -42,8 +42,8 @@ class RiskControlTestCase(unittest.TestCase):
         p0 = pc * 1.00
         p3 = pc * 1.03
         tickets = [
-            Ticket(day='2023-04-10T09:30:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p0, latest=p0, ),
-            Ticket(day='2023-04-10T09:30:01-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p0, latest=p3, ),
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+            Ticket(day='23-04-10T09:30:01-04:00:00', pre_close=pc, open=p0, latest=p3, ),
         ]
         for store_type in [_BadChipDayStore, _BadCashDayStore, _BadQuoteDayStore]:
             with pytest.raises(RiskControlError):

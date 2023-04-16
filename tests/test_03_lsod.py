@@ -11,10 +11,10 @@ class LsodTestCase(unittest.TestCase):
         pc = 10.0
         p = pc * 1.03
         tickets = [
-            Ticket(day='2023-04-10T09:30:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:10-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:20-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:30-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(symbol='TEST', tickets=tickets, auto_run=False)
         with store:
@@ -24,7 +24,7 @@ class LsodTestCase(unittest.TestCase):
             assert not state.has_lsod_seal(seal)
 
         tickets = [
-            Ticket(day='2023-04-10T20:00:00-04:00:00', ms='CLOSING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(store=store, tickets=tickets, auto_run=False)
         with store:
@@ -34,7 +34,7 @@ class LsodTestCase(unittest.TestCase):
             assert state.has_lsod_seal(seal)
 
         tickets = [
-            Ticket(day='2023-04-11T09:00:00-04:00:00', ms='PRE_MARKET', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-11T09:00:00-04:00:00', ms='PRE_MARKET', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(store=store, tickets=tickets, auto_run=False)
         with store:
@@ -44,7 +44,7 @@ class LsodTestCase(unittest.TestCase):
             assert state.has_lsod_seal(seal)
 
         tickets = [
-            Ticket(day='2023-04-11T09:30:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-11T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(store=store, tickets=tickets, auto_run=False)
         with store:
@@ -57,10 +57,10 @@ class LsodTestCase(unittest.TestCase):
         pc = 10.0
         p = pc
         tickets = [
-            Ticket(day='2023-04-10T09:30:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:10-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:20-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:30-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(symbol='TEST', tickets=tickets, auto_run=False)
         with store:
@@ -70,7 +70,7 @@ class LsodTestCase(unittest.TestCase):
             assert not state.is_lsod_today
 
         tickets = [
-            Ticket(day='2023-04-10T20:00:00-04:00:00', ms='CLOSING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(store=store, tickets=tickets, auto_run=False)
         with store:
@@ -84,10 +84,10 @@ class LsodTestCase(unittest.TestCase):
         pc = 10.0
         p = pc * 1.03
         tickets = [
-            Ticket(day='2023-04-10T09:30:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:10-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:20-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:30-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(symbol='TEST', tickets=tickets, auto_run=False)
         with store:
@@ -97,7 +97,7 @@ class LsodTestCase(unittest.TestCase):
             assert not state.has_lsod_seal(seal)
 
         tickets = [
-            Ticket(day='2023-04-11T09:30:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-11T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(store=store, tickets=tickets, auto_run=False)
         with store:
@@ -109,10 +109,10 @@ class LsodTestCase(unittest.TestCase):
         pc = 10.0
         p = pc * 1.03
         tickets = [
-            Ticket(day='2023-04-10T09:30:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:10-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:20-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T09:30:30-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(symbol='TEST', tickets=tickets, auto_run=False)
         with store:
@@ -122,7 +122,7 @@ class LsodTestCase(unittest.TestCase):
             assert not state.has_lsod_seal(seal)
 
         tickets = [
-            Ticket(day='2023-04-11T20:00:00-04:00:00', ms='CLOSING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-11T20:00:00-04:00:00', ms='CLOSING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(store=store, tickets=tickets, auto_run=False)
         with store:
@@ -134,10 +134,10 @@ class LsodTestCase(unittest.TestCase):
         pc = 30000.0
         p = pc * 1.03
         tickets = [
-            Ticket(day='2023-04-10T22:30:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T22:30:10-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T22:30:20-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
-            Ticket(day='2023-04-10T22:30:30-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T22:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T22:30:10-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T22:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T22:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(symbol='BTC', tickets=tickets, auto_run=False)
         with store:
@@ -147,7 +147,7 @@ class LsodTestCase(unittest.TestCase):
             assert not state.has_lsod_seal(seal)
 
         tickets = [
-            Ticket(day='2023-04-10T23:00:00-04:00:00', ms='TRADING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
+            Ticket(day='23-04-10T23:00:00-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = start_simulation(store=store, tickets=tickets, auto_run=False)
         with store:

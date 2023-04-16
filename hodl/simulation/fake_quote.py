@@ -1,13 +1,17 @@
+import re
 import csv
 import random
 from decimal import Decimal
 from collections import namedtuple
 from dataclasses import *
 from datetime import timedelta, datetime
-from hodl.tools import TimeTools
+from hodl.tools import *
 
 
-FakeQuote = namedtuple('FakeQuote', ['time', 'price', 'market_status', 'open', 'pre_close', 'quote_status', ])
+FakeQuote = namedtuple(
+    'FakeQuote',
+    ['time', 'price', 'market_status', 'open', 'pre_close', 'quote_status', 'day_low', 'day_high', ]
+)
 
 
 def _build_item(
@@ -17,14 +21,18 @@ def _build_item(
         open: float,
         pre_close: float,
         quote_status: str = 'NORMAL',
+        day_low: float = None,
+        day_high: float = None,
 ):
     return FakeQuote(
         time=time,
-        price=float(Decimal(price).quantize(Decimal("0.00"))),
+        price=FormatTool.adjust_precision(price, 2),
         market_status=market_status,
         open=open,
         pre_close=pre_close,
         quote_status=quote_status,
+        day_low=day_low,
+        day_high=day_high,
     )
 
 
@@ -36,9 +44,15 @@ class Ticket:
     latest: float = field()
     ms: str = field(default='TRADING')
     qs: str = field(default='NORMAL')
+    low: float = field(default=None)
+    high: float = field(default=None)
 
     def to_fake_quote(self) -> FakeQuote:
-        time = datetime.fromisoformat(self.day)
+        if re.match(r'^\d{2}-\d{2}-\d{2}', self.day):
+            day = f'20{self.day}'
+        else:
+            day = self.day
+        time = datetime.fromisoformat(day)
         return _build_item(
             time=time,
             price=self.latest,
@@ -46,6 +60,8 @@ class Ticket:
             open=self.open,
             pre_close=self.pre_close,
             quote_status=self.qs,
+            day_low=self.low,
+            day_high=self.high,
         )
 
 

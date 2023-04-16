@@ -305,7 +305,8 @@ class Order(DictWrapper):
     @property
     def is_today(self):
         tz = TimeTools.region_to_tz(region=self.region)
-        return TimeTools.us_day_now(tz=tz) == self.order_day
+        today = TimeTools.us_day_now(tz=tz)
+        return today == self.order_day
 
     @property
     def is_buy(self) -> bool:
