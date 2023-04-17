@@ -509,5 +509,8 @@ class StoreBase(ThreadMixin):
         with open(earning_json_path, mode='w', encoding='utf8') as f:
             f.write(file_body)
 
+    def args(self) -> tuple[StoreConfig, State, Plan, ]:
+        return self.store_config, self.state, self.state.plan,
+
 
 __all__ = ['StoreBase', ]
