@@ -177,6 +177,7 @@ def start_simulation(
         quote_length: int = 0,
         show_plan_table: bool = False,
         store: SimulationStore = None,
+        store_config: StoreConfig = None,
         auto_run: bool = True,
         output_state: bool = True,
         store_type: Type[SimulationStore] = SimulationStore,
@@ -186,10 +187,11 @@ def start_simulation(
         raise ValueError(f'测试报价数据来源需要指定')
 
     if store is None:
-        if not symbol:
+        if not symbol and not store_config:
             raise ValueError(f'创建持仓对象需要指定symbol')
-        var = VariableTools()
-        store_config = var.store_configs[symbol]
+        if store_config is None:
+            var = VariableTools()
+            store_config = var.store_configs[symbol]
         store = store_type(
             store_config=store_config,
             tickets=tickets,

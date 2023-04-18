@@ -36,42 +36,6 @@ sell_spread = 0.0
 sell_order_rate = 1.01
 buy_order_rate = 0.99
 
-[store.LOCK]
-broker = 'tiger'
-symbol = 'LOCK'
-currency = 'USD'
-region = 'US'
-trade_type = 'stock'
-enable = true
-max_shares = 100_000
-log_root = ''
-state_file_path = ''
-state_archive_folder = ''
-prudent = true
-base_price_last_buy = true
-sleep_mode = false
-buy_spread = 0.0
-sell_spread = 0.0
-lock_position = true
-
-[store.MKT]
-broker = 'tiger'
-symbol = 'MKT'
-currency = 'USD'
-region = 'US'
-trade_type = 'stock'
-enable = true
-max_shares = 100_000
-log_root = ''
-state_file_path = ''
-state_archive_folder = ''
-prudent = true
-base_price_last_buy = true
-sleep_mode = false
-buy_spread = 0.0
-sell_spread = 0.0
-market_price_rate = 0.02
-
 [store.ASHARE]
 broker = 'tiger'
 symbol = '000001'

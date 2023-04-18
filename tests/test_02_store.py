@@ -1,6 +1,7 @@
 import unittest
 from hodl.simulation.fake_quote import *
 from hodl.simulation.main import *
+from hodl.tools import *
 
 
 class StoreTestCase(unittest.TestCase):
@@ -143,3 +144,33 @@ class StoreTestCase(unittest.TestCase):
         state = store.state
         plan = state.plan
         assert plan.earning > 0
+
+    def test_enable(self):
+        # 测试使能关闭, 不会开仓卖出
+        store_config = VariableTools().store_configs['TEST']
+        store_config['enable'] = False
+        pc = 10.0
+        p0 = pc
+        p100 = pc * 100
+        tickets = [
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+            Ticket(day='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p0, latest=p100, ),
+        ]
+
+        store = start_simulation(store_config=store_config, tickets=tickets)
+        state = store.state
+        plan = state.plan
+        orders = plan.orders
+        assert len(orders) == 0
+
+    def test_bars(self):
+        pc = 10.0
+        p0 = pc
+        tickets = [
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+        ]
+
+        store = start_simulation(symbol='TEST', tickets=tickets)
+        store.primary_bar()
+        store.secondary_bar()
+        store.warning_alert_bar()

@@ -7,6 +7,7 @@ from hodl.simulation.main import *
 
 class LsodTestCase(unittest.TestCase):
     def test_lsod(self):
+        # 第一天触发卖出, 并且走完收盘时段, 第二天再触发买入, 整个过程lsod检测应通过
         seal = 'ClosingChecked'
         pc = 10.0
         p0 = pc

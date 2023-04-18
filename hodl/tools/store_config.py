@@ -4,8 +4,10 @@ import exchange_calendars
 
 
 class TradeStrategyEnum(enum.Enum):
+    # 根据基准价格分价分量高价卖出, 当股价低于当前挡的买入价时买回卖出的部分, 以挣取差价
     HODL = enum.auto()
-    RECYCLE = enum.auto()
+    # 每日按计划小批量买入或者卖出股票
+    DAY_DAY_BUY = enum.auto()
 
 
 class StoreConfig(dict):
@@ -56,28 +58,14 @@ class StoreConfig(dict):
         match strategy:
             case 'hodl':
                 return TradeStrategyEnum.HODL
-            case 'recycle':
-                return TradeStrategyEnum.RECYCLE
+            case 'dayDayBuy':
+                return TradeStrategyEnum.DAY_DAY_BUY
             case _:
                 return TradeStrategyEnum.HODL
 
     @property
     def trade_type(self) -> str:
         return self.get('trade_type', 'stock')
-
-    @property
-    def cost_price(self) -> float:
-        """
-        对于保本型拐点套利，必须设定建仓成本价，以便计算清仓价格
-        """
-        return self.get('cost_price', None)
-
-    @property
-    def recycle_rate(self) -> float:
-        """
-        对于保本型拐点套利，必须设定清仓比例，假设cost_price=10，recycle_rate设定0.01，那么市价低于10.1则触发清仓机制。
-        """
-        return self.get('cost_price', None)
 
     @property
     def symbol(self) -> str:
@@ -335,7 +323,7 @@ class StoreConfig(dict):
         """
         买卖计划价格将乘以该系数
         利用此设置可以微调买卖因子的幅度。
-        假设某个等级的卖出价是基准价格的3%, 买入价是基准价格的0%, 当这是设置0.333：
+        假设某个等级的卖出价是基准价格的3%, 而买入价是基准价格的0%, 当这是设置0.333：
         则会使卖出幅度变为1% (3% * 0.333), 买入幅度变为0% (0% * 0.333)。
         :return:
         """

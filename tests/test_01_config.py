@@ -2,7 +2,7 @@ import unittest
 from hodl.tools import *
 
 
-class ConfigReadTestCase(unittest.TestCase):
+class ConfigTestCase(unittest.TestCase):
     def test_read_config(self):
         symbol = 'TEST'
         var = VariableTools()

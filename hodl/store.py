@@ -28,17 +28,23 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
             raise e
 
     def prepare_plan(self):
-        state = self.state
+        sc, state, _ = self.args()
         if state.plan.cleanable:
             state.plan = Plan.new_plan(
                 store_config=self.store_config,
             )
         state.plan.clean_orders()
         plan = state.plan
-        profit_calc = plan.plan_calc()
-        plan.weight = profit_calc.weight
-        plan.sell_rate = profit_calc.sell_rate
-        plan.buy_rate = profit_calc.buy_rate
+        if factors := sc.factors:
+            sell_factors, buy_factors, weight = list(zip(*factors))
+            plan.weight = weight
+            plan.sell_rate = sell_factors
+            plan.buy_rate = buy_factors
+        else:
+            profit_calc = plan.plan_calc()
+            plan.weight = profit_calc.weight
+            plan.sell_rate = profit_calc.sell_rate
+            plan.buy_rate = profit_calc.buy_rate
 
         current_enable = self.runtime_state.enable
         new_enable = self.store_config.enable
