@@ -1,4 +1,4 @@
-from typing import Generator, Any, Type
+from typing import Generator, Any, Type, Self
 from datetime import datetime
 from collections import defaultdict
 from pprint import pprint
@@ -158,11 +158,12 @@ class SimulationStore(Store):
                 pprint(self.state)
             raise e
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         QuoteMixin.CACHE_MARKET_STATUS = False
         RiskControl.ORDER_DICT = dict()
         for mock in self.mocks:
             mock.start()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         for mock in self.mocks:
