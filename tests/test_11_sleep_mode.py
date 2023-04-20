@@ -16,12 +16,13 @@ class SleepModeTestCase(unittest.TestCase):
         us_tickets_table = [
             (Ticket(day='23-04-10T09:29:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False, ),
             (Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), True, ),  # 开市
+            (Ticket(day='23-04-10T15:59:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), True, ),
             (Ticket(day='23-04-10T16:00:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False, ),  # 休市
             (Ticket(day='23-04-07T09:30:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False, ),  # 耶稣受难日
         ]
         for ticket, result in us_tickets_table:
             time = ticket.to_fake_quote().time
-            assert is_trading_minute(calendar=us_calendar, time=time) == result
+            assert is_trading_minute(calendar=us_calendar, time=time) is result
 
         cn_tickets_table = [
             (Ticket(day='23-04-10T09:29:00+08:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False,),
@@ -36,4 +37,4 @@ class SleepModeTestCase(unittest.TestCase):
         ]
         for ticket, result in cn_tickets_table:
             time = ticket.to_fake_quote().time
-            assert is_trading_minute(calendar=cn_calendar, time=time) == result
+            assert is_trading_minute(calendar=cn_calendar, time=time) is result

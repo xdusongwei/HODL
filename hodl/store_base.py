@@ -122,30 +122,30 @@ class StoreBase(ThreadMixin):
         self.state.name = self.store_config.name
 
     def save_state(self):
-        if not self.ENABLE_STATE_FILE:
-            return
         runtime_state = self.runtime_state
-        text = FormatTool.json_dumps(self.state)
-        day = TimeTools.us_time_now()
-        today = TimeTools.date_to_ymd(day)
-        changed = (today, text,) != runtime_state.state_compare
-        if changed:
-            if self.state_file:
-                with open(self.state_file, 'w', encoding='utf8') as f:
-                    f.write(text)
-            if self.state_archive:
-                archive_path = os.path.join(self.state_archive, f'{today}.json')
-                with open(archive_path, 'w', encoding='utf8') as f:
-                    f.write(text)
-            if db := self.db:
-                row = StateRow(
-                    version=self.state.version,
-                    day=int(TimeTools.date_to_ymd(day, join=False)),
-                    symbol=self.store_config.symbol,
-                    content=text,
-                    update_time=int(TimeTools.us_time_now().timestamp()),
-                )
-                row.save(con=db.conn)
+        changed = False
+        if self.ENABLE_STATE_FILE:
+            text = FormatTool.json_dumps(self.state)
+            day = TimeTools.us_time_now()
+            today = TimeTools.date_to_ymd(day)
+            changed = (today, text,) != runtime_state.state_compare
+            if changed:
+                if self.state_file:
+                    with open(self.state_file, 'w', encoding='utf8') as f:
+                        f.write(text)
+                if self.state_archive:
+                    archive_path = os.path.join(self.state_archive, f'{today}.json')
+                    with open(archive_path, 'w', encoding='utf8') as f:
+                        f.write(text)
+                if db := self.db:
+                    row = StateRow(
+                        version=self.state.version,
+                        day=int(TimeTools.date_to_ymd(day, join=False)),
+                        symbol=self.store_config.symbol,
+                        content=text,
+                        update_time=int(TimeTools.us_time_now().timestamp()),
+                    )
+                    row.save(con=db.conn)
         quote_time = self.state.quote_time
         low_price = self.state.quote_low_price
         if quote_time and low_price:

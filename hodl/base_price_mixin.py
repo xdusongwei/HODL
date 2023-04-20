@@ -1,5 +1,6 @@
 from abc import ABC
 from collections import defaultdict
+from hodl.quote import *
 from hodl.store_base import *
 from hodl.storage import *
 from hodl.tools import *
@@ -56,11 +57,11 @@ class BasePriceMixin(StoreBase, ABC):
         """
         self._set_up_base_price_ta_info()
 
-        state = self.state
-        store_config = self.store_config
+        store_config, state, _ = self.args()
         symbol = store_config.symbol
-        quote_pre_close = self.state.quote_pre_close
-        low_price = self.state.quote_low_price
+        quote_pre_close = state.quote_pre_close
+        quote_open = state.quote_open
+        low_price = state.quote_low_price
         db = self.db
         match store_config.trade_strategy:
             case TradeStrategyEnum.HODL:
@@ -71,6 +72,8 @@ class BasePriceMixin(StoreBase, ABC):
                         return base_price_row.price
 
                 price_list = [quote_pre_close, ]
+                if quote_open:
+                    price_list.append(quote_open)
                 if db and store_config.base_price_last_buy:
                     con = db.conn
                     days = store_config.base_price_last_buy_days
@@ -120,6 +123,11 @@ class BasePriceMixin(StoreBase, ABC):
         state.ta_tumble_protect_alert_price = self._tumble_protect_alert_price()
         self._set_bp_function('max')
 
+    def _query_vix(self) -> VixQuote:
+        store_config = self.store_config
+        vix_quote = self.market_status_proxy.query_vix(store_config)
+        return vix_quote
+
     def _vix_tp_check(self):
         state = self.state
         store_config = self.store_config
@@ -127,7 +135,7 @@ class BasePriceMixin(StoreBase, ABC):
         state.ta_vix_high = None
         vix_limit = store_config.vix_tumble_protect
         if vix_limit is not None:
-            vix_quote = self.market_status_proxy.query_vix(store_config)
+            vix_quote = self._query_vix()
             if vix_quote:
                 state.ta_vix_high = vix_quote.day_high
                 state.ta_vix_time = vix_quote.time.timestamp()
@@ -173,6 +181,7 @@ class BasePriceMixin(StoreBase, ABC):
                     state.ta_tumble_protect_rsi = unlock_limit
                     state.ta_tumble_protect_rsi_period = rsi_period
                     state.ta_tumble_protect_rsi_day = rsi_day
+                    self._set_bp_function('max')
             if rsi_points:
                 state.ta_tumble_protect_rsi_current = rsi_points[-1][1]
         else:
