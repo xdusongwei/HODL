@@ -1,9 +1,16 @@
 from abc import ABC
 from collections import defaultdict
+from dataclasses import dataclass, field, asdict
 from hodl.quote import *
 from hodl.store_base import *
 from hodl.storage import *
 from hodl.tools import *
+
+
+@dataclass
+class BasePriceItem:
+    v: float = field()
+    desc: str = field()
 
 
 class BasePriceMixin(StoreBase, ABC):
@@ -46,6 +53,39 @@ class BasePriceMixin(StoreBase, ABC):
         self._try_reset_bp_function()
         self._set_up_ta_info()
 
+    def _calc_hodl_price_list(self) -> list[BasePriceItem]:
+        store_config, state, _ = self.args()
+        symbol = store_config.symbol
+        db = self.db
+        quote_pre_close = state.quote_pre_close
+        quote_open = state.quote_open
+        low_price = state.quote_low_price
+        items: list[BasePriceItem] = list()
+
+        if db:
+            con = db.conn
+            base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
+            if base_price_row and base_price_row.price > 0:
+                items.append(BasePriceItem(v=base_price_row.price, desc='TempPrice'))
+                return items
+
+        items.append(BasePriceItem(v=quote_pre_close, desc='PreClosePrice'))
+        if quote_open:
+            items.append(BasePriceItem(v=quote_open, desc='OpenPrice'))
+        if db and store_config.base_price_last_buy:
+            con = db.conn
+            days = store_config.base_price_last_buy_days
+            earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol, days=days)
+            if earning_row and earning_row.buyback_price and earning_row.buyback_price > 0:
+                items.append(BasePriceItem(v=earning_row.buyback_price, desc='BuybackPrice'))
+        if store_config.base_price_day_low:
+            if low_price is not None:
+                items.append(BasePriceItem(v=low_price, desc='LowPrice'))
+        if state.ta_tumble_protect_alert_price is not None:
+            items.append(BasePriceItem(v=state.ta_tumble_protect_alert_price, desc='TpMaPrice'))
+
+        return items
+
     def calc_base_price(self) -> float:
         """
         计算基准价格，
@@ -58,41 +98,18 @@ class BasePriceMixin(StoreBase, ABC):
         self._set_up_base_price_ta_info()
 
         store_config, state, _ = self.args()
-        symbol = store_config.symbol
-        quote_pre_close = state.quote_pre_close
-        quote_open = state.quote_open
-        low_price = state.quote_low_price
-        db = self.db
         match store_config.trade_strategy:
             case TradeStrategyEnum.HODL:
-                if db:
-                    con = db.conn
-                    base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
-                    if base_price_row and base_price_row.price > 0:
-                        return base_price_row.price
-
-                price_list = [quote_pre_close, ]
-                if quote_open:
-                    price_list.append(quote_open)
-                if db and store_config.base_price_last_buy:
-                    con = db.conn
-                    days = store_config.base_price_last_buy_days
-                    earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol, days=days)
-                    if earning_row and earning_row.buyback_price and earning_row.buyback_price > 0:
-                        price_list.append(earning_row.buyback_price)
-                if store_config.base_price_day_low:
-                    if low_price is not None:
-                        price_list.append(low_price)
-                if state.ta_tumble_protect_alert_price is not None:
-                    price_list.append(state.ta_tumble_protect_alert_price)
-
-                func = self._get_bp_function()
-                price = func(price_list)
-
-                assert price > 0.0
-                return price
+                items = self._calc_hodl_price_list()
             case _:
                 raise NotImplementedError
+
+        state.bp_items = [asdict(item) for item in items]
+        func = self._get_bp_function()
+        price = func([item.v for item in items])
+
+        assert price > 0.0
+        return price
 
     def _set_up_ta_info(self):
         """

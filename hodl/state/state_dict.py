@@ -397,6 +397,14 @@ class State(dict):
         self._set_snapshot('basePrice', 'functionDay', v)
 
     @property
+    def bp_items(self) -> list[dict]:
+        return self._get_snapshot('basePrice', 'items', list())
+
+    @bp_items.setter
+    def bp_items(self, v: list[dict]):
+        self._set_snapshot('basePrice', 'items', v)
+
+    @property
     def bp_function(self) -> str:
         return self._get_snapshot('basePrice', 'function', 'min')
 
