@@ -10,7 +10,7 @@ dependencies = [
     "PySocks>=1.7.1",
     "pytz>=2021.1",
     "concurrent-log-handler>=0.9.20",
-    "json-log-formatter>=0.5.1",
+    "json-log-formatter==0.5.1",
     "toml>=0.10.2",
     "httpx>=0.22.0",
     "h2>=4.1.0",
@@ -28,6 +28,7 @@ dependencies = [
     "exchange-calendars>=4.2.4",
     "textual==0.1.18",
     "libp2p-go==0.1.4",
+    "futu-api>=7.1.3308",
 ]
 
 requires-python = ">=3.11"

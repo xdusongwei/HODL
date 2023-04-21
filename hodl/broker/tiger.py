@@ -96,7 +96,7 @@ class TigerApi(BrokerApiBase):
             share_market_state=True,
             share_quote=True,
             market_status_regions={'US', 'HK', 'CN', },
-            quote_regions={'US', 'HK', 'CN', },
+            quote_regions={'US', 'HK', },
             trade_regions={'US', 'HK', },
             vix_symbol='VIX',
         ),
@@ -198,7 +198,9 @@ class TigerApi(BrokerApiBase):
     @classmethod
     def _transform_trading_status(cls, status: str) -> str:
         if status == 'EARLY_CLOSED':
-            return 'CLOSED'
+            return 'CLOSING'
+        if status == 'MARKET_CLOSED':
+            return 'CLOSING'
         return status
 
     def fetch_market_status(self) -> dict:

@@ -2,6 +2,7 @@ from urllib.parse import urljoin
 import requests
 from hodl.broker.base import *
 from hodl.exception_tools import *
+from hodl.quote import *
 from hodl.state import *
 from hodl.tools import *
 
@@ -13,7 +14,7 @@ class CiticsRestApi(BrokerApiBase):
         ApiMeta(
             trade_type=BrokerTradeType.STOCK,
             share_market_state=False,
-            share_quote=False,
+            share_quote=True,
             market_status_regions=set(),
             quote_regions=set(),
             trade_regions={'CN', },
@@ -98,6 +99,26 @@ class CiticsRestApi(BrokerApiBase):
             return True
         except Exception as e:
             return False
+
+    def fetch_quote(self) -> Quote:
+        symbol = self.symbol
+        citics_state = self._citics_fetch(f'/api/citics/state')
+        quote_list = citics_state['quoteList']
+        for quote in quote_list:
+            qd: dict = quote
+            if qd.get('symbol') != symbol:
+                continue
+            return Quote(
+                symbol=qd['symbol'],
+                open=FormatTool.adjust_precision(qd['open_price'], 3),
+                pre_close=FormatTool.adjust_precision(qd['pre_close'], 3),
+                latest_price=FormatTool.adjust_precision(qd['latest_price'], 3),
+                time=TimeTools.from_timestamp(qd['time']),
+                status='NORMAL' if qd['status'] else '--',
+                day_low=FormatTool.adjust_precision(qd['low_price'], 3),
+                day_high=FormatTool.adjust_precision(qd['high_price'], 3),
+            )
+        raise PrepareError(f'中信证券找不到指定的行情:{symbol}')
 
     def query_cash(self):
         symbol = self.symbol
