@@ -86,6 +86,36 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         state.quote_broker = quote.broker_name
         state.quote_broker_display = quote.broker_display
 
+        db = self.db
+        runtime_state = self.runtime_state
+        quote_time = quote.time.timestamp()
+        low_price = quote.day_low
+        quote_day = int(TimeTools.date_to_ymd(TimeTools.from_timestamp(quote_time), join=False))
+
+        if quote_time and low_price and db and (quote_day, low_price,) != runtime_state.low_price_compare:
+            runtime_state.low_price_compare = (quote_day, low_price,)
+            row = QuoteLowHistoryRow(
+                broker=self.store_config.broker,
+                region=self.store_config.region,
+                symbol=self.store_config.symbol,
+                day=quote_day,
+                low_price=low_price,
+                update_time=int(TimeTools.us_time_now().timestamp()),
+            )
+            row.save(con=db.conn)
+        high_price = quote.day_high
+        if quote_time and high_price and db and (quote_day, high_price,) != runtime_state.high_price_compare:
+            runtime_state.high_price_compare = (quote_day, high_price,)
+            row = QuoteHighHistoryRow(
+                broker=self.store_config.broker,
+                region=self.store_config.region,
+                symbol=self.store_config.symbol,
+                day=quote_day,
+                high_price=high_price,
+                update_time=int(TimeTools.us_time_now().timestamp()),
+            )
+            row.save(con=db.conn)
+
     def prepare_delete_state(self) -> int:
         orders = self.state.plan.orders
         total_sell = sum(order.filled_qty for order in orders if order.is_sell)
