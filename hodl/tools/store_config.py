@@ -84,7 +84,6 @@ class StoreConfig(dict):
 
         """
         conid = self.get('conid')
-        assert conid
         return conid
 
     @property
