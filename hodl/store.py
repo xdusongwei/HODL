@@ -83,6 +83,8 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         state.quote_latest_price = quote.latest_price
         state.quote_low_price = quote.day_low
         state.quote_high_price = quote.day_high
+        state.quote_broker = quote.broker_name
+        state.quote_broker_display = quote.broker_display
 
     def prepare_delete_state(self) -> int:
         orders = self.state.plan.orders
@@ -111,15 +113,20 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         state.cash_day = TimeTools.us_day_now()
 
     def prepare_plug_in(self):
+        state = self.state
         if not self.ENABLE_BROKER:
+            state.trade_broker = '--'
+            state.trade_broker_display = '--'
             return
+        state.trade_broker = self.broker_proxy.trade_broker.BROKER_NAME
+        state.trade_broker_display = self.broker_proxy.trade_broker.BROKER_DISPLAY
         if self.broker_proxy.detect_plug_in():
             text = f"""✅{self.store_config.full_name}连通已恢复"""
-            self.state.is_plug_in = True
+            state.is_plug_in = True
             self.bot.unset_alarm(AlertBot.K_TRADE_SERVICE, text=text)
         else:
             text = f"""🔌{self.store_config.full_name}连通测试失败"""
-            self.state.is_plug_in = False
+            state.is_plug_in = False
             self.bot.set_alarm(AlertBot.K_TRADE_SERVICE, text=text)
             raise PlugInError()
 

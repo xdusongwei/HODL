@@ -137,6 +137,8 @@ class OkxRestApi(BrokerApiBase):
             latest_price=latest_price,
             status='NORMAL',
             time=us_date,
+            broker_name=cls.BROKER_NAME,
+            broker_display=cls.BROKER_DISPLAY,
         )
 
     def fetch_market_status(self) -> dict:

@@ -20,20 +20,32 @@ class FutuApi(BrokerApiBase):
             share_market_state=True,
             share_quote=True,
             market_status_regions={'US', 'HK', 'CN', },
-            quote_regions={'CN', },
+            quote_regions={'HK', 'CN', },
             trade_regions=set(),
         ),
     ]
 
+    QUOTE_CLIENT: OpenQuoteContext = None
     MARKET_STATUS_BUCKET = LeakyBucket(10)
     SNAPSHOT_BUCKET = LeakyBucket(120)
 
     def __post_init__(self):
-        config_dict = self.broker_config
-        host = config_dict.get('host', '127.0.0.1')
-        port = config_dict.get('port', 11111)
-        quote_ctx = OpenQuoteContext(host=host, port=port)
-        self.quote_client = quote_ctx
+        if FutuApi.QUOTE_CLIENT is None:
+            SysConfig.set_all_thread_daemon(True)
+            config_dict = self.broker_config
+            host = config_dict.get('host', '127.0.0.1')
+            port = config_dict.get('port', 11111)
+            quote_ctx = OpenQuoteContext(host=host, port=port)
+            FutuApi.QUOTE_CLIENT = quote_ctx
+        self.quote_client = FutuApi.QUOTE_CLIENT
+
+    def detect_plug_in(self):
+        try:
+            client = self.quote_client
+            conn_id = client.get_sync_conn_id()
+            return bool(conn_id)
+        except Exception as e:
+            return False
 
     def fetch_market_status(self) -> dict:
         client = self.quote_client
@@ -96,6 +108,8 @@ class FutuApi(BrokerApiBase):
                     status=d['sec_status'],
                     day_low=d['low_price'],
                     day_high=d['high_price'],
+                    broker_name=self.BROKER_NAME,
+                    broker_display=self.BROKER_DISPLAY,
                 )
         else:
             raise PrepareError(f'富途快照接口调用失败: {data}')

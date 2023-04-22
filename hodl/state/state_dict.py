@@ -117,6 +117,22 @@ class State(dict):
         self._set_snapshot('latestSnapshot', 'quoteTime', v)
 
     @property
+    def quote_broker(self) -> str:
+        return self._get_snapshot('latestSnapshot', 'quoteBroker', default='--')
+
+    @quote_broker.setter
+    def quote_broker(self, v: str):
+        self._set_snapshot('latestSnapshot', 'quoteBroker', v)
+
+    @property
+    def quote_broker_display(self) -> str:
+        return self._get_snapshot('latestSnapshot', 'quoteBrokerDisplay', default='--')
+
+    @quote_broker_display.setter
+    def quote_broker_display(self, v: str):
+        self._set_snapshot('latestSnapshot', 'quoteBrokerDisplay', v)
+
+    @property
     def quote_open(self):
         return self._get_snapshot('latestSnapshot', 'quoteOpen')
 
@@ -411,6 +427,22 @@ class State(dict):
     @bp_function.setter
     def bp_function(self, v: str):
         self._set_snapshot('basePrice', 'function', v)
+
+    @property
+    def trade_broker(self) -> str:
+        return self.get('tradeBroker', '--')
+
+    @trade_broker.setter
+    def trade_broker(self, v: str):
+        self['tradeBroker'] = v
+
+    @property
+    def trade_broker_display(self) -> str:
+        return self.get('tradeBrokerDisplay', '--')
+
+    @trade_broker_display.setter
+    def trade_broker_display(self, v: str):
+        self['tradeBrokerDisplay'] = v
 
 
 __all__ = [

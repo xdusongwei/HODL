@@ -1,3 +1,4 @@
+import random
 import multiprocessing.pool
 from requests import Session
 from hodl.broker import *
@@ -50,6 +51,7 @@ class MarketStatusProxy:
                 broker = type(b)(
                     broker_config=b.broker_config,
                     symbol=vix_symbol,
+                    conid=vix_symbol,
                     name='VIX',
                     logger=b.logger,
                     session=b.http_session,
@@ -60,7 +62,7 @@ class MarketStatusProxy:
                         'latest': quote.latest_price,
                         'dayHigh': quote.day_high,
                         'dayLow': quote.day_low,
-                        'time': quote.time.timestamp(),
+                        'time': int(quote.time.timestamp()),
                     }
                 }
             except Exception as e:
@@ -173,10 +175,12 @@ class BrokerProxy:
                     continue
                 if store_config.region not in meta.quote_regions:
                     continue
-                quote = None
+                if meta.need_conid and not store_config.conid:
+                    continue
                 try:
                     quote = broker.fetch_quote()
                 except Exception as e:
+                    quote = None
                     exc = e
                 if quote:
                     return quote
@@ -235,10 +239,12 @@ class BrokerProxy:
                 name=store_config.name,
                 logger=self.runtime_state.log.logger(),
                 session=self.runtime_state.http_session,
+                conid=store_config.conid,
             )
             for t, d in broker_info
             if any(meta for meta in t.META if meta.quote_regions)
         ]
+        random.shuffle(brokers)
         self.quote_brokers = brokers
 
         self.trade_brokers = list()

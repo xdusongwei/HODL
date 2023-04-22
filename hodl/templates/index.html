@@ -101,8 +101,8 @@
                                             </span>
                                             {% endif %}
                                         </p>
-                                        <p class="mb-0">[{{ store_config.region }}]{{ store_config.symbol }}<span class="text-muted ms-2">交易通道: {{ store.broker_display }}</span></p>
-                                        <p class="text-muted fs-6">{{ FMT.pretty_dt(state.quote_time, region=store_config.region, with_year=True, with_tz=True)[:24] }}</p>
+                                        <p class="mb-0">[{{ store_config.region }}]{{ store_config.symbol }}<span class="text-muted ms-2">{{ FMT.pretty_dt(state.quote_time, region=store_config.region, with_year=True, with_tz=True)[:24] }}</span></p>
+                                        <p class="text-muted fs-6">交易通道:{{ state.trade_broker_display }} 行情通道:{{ state.quote_broker_display }}</p>
                                         <p>
                                             {% for bar in store.primary_bar() %}
                                             <span class="badge bg-secondary" {{ bar.tooltip_attr|safe }}>{{ bar.content }}</span>

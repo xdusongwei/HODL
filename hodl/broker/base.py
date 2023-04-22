@@ -30,6 +30,7 @@ class ApiMeta:
     允许的行情信息国家代码集合；
     允许的交易品种国家代码集合；
     broker支持获取vix波动率的代码；
+    需要提供conid(盈透证券的标的代码)；
     """
     trade_type: BrokerTradeType = field(default=BrokerTradeType.STOCK)
     share_market_state: bool = field(default=False)
@@ -38,6 +39,7 @@ class ApiMeta:
     quote_regions: set[str] = field(default_factory=set)
     trade_regions: set[str] = field(default_factory=set)
     vix_symbol: str = field(default=None)
+    need_conid: bool = field(default=False)
 
 
 class BrokerApiMixin(abc.ABC):
@@ -118,10 +120,12 @@ class BrokerApiBase(BrokerApiMixin):
             name: None | str,
             logger: LoggerWrapper = None,
             session: requests.Session = None,
+            conid: None | str = None,
     ):
         self.broker_config = broker_config
         self.custom_client = None
         self.symbol = symbol
+        self.conid = conid
         self.name = name
         self.http_session = session
         self.logger = logger

@@ -117,6 +117,8 @@ class CiticsRestApi(BrokerApiBase):
                 status='NORMAL' if qd['status'] else '--',
                 day_low=FormatTool.adjust_precision(qd['low_price'], 3),
                 day_high=FormatTool.adjust_precision(qd['high_price'], 3),
+                broker_name=self.BROKER_NAME,
+                broker_display=self.BROKER_DISPLAY,
             )
         raise PrepareError(f'中信证券找不到指定的行情:{symbol}')
 

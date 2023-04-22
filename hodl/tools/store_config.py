@@ -74,6 +74,20 @@ class StoreConfig(dict):
         return symbol
 
     @property
+    def conid(self) -> str:
+        """
+        盈透证券的标的代码(IBKR Contract identifier), 当持仓需要盈透证券的下单、行情功能时需提供.
+        可以在这个网页搜索对应股票的该代码:
+        https://pennies.interactivebrokers.com/cstools/contract_info/v3.10/index.php
+        Returns
+        -------
+
+        """
+        conid = self.get('conid')
+        assert conid
+        return conid
+
+    @property
     def name(self) -> str:
         """
         如果不考虑某些证券系统同证券代码会有多种标的，名称可以随便起。

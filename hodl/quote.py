@@ -12,6 +12,8 @@ class Quote:
     status: str
     day_low: float = None
     day_high: float = None
+    broker_name: str = '--'
+    broker_display: str = '--'
 
 
 @dataclass

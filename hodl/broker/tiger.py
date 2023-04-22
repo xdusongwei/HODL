@@ -193,6 +193,8 @@ class TigerApi(BrokerApiBase):
                 time=us_date,
                 day_low=low_price,
                 day_high=high_price,
+                broker_name=cls.BROKER_NAME,
+                broker_display=cls.BROKER_DISPLAY,
             )
 
     @classmethod
