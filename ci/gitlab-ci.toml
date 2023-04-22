@@ -53,6 +53,8 @@ sleep_mode = false
 buy_spread = 0.0
 sell_spread = 0.0
 lock_position = true
+shares_per_unit = 100
+legal_rate_daily = 0.1
 
 [store.BTC]
 broker = 'okx'

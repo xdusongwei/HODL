@@ -90,7 +90,6 @@ class TumbleProtectTestCase(unittest.TestCase):
             Ticket(day='23-04-17T09:30:00-04:00:00', pre_close=6.0, open=10.0, latest=10.0, low=10.0, high=10.0),
             Ticket(day='23-04-18T09:30:00-04:00:00', pre_close=10.0, open=15.0, latest=15.0, low=15.0, high=15.0),
             Ticket(day='23-04-19T09:30:00-04:00:00', pre_close=15.0, open=20.0, latest=20.0, low=20.0, high=20.0),
-            Ticket(day='23-04-20T09:30:00-04:00:00', pre_close=15.0, open=20.0, latest=20.0, low=20.0, high=20.0),
         ]
         store = start_simulation(store=store, db=db, tickets=tickets)
         _, state, _ = store.args()
