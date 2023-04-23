@@ -28,7 +28,7 @@ class StoreState(StoreStateBase):
             symbol=store_config.symbol,
         )
         self.alive_log = Logger(
-            logger_name=f'alive-[{store_config.region}]{store_config.symbol}',
+            logger_name=f'alive-{store_config.broker}-{store_config.symbol}',
             log_root=log_root,
             log_level='DEBUG',
             write_stdout=False,
@@ -38,7 +38,7 @@ class StoreState(StoreStateBase):
         )
         self.alive_log.set_up()
         self.log = Logger(
-            logger_name=f'main-[{store_config.region}]{store_config.symbol}',
+            logger_name=f'main-{store_config.broker}-{store_config.symbol}',
             log_root=log_root,
             write_stdout=False,
             write_json=False,
