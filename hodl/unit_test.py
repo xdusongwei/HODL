@@ -1,6 +1,6 @@
 from unittest.mock import patch, MagicMock, Mock
 from hodl.quote_mixin import QuoteMixin
-from hodl.tools import TimeTools
+from hodl.tools import *
 from hodl.store import Store
 
 
@@ -49,6 +49,14 @@ def chip_count_mock(function):
     return basic_mock(Store, 'current_chip', side_effect=function)
 
 
+def file_read_mock(function):
+    return basic_mock(LocateTools, 'read_file', side_effect=function)
+
+
+def file_write_mock(function):
+    return basic_mock(LocateTools, 'write_file', side_effect=function)
+
+
 __all__ =[
     'now_mock',
     'sleep_mock',
@@ -59,4 +67,6 @@ __all__ =[
     'submit_order_mock',
     'cash_amount_mock',
     'chip_count_mock',
+    'file_read_mock',
+    'file_write_mock',
 ]

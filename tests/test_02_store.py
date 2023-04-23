@@ -151,7 +151,7 @@ class StoreTestCase(unittest.TestCase):
         store_config['enable'] = False
         pc = 10.0
         p0 = pc
-        p100 = pc * 100
+        p100 = pc * 2
         tickets = [
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
             Ticket(day='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p0, latest=p100, ),
@@ -162,6 +162,21 @@ class StoreTestCase(unittest.TestCase):
         plan = state.plan
         orders = plan.orders
         assert len(orders) == 0
+
+    def test_state_file(self):
+        store_config = VariableTools().store_configs['TEST']
+        store_config['state_file_path'] = '/a/b/c.json'
+        pc = 10.0
+        p0 = pc
+        p100 = pc * 2
+        tickets = [
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+            Ticket(day='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p0, latest=p100, ),
+        ]
+
+        store = start_simulation(store_config=store_config, tickets=tickets)
+        files = store.files
+        assert files['/a/b/c.json']
 
     def test_bars(self):
         pc = 10.0

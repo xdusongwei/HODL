@@ -36,5 +36,19 @@ class LocateTools:
                 return detect_path
         raise FileNotFoundError
 
+    @classmethod
+    def read_file(cls, path: str) -> None | str:
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf8') as f:
+                text = f.read()
+            return text
+        else:
+            return None
+
+    @classmethod
+    def write_file(cls, path: str, text: str):
+        with open(path, 'w', encoding='utf8') as f:
+            f.write(text)
+
 
 __all__ = ['LocateTools', ]

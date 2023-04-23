@@ -19,8 +19,6 @@ from hodl.unit_test import *
 class SimulationStore(Store):
     ENABLE_LOG_ALIVE = False
     ENABLE_BROKER = False
-    ENABLE_STATE_FILE = False
-    ENABLE_PROCESS_TIME = False
     SHOW_EXCEPTION_DETAIL = True
 
     def __init__(
@@ -38,7 +36,10 @@ class SimulationStore(Store):
         self.tiger_order_pool: dict[int, TigerOrder] = dict()
         self.order_pool: dict[int, Order] = dict()
         self.current_fake_quote: FakeQuote = None
+        if tickets:
+            self.current_fake_quote = tickets[0].to_fake_quote()
         self.order_seq = 1
+        self.files: dict[str, str] = dict()
 
         self.earning = 0.0
         self.times_per_level = defaultdict(int)
@@ -136,6 +137,13 @@ class SimulationStore(Store):
     def current_cash_mock(self) -> float:
         return 10_000_000.0
 
+    def read_file_mock(self, path: str):
+        return self.files.get(path, None)
+
+    def write_file_mock(self, path: str, text: str):
+        assert isinstance(text, str)
+        self.files[path] = text
+
     def set_up_earning(self):
         super(SimulationStore, self).set_up_earning()
         plan = self.state.plan
@@ -209,6 +217,8 @@ def start_simulation(
             refresh_order_mock(store.refresh_fake_order),
             chip_count_mock(store.current_chip_mock),
             cash_amount_mock(store.current_cash_mock),
+            file_read_mock(store.read_file_mock),
+            file_write_mock(store.write_file_mock),
         ]
         store.mocks = mocks
     elif tickets:

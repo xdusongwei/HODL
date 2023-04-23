@@ -1,11 +1,11 @@
 import os
 import threading
+from datetime import datetime
 import requests
 from hodl.risk_control import *
 from hodl.tools import *
 from hodl.storage import *
 from hodl.bot import *
-from hodl.broker import broker_display
 from hodl.broker.broker_proxy import *
 from hodl.thread_mixin import *
 from hodl.state import *
@@ -18,9 +18,6 @@ class StoreBase(ThreadMixin):
 
     ENABLE_LOG_ALIVE = True
     ENABLE_BROKER = True
-    ENABLE_STATE_FILE = True
-    ENABLE_PROCESS_TIME = True
-
     SHOW_EXCEPTION_DETAIL = False
 
     SESSION = requests.Session()
@@ -73,10 +70,6 @@ class StoreBase(ThreadMixin):
         setattr(self, '_broker_proxy', v)
 
     @property
-    def broker_display(self):
-        return broker_display(self.store_config.broker)
-
-    @property
     def risk_control(self) -> RiskControl:
         return getattr(self, '_risk_control', None)
 
@@ -106,46 +99,38 @@ class StoreBase(ThreadMixin):
         return State.new(state)
 
     def load_state(self):
-        if not self.ENABLE_STATE_FILE:
-            return
         if not self.state_file:
             return
-        runtime_state = self.runtime_state
-        if os.path.exists(self.state_file):
-            with open(self.state_file, 'r', encoding='utf8') as f:
-                text = f.read()
-                runtime_state.state_compare = TimeTools.us_day_now(), text
-            state = self.read_state(text)
-            self.state = state
-        else:
+        text = LocateTools.read_file(self.state_file)
+        if text is None:
             self.state = State.new()
+        else:
+            runtime_state = self.runtime_state
+            runtime_state.state_compare = TimeTools.us_day_now(), text
+            self.state = self.read_state(text)
         self.state.name = self.store_config.name
 
     def save_state(self):
         runtime_state = self.runtime_state
-        changed = False
-        if self.ENABLE_STATE_FILE:
-            text = FormatTool.json_dumps(self.state)
-            day = TimeTools.us_time_now()
-            today = TimeTools.date_to_ymd(day)
-            changed = (today, text,) != runtime_state.state_compare
-            if changed:
-                if self.state_file:
-                    with open(self.state_file, 'w', encoding='utf8') as f:
-                        f.write(text)
-                if self.state_archive:
-                    archive_path = os.path.join(self.state_archive, f'{today}.json')
-                    with open(archive_path, 'w', encoding='utf8') as f:
-                        f.write(text)
-                if db := self.db:
-                    row = StateRow(
-                        version=self.state.version,
-                        day=int(TimeTools.date_to_ymd(day, join=False)),
-                        symbol=self.store_config.symbol,
-                        content=text,
-                        update_time=int(TimeTools.us_time_now().timestamp()),
-                    )
-                    row.save(con=db.conn)
+        text = FormatTool.json_dumps(self.state)
+        day = TimeTools.us_time_now()
+        today = TimeTools.date_to_ymd(day)
+        changed = (today, text,) != runtime_state.state_compare
+        if changed:
+            if self.state_file:
+                LocateTools.write_file(self.state_file, text)
+            if self.state_archive:
+                archive_path = os.path.join(self.state_archive, f'{today}.json')
+                LocateTools.write_file(archive_path, text)
+            if db := self.db:
+                row = StateRow(
+                    version=self.state.version,
+                    day=int(TimeTools.date_to_ymd(day, join=False)),
+                    symbol=self.store_config.symbol,
+                    content=text,
+                    update_time=int(TimeTools.us_time_now().timestamp()),
+                )
+                row.save(con=db.conn)
         for cb in self.on_state_changed:
             if not changed:
                 continue
@@ -186,16 +171,14 @@ class StoreBase(ThreadMixin):
 
     def before_loop(self):
         self.load_state()
-        if self.ENABLE_PROCESS_TIME:
-            setattr(self, '_begin_time', TimeTools.us_time_now())
+        setattr(self, '_begin_time', datetime.now())
         return True
 
     def after_loop(self):
         self.save_state()
-        if self.ENABLE_PROCESS_TIME:
-            now = TimeTools.us_time_now()
-            begin_time = getattr(self, '_begin_time', now)
-            self.process_time = (now - begin_time).total_seconds()
+        now = datetime.now()
+        begin_time: datetime = getattr(self, '_begin_time', now)
+        self.process_time = (now - begin_time).total_seconds()
 
     @classmethod
     def build_table(cls, store_config: StoreConfig, plan: Plan):
