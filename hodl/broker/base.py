@@ -1,4 +1,3 @@
-from typing import Type
 import abc
 import enum
 from dataclasses import dataclass, field
@@ -178,7 +177,8 @@ class BrokerApiBase(BrokerApiMixin):
         logger = self.logger
         new_order = order.copy()
         new_order.error_reason = broker_order.reason
-        new_order.trade_timestamp = broker_order.trade_time / 1000.0 if broker_order.trade_time else None
+        trade_timestamp = FMT.adjust_precision(broker_order.trade_time / 1000.0, 3) if broker_order.trade_time else None
+        new_order.trade_timestamp = trade_timestamp
         new_order.avg_price = broker_order.avg_fill_price
         new_order.filled_qty = broker_order.filled
         new_order.remain_qty = broker_order.remaining

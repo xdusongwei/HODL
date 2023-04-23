@@ -156,6 +156,11 @@ class SimulationStore(Store):
         self.earning += plan.earning
         self.times_per_level[level] += 1
 
+    def call_bars(self):
+        self.primary_bar()
+        self.secondary_bar()
+        self.warning_alert_bar()
+
     def run(self, output_state: bool = True):
         try:
             super().run()

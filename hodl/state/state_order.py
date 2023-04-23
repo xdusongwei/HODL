@@ -20,6 +20,12 @@ class Order(DictWrapper):
             create_timestamp: float = None,
             order_day: str = None,
     ):
+        if direction == 'BUY':
+            config_spread = store_config.buy_spread
+            config_spread_rate = store_config.buy_spread_rate
+        else:
+            config_spread = store_config.sell_spread
+            config_spread_rate = store_config.sell_spread_rate
         return cls.new_order(
             symbol=store_config.symbol,
             region=store_config.region,
@@ -30,7 +36,8 @@ class Order(DictWrapper):
             qty=qty,
             limit_price=limit_price,
             precision=store_config.precision,
-            spread=store_config.buy_spread if direction == 'BUY' else store_config.sell_spread,
+            config_spread=config_spread,
+            config_spread_rate=config_spread_rate,
             create_timestamp=create_timestamp,
             order_day=order_day,
         )
@@ -47,7 +54,8 @@ class Order(DictWrapper):
             qty: int,
             limit_price: float | None,
             precision: int = 2,
-            spread: float = 0.0,
+            config_spread: float = None,
+            config_spread_rate: float = None,
             create_timestamp: float = None,
             order_day: str = None,
     ) -> 'Order':
@@ -70,7 +78,8 @@ class Order(DictWrapper):
         o.qty = qty
         o.limit_price = limit_price
         o.precision = precision
-        o.spread = spread
+        o.config_spread = config_spread
+        o.config_spread_rate = config_spread_rate
         o.create_timestamp = create_timestamp
         o.order_day = order_day
         return o
@@ -160,21 +169,26 @@ class Order(DictWrapper):
 
     @property
     def spread(self) -> float:
-        return self.d.get('spread', 0.0)
+        spread = 0.0
+        if isinstance(self.avg_price, (float, int, )):
+            spread = FMT.spread(self.avg_price, self.precision, self.config_spread, self.config_spread_rate)
+        return spread
 
-    @spread.setter
-    def spread(self, v: float):
-        """
-        仅用于计算盈亏时扣减的点差，这个点差在下单价中应该包含过了
-        Parameters
-        ----------
-        v
+    @property
+    def config_spread(self) -> float:
+        return self.d.get('configSpread', None)
 
-        Returns
-        -------
+    @config_spread.setter
+    def config_spread(self, v: float):
+        self.d['configSpread'] = v
 
-        """
-        self.d['spread'] = v
+    @property
+    def config_spread_rate(self) -> float:
+        return self.d.get('configSpreadRate', None)
+
+    @config_spread_rate.setter
+    def config_spread_rate(self, v: float):
+        self.d['configSpreadRate'] = v
 
     @property
     def currency(self) -> str | None:

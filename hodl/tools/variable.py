@@ -12,6 +12,8 @@ class VariableTools:
     """
     配置文件读写工具
     """
+    DEBUG_CONFIG = dict()
+
     @classmethod
     def _get_config_path(cls):
         if path := os.getenv('TRADE_BOT_CONFIG', None):
@@ -24,7 +26,7 @@ class VariableTools:
         if not config_file:
             config_file = VariableTools._get_config_path()
         with open(config_file, 'r', encoding='utf8') as f:
-            self._config: dict = toml.loads(f.read())
+            self._config: dict = toml.loads(f.read()) | VariableTools.DEBUG_CONFIG
 
     def save_config(self):
         config_file = VariableTools._get_config_path()

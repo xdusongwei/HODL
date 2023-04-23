@@ -159,18 +159,36 @@ class StoreConfig(dict):
     @property
     def buy_spread(self) -> float:
         """
-        设置买入价时需要的点差
+        设置买入价时需要舍去的点差(佣金、成本)
         :return:
         """
-        return self.get('buy_spread', 0.01)
+        return self.get('buy_spread', None)
 
     @property
     def sell_spread(self) -> float:
         """
-        设置卖出价时需要的点差
+        设置卖出价时需要舍去的点差(佣金、成本)
         :return:
         """
-        return self.get('sell_spread', 0.01)
+        return self.get('sell_spread', None)
+
+    @property
+    def buy_spread_rate(self) -> float:
+        """
+        设置买入价时需要舍去的点差(佣金、成本), 以目标价格的比例进行计算.
+        例如这里设置0.005, 假如一个预期买入价格是10, 那么实际买入价格=10*(1-0.005)=9.95
+        :return:
+        """
+        return self.get('buy_spread_rate', None)
+
+    @property
+    def sell_spread_rate(self) -> float:
+        """
+        设置卖出价时需要舍去的点差(佣金、成本), 以目标价格的比例进行计算.
+        例如这里设置0.005, 假如一个预期卖出价格是10, 那么实际买入价格=10*(1.005)=10.05
+        :return:
+        """
+        return self.get('sell_spread_rate', None)
 
     @property
     def buy_order_rate(self) -> float:

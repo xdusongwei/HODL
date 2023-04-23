@@ -190,6 +190,8 @@ class StoreBase(ThreadMixin):
             sell_spread=store_config.sell_spread,
             precision=store_config.precision,
             shares_per_unit=store_config.shares_per_unit,
+            buy_spread_rate=store_config.buy_spread_rate,
+            sell_spread_rate=store_config.sell_spread_rate,
         )
         return profit_table
 
@@ -458,8 +460,7 @@ class StoreBase(ThreadMixin):
             'monthlyEarnings': monthly_list,
         }
         file_body = FormatTool.json_dumps(file_dict)
-        with open(earning_json_path, mode='w', encoding='utf8') as f:
-            f.write(file_body)
+        LocateTools.write_file(earning_json_path, file_body)
 
     def args(self) -> tuple[StoreConfig, State, Plan, ]:
         return self.store_config, self.state, self.state.plan,

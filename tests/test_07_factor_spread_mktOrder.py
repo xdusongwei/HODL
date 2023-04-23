@@ -46,13 +46,35 @@ class OrderTestCase(unittest.TestCase):
         assert buy_order.is_buy
         assert buy_order.is_filled
 
-    def test_spread(self):
+    def test_spread_by_points(self):
         config = VariableTools().store_configs['TEST']
         config['sell_spread'] = 0.03
         config['buy_spread'] = 0.04
         pc = 10.0
         p_sell = pc * 1.03 + 0.03
         p_buy = pc - 0.04
+        tickets = [
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
+            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
+        ]
+        store = start_simulation(store_config=config, tickets=tickets)
+        state = store.state
+        plan = state.plan
+        assert len(plan.orders) == 2
+        sell_order, buy_order = plan.orders[0], plan.orders[1]
+        assert sell_order.spread == 0.03
+        assert buy_order.spread == 0.04
+
+    def test_spread_by_rate(self):
+        config = VariableTools().store_configs['TEST']
+        config['sell_spread_rate'] = None
+        config['buy_spread_rate'] = None
+        config['sell_spread_rate'] = 0.003
+        config['buy_spread_rate'] = 0.004
+        pc = 10.0
+        p_sell = pc * 1.03 * (1 + 0.003)
+        p_buy = pc * (1 - 0.004)
         tickets = [
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),

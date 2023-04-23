@@ -10,9 +10,17 @@ from hodl.tools.store_config import StoreConfig
 
 
 class FormatTool:
+    _PRECISION_MAP = dict()
+
+    @classmethod
+    def _precision(cls, precision: int) -> Decimal:
+        if precision not in FormatTool._PRECISION_MAP:
+            FormatTool._PRECISION_MAP[precision] = Decimal(f"0.{'0' * precision}")
+        return FormatTool._PRECISION_MAP[precision]
+
     @classmethod
     def adjust_precision(cls, f: float, precision: int) -> float:
-        d = Decimal(f"0.{'0' * precision}")
+        d = cls._precision(precision=precision)
         f = float(Decimal(f).quantize(d))
         return f
 
@@ -131,6 +139,16 @@ class FormatTool:
     @classmethod
     def json_loads(cls, b: bytes | str) -> dict:
         return orjson.loads(b)
+
+    @classmethod
+    def spread(cls, price: float, precision: int, spread, spread_rate) -> float:
+        if isinstance(spread_rate, float):
+            return cls.adjust_precision(abs(price * spread_rate), precision=precision)
+
+        if isinstance(spread, float):
+            return cls.adjust_precision(abs(spread), precision=precision)
+
+        return 0.0
 
 
 __all__ = ['FormatTool', ]

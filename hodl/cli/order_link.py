@@ -32,7 +32,6 @@ match broker:
         order_id = int(order_id)
 
 limit_price = limit_price if limit_price > 0 else None
-spread = config.buy_spread if direction == 'BUY' else config.sell_spread
 
 order = Order.new_config_order(
     store_config=config,

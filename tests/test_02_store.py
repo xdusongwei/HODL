@@ -1,6 +1,7 @@
 import unittest
 from hodl.simulation.fake_quote import *
 from hodl.simulation.main import *
+from hodl.storage import *
 from hodl.tools import *
 
 
@@ -129,6 +130,10 @@ class StoreTestCase(unittest.TestCase):
         -------
 
         """
+        VariableTools.DEBUG_CONFIG = {
+            'earning_json_path': '/a/b/c/earning.json'
+        }
+        db = LocalDb(':memory:')
         pc = 10.0
         p0 = pc
         p3 = pc * 1.03
@@ -140,10 +145,15 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:40-04:00:00', pre_close=pc, open=p0, latest=p0, ),
         ]
 
-        store = start_simulation(symbol='TEST', tickets=tickets)
+        store = start_simulation(symbol='TEST', db=db, tickets=tickets)
         state = store.state
         plan = state.plan
+        files = store.files
         assert plan.earning > 0
+        assert files['/a/b/c/earning.json']
+        store.call_bars()
+
+        VariableTools.DEBUG_CONFIG.clear()
 
     def test_enable(self):
         # 测试使能关闭, 不会开仓卖出
@@ -162,6 +172,7 @@ class StoreTestCase(unittest.TestCase):
         plan = state.plan
         orders = plan.orders
         assert len(orders) == 0
+        store.call_bars()
 
     def test_state_file(self):
         store_config = VariableTools().store_configs['TEST']
@@ -186,6 +197,4 @@ class StoreTestCase(unittest.TestCase):
         ]
 
         store = start_simulation(symbol='TEST', tickets=tickets)
-        store.primary_bar()
-        store.secondary_bar()
-        store.warning_alert_bar()
+        store.call_bars()

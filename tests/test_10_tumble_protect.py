@@ -38,6 +38,7 @@ class TumbleProtectTestCase(unittest.TestCase):
         assert state.ta_tumble_protect_alert_price
         assert state.ta_tumble_protect_ma5 or state.ta_tumble_protect_ma10
         assert state.bp_function == 'max'
+        store.call_bars()
 
     def test_tp_vix(self):
         class _Store(SimulationStore):
@@ -59,6 +60,7 @@ class TumbleProtectTestCase(unittest.TestCase):
         assert state.bp_function == 'max'
         assert state.ta_vix_high == 30.0
         assert len(plan.orders) == 0
+        store.call_bars()
 
     def test_tp_rsi(self):
         config = VariableTools().store_configs['TEST']
@@ -85,6 +87,7 @@ class TumbleProtectTestCase(unittest.TestCase):
         assert state.bp_function == 'max'
         assert state.ta_tumble_protect_rsi == config.tumble_protect_rsi_unlock_limit
         assert state.ta_tumble_protect_rsi_period == config.tumble_protect_rsi_period
+        store.call_bars()
 
         tickets = [
             Ticket(day='23-04-17T09:30:00-04:00:00', pre_close=6.0, open=10.0, latest=10.0, low=10.0, high=10.0),
@@ -95,4 +98,5 @@ class TumbleProtectTestCase(unittest.TestCase):
         _, state, _ = store.args()
         assert state.bp_function == 'min'
         assert state.ta_tumble_protect_rsi is None
+        store.call_bars()
 

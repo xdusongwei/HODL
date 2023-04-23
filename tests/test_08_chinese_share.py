@@ -3,7 +3,7 @@ from hodl.simulation.fake_quote import *
 from hodl.simulation.main import *
 
 
-class ASharesTestCase(unittest.TestCase):
+class ChineseShareTestCase(unittest.TestCase):
     def test_chinese_stock_share(self):
         """
         测试当日卖出价格限制在昨收价的110%,

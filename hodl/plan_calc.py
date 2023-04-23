@@ -155,13 +155,13 @@ class PlanCalc:
             base_price: float,
             max_shares: int,
             base_asset=1.0,
-            buy_spread=0.01,
-            sell_spread=0.01,
+            buy_spread=None,
+            sell_spread=None,
             precision=2,
             shares_per_unit=1,
+            buy_spread_rate=None,
+            sell_spread_rate=None,
     ) -> ProfitTable[ProfitRow]:
-        buy_spread = abs(buy_spread)
-        sell_spread = abs(sell_spread)
         weight = list(self.weight)
         sell_rate = list(self.sell_rate)
         buy_rate = list(self.buy_rate)
@@ -179,8 +179,20 @@ class PlanCalc:
             float_rate = cog_diff / sum(range_weight)
             total_rate = cog_diff / sum(weight)
             value = base_asset * total_rate
-            sell_at = base_price * sell_rate[i] + sell_spread
-            buy_at = base_price * buy_rate[i] - buy_spread
+            sell_spread_points = FMT.spread(
+                price=base_price * sell_rate[i],
+                precision=precision,
+                spread=sell_spread,
+                spread_rate=sell_spread_rate,
+            )
+            buy_spread_points = FMT.spread(
+                price=base_price * buy_rate[i],
+                precision=precision,
+                spread=buy_spread,
+                spread_rate=buy_spread_rate,
+            )
+            sell_at = base_price * sell_rate[i] + sell_spread_points
+            buy_at = base_price * buy_rate[i] - buy_spread_points
 
             # 由于权重不能把全部股数整除的原因，下一档的股数要补上之前档位股数的余下部分，减少因为除不尽导致不能流动的股票份额
             range_shares = int(max_shares * sum(range_weight) / sum(weight))
@@ -196,8 +208,8 @@ class PlanCalc:
                 total_rate=FMT.adjust_precision(total_rate + 1, 4),
                 sell_at=FMT.adjust_precision(sell_at, precision),
                 buy_at=FMT.adjust_precision(buy_at, precision),
-                buy_spread=buy_spread,
-                sell_spread=sell_spread,
+                buy_spread=buy_spread_points,
+                sell_spread=sell_spread_points,
                 shares=shares,
             )
             result.append(row)
