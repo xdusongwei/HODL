@@ -155,7 +155,7 @@ class BasePriceMixin(StoreBase, ABC):
             vix_quote = self._query_vix()
             if vix_quote:
                 state.ta_vix_high = vix_quote.day_high
-                state.ta_vix_time = vix_quote.time.timestamp()
+                state.ta_vix_time = FormatTool.adjust_precision(vix_quote.time.timestamp(), precision=3)
                 if state.ta_vix_high >= vix_limit:
                     self._set_bp_function('max')
 

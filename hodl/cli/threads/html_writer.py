@@ -156,8 +156,8 @@ class HtmlWriterThread(ThreadMixin):
             new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
             if self.current_hash != new_hash:
                 if db:
-                    create_time = (TimeTools.us_time_now(tz='Asia/Shanghai') - datetime.timedelta(days=365)).timestamp()
-                    create_time = int(create_time)
+                    create_time = TimeTools.timedelta(TimeTools.us_time_now(tz='Asia/Shanghai'), days=-365)
+                    create_time = int(create_time.timestamp())
                     self.recent_earnings = list(EarningRow.items_after_time(con=db.conn, create_time=create_time))
                 else:
                     self.recent_earnings = list()

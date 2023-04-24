@@ -47,7 +47,7 @@ class JsonWriterThread(ThreadMixin):
             d = {
                 'type': 'manager',
                 'pid': pid,
-                'time': TimeTools.us_time_now().timestamp(),
+                'time': FormatTool.adjust_precision(TimeTools.us_time_now().timestamp(), precision=3),
                 'storeSleepSecs': sleep_secs,
                 'marketStatus': ms,
                 'marketStatusThread': {

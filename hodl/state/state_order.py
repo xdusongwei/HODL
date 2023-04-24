@@ -62,7 +62,7 @@ class Order(DictWrapper):
         o = Order()
         now = TimeTools.us_time_now()
         if create_timestamp is None:
-            create_timestamp = now.timestamp()
+            create_timestamp = FormatTool.adjust_precision(now.timestamp(), precision=3)
         if order_day is None:
             order_day = TimeTools.date_to_ymd(now)
         if limit_price:

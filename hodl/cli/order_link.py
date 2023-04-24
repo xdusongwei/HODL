@@ -39,7 +39,7 @@ order = Order.new_config_order(
     direction=direction,
     qty=qty,
     limit_price=limit_price,
-    create_timestamp=TimeTools.us_time_now().timestamp(),
+    create_timestamp=FormatTool.adjust_precision(TimeTools.us_time_now().timestamp(), precision=3),
     order_day=order_day,
 )
 order.order_id = order_id
