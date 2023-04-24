@@ -62,6 +62,7 @@ class FutuApi(BrokerApiBase):
                 'AFTER_HOURS_END': 'CLOSING',
                 'MORNING': 'TRADING',
                 'AFTERNOON': 'TRADING',
+                'AFTER_HOURS_BEGIN': 'POST_HOUR_TRADING',
             }
             result = dict()
             for k, v in data.items():
