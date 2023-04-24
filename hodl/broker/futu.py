@@ -3,7 +3,6 @@
 https://openapi.futunn.com/futu-api-doc/
 """
 import re
-from datetime import datetime
 from futu import *
 from hodl.broker.base import *
 from hodl.quote import *
@@ -14,16 +13,6 @@ from hodl.exception_tools import *
 class FutuApi(BrokerApiBase):
     BROKER_NAME = 'futu'
     BROKER_DISPLAY = '富途证券'
-    META = [
-        ApiMeta(
-            trade_type=BrokerTradeType.STOCK,
-            share_market_state=True,
-            share_quote=True,
-            market_status_regions={'US', 'HK', 'CN', },
-            quote_regions={'HK', 'CN', },
-            trade_regions=set(),
-        ),
-    ]
 
     QUOTE_CLIENT: OpenQuoteContext = None
     MARKET_STATUS_BUCKET = LeakyBucket(10)
@@ -62,6 +51,7 @@ class FutuApi(BrokerApiBase):
                 'AFTER_HOURS_END': 'CLOSING',
                 'MORNING': 'TRADING',
                 'AFTERNOON': 'TRADING',
+                # 如果不映射盘后时段, 盘后时间段不会更新订单信息, 这段时间即不会用来记录lsod当日的有效检查
                 'AFTER_HOURS_BEGIN': 'POST_HOUR_TRADING',
             }
             result = dict()

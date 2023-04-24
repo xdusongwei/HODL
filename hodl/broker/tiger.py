@@ -90,17 +90,6 @@ class SpeedupTradeClient(TradeClient, _SpeedupMixin):
 class TigerApi(BrokerApiBase):
     BROKER_NAME = 'tiger'
     BROKER_DISPLAY = '老虎国际'
-    META = [
-        ApiMeta(
-            trade_type=BrokerTradeType.STOCK,
-            share_market_state=True,
-            share_quote=True,
-            market_status_regions={'US', 'HK', 'CN', },
-            quote_regions={'US', 'HK', },
-            trade_regions={'US', 'HK', },
-            vix_symbol='VIX',
-        ),
-    ]
 
     HAS_GRAB = False
     GRAB_LOCK = threading.Lock()

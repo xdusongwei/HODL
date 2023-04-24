@@ -12,17 +12,6 @@ from hodl.quote import *
 class InteractiveBrokers(BrokerApiBase):
     BROKER_NAME = 'interactiveBrokers'
     BROKER_DISPLAY = '盈透证券'
-    META = [
-        ApiMeta(
-            trade_type=BrokerTradeType.STOCK,
-            share_market_state=False,
-            share_quote=True,
-            market_status_regions=set(),
-            quote_regions={'US', 'HK', },
-            trade_regions={'US', 'HK', },
-            need_conid=True,
-        ),
-    ]
 
     @classmethod
     def http_request(

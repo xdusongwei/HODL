@@ -422,6 +422,10 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
                             self.refresh_orders()
                             order_checked = True
                         self.prepare_quote()
+                    except QuoteFieldError as e:
+                        if self.ENABLE_LOG_ALIVE:
+                            self.alive_logger.warning(f'行情字段异常: {e}')
+                        continue
                     except PlugInError:
                         continue
                     except PrepareError as e:

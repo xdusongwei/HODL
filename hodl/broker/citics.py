@@ -10,16 +10,6 @@ from hodl.tools import *
 class CiticsRestApi(BrokerApiBase):
     BROKER_NAME = 'citics'
     BROKER_DISPLAY = '中信证券'
-    META = [
-        ApiMeta(
-            trade_type=BrokerTradeType.STOCK,
-            share_market_state=False,
-            share_quote=True,
-            market_status_regions=set(),
-            quote_regions=set(),
-            trade_regions={'CN', },
-        ),
-    ]
 
     @classmethod
     def http_request(

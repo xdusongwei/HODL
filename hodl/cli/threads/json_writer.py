@@ -93,9 +93,6 @@ class JsonWriterThread(ThreadMixin):
                             'marketPriceRate': store.store_config.market_price_rate,
                             'visible': store.store_config.visible,
                         },
-                        'broker': {
-                            'tradeBroker': str(store.broker_proxy.trade_broker),
-                        } if store.broker_proxy else {},
                     }
                     for store in stores if store.state and store.store_config.visible],
             }

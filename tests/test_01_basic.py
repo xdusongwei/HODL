@@ -90,3 +90,13 @@ class BasicTestCase(unittest.TestCase):
         TimeTools.sleep(0.05)
         end = datetime.now()
         assert (end - start).total_seconds() >= 0.05
+
+    def test_broker_meta(self):
+        var = VariableTools()
+        store_config = var.store_configs['TEST']
+        meta_list = var.broker_meta('tiger')
+        assert len(meta_list) == 1
+        meta = meta_list[0]
+        assert meta.trade_type == BrokerTradeType.STOCK
+        assert meta.trade_type.value == store_config.trade_type
+        assert store_config.region in meta.trade_regions

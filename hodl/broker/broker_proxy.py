@@ -8,7 +8,10 @@ from hodl.tools import *
 from hodl.exception_tools import *
 
 
-def sort_brokers(var: VariableTools, prefer_list: list[str] = None) -> list[tuple[Type[BrokerApiBase], dict]]:
+def sort_brokers(
+        var: VariableTools,
+        prefer_list: list[str] = None,
+) -> list[tuple[Type[BrokerApiBase], dict, list[BrokerMeta]]]:
     brokers = BROKERS.copy()
     prefer_list = prefer_list or list()
     prefer_list = prefer_list.copy()
@@ -22,7 +25,11 @@ def sort_brokers(var: VariableTools, prefer_list: list[str] = None) -> list[tupl
 
     ordered_brokers = sorted(brokers, key=_key, reverse=True)
     ordered_brokers = [
-        (broker, var.broker_config_dict(name=broker.BROKER_NAME),)
+        (
+            broker,
+            var.broker_config_dict(name=broker.BROKER_NAME),
+            var.broker_meta(name=broker.BROKER_NAME),
+        )
         for broker in ordered_brokers
         if var.broker_config_dict(name=broker.BROKER_NAME)
     ]
@@ -36,7 +43,7 @@ class MarketStatusProxy:
     @classmethod
     def _market_status_thread(cls, b: BrokerApiBase) -> tuple[Type[BrokerApiBase], dict[str, dict[str, str]]]:
         d = dict()
-        if any(meta for meta in b.META if meta.market_status_regions):
+        if any(meta for meta in b.broker_meta if meta.market_status_regions):
             try:
                 d |= b.fetch_market_status()
             except Exception as e:
@@ -45,11 +52,12 @@ class MarketStatusProxy:
                         'detail': str(e),
                     },
                 }
-        if any(meta for meta in b.META if meta.vix_symbol):
-            vix_symbol = [meta.vix_symbol for meta in b.META if meta.vix_symbol][0]
+        if any(meta for meta in b.broker_meta if meta.vix_symbol):
+            vix_symbol = [meta.vix_symbol for meta in b.broker_meta if meta.vix_symbol][0]
             try:
                 broker = type(b)(
                     broker_config=b.broker_config,
+                    broker_meta=b.broker_meta,
                     symbol=vix_symbol,
                     conid=vix_symbol,
                     name='VIX',
@@ -90,20 +98,21 @@ class MarketStatusProxy:
         brokers = [
             t(
                 broker_config=d,
+                broker_meta=m,
                 symbol=None,
                 name='MarketStatus',
                 logger=None,
                 session=session,
             )
-            for t, d in broker_info
-            if any(meta for meta in t.META if meta.market_status_regions or meta.vix_symbol)
+            for t, d, m in broker_info
+            if any(meta for meta in m if meta.market_status_regions or meta.vix_symbol)
         ]
         self.market_status_brokers = brokers
 
     def query_status(self, store_config: StoreConfig) -> str:
         market_status_dict = self.all_status
         for broker in self.brokers:
-            for meta in broker.META:
+            for meta in broker.broker_meta:
                 if meta.trade_type.value != store_config.trade_type:
                     continue
                 if broker.BROKER_NAME != store_config.broker and not meta.share_market_state:
@@ -122,7 +131,7 @@ class MarketStatusProxy:
     def query_vix(self, store_config: StoreConfig):
         market_status_dict = self.all_status
         for broker in self.brokers:
-            for meta in broker.META:
+            for meta in broker.broker_meta:
                 if meta.trade_type.value != store_config.trade_type:
                     continue
                 if broker.BROKER_NAME != store_config.broker and not meta.share_market_state:
@@ -168,7 +177,7 @@ class BrokerProxy:
         exc = None
         store_config = self.store_config
         for broker in self.quote_brokers:
-            for meta in broker.META:
+            for meta in broker.broker_meta:
                 if meta.trade_type.value != store_config.trade_type:
                     continue
                 if broker.BROKER_NAME != store_config.broker and not meta.share_quote:
@@ -235,14 +244,15 @@ class BrokerProxy:
         brokers = [
             t(
                 broker_config=d,
+                broker_meta=m,
                 symbol=store_config.symbol,
                 name=store_config.name,
                 logger=self.runtime_state.log.logger(),
                 session=self.runtime_state.http_session,
                 conid=store_config.conid,
             )
-            for t, d in broker_info
-            if any(meta for meta in t.META if meta.quote_regions)
+            for t, d, m in broker_info
+            if any(meta for meta in m if meta.quote_regions)
         ]
         random.shuffle(brokers)
         self.quote_brokers = brokers
@@ -252,12 +262,13 @@ class BrokerProxy:
         brokers = [
             t(
                 broker_config=d,
+                broker_meta=m,
                 symbol=store_config.symbol,
                 name=store_config.name,
                 logger=self.runtime_state.log.logger(),
                 session=self.runtime_state.http_session,
             )
-            for t, d in broker_info
+            for t, d, m in broker_info
             if t.BROKER_NAME == store_config.broker
         ]
         self.trade_brokers = brokers
@@ -266,13 +277,14 @@ class BrokerProxy:
         broker_name = self.store_config.broker
         brokers = self.trade_brokers
         for broker in brokers:
-            if broker.BROKER_NAME == broker_name:
-                for meta in broker.META:
-                    if meta.trade_type.value != self.store_config.trade_type:
-                        continue
-                    if self.store_config.region not in meta.trade_regions:
-                        continue
-                    return broker
+            if broker.BROKER_NAME != broker_name:
+                continue
+            for meta in broker.broker_meta:
+                if meta.trade_type.value != self.store_config.trade_type:
+                    continue
+                if self.store_config.region not in meta.trade_regions:
+                    continue
+                return broker
         else:
             raise BrokerMismatchError
 

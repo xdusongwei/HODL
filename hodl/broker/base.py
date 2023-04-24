@@ -1,6 +1,4 @@
 import abc
-import enum
-from dataclasses import dataclass, field
 import requests
 from tigeropen.common.consts import OrderStatus
 from tigeropen.trade.domain.order import Order as BrokerOrder
@@ -9,36 +7,6 @@ from hodl.tools import *
 from hodl.state import *
 from hodl.exception_tools import *
 from hodl.tools.format import FormatTool as FMT
-
-
-class BrokerTradeType(enum.Enum):
-    STOCK = 'stock'
-    CRYPTO = 'crypto'
-
-
-@dataclass
-class ApiMeta:
-    """
-    描述broker类型可以做什么，以便持仓配置可以匹配到正确的broker。
-    一个Broker可以支持多个ApiMeta，例如即是可以做证券交易，也可以做加密货币交易。
-    每个ApiMeta，定义了broker允许的行为：
-    参与何种交易品种；
-    是否可以共享市场状态信息给其他有需要的持仓；
-    是否可以共享行情信息给其他有需要的持仓；
-    允许的市场状态国家代码集合；
-    允许的行情信息国家代码集合；
-    允许的交易品种国家代码集合；
-    broker支持获取vix波动率的代码；
-    需要提供conid(盈透证券的标的代码)；
-    """
-    trade_type: BrokerTradeType = field(default=BrokerTradeType.STOCK)
-    share_market_state: bool = field(default=False)
-    share_quote: bool = field(default=False)
-    market_status_regions: set[str] = field(default_factory=set)
-    quote_regions: set[str] = field(default_factory=set)
-    trade_regions: set[str] = field(default_factory=set)
-    vix_symbol: str = field(default=None)
-    need_conid: bool = field(default=False)
 
 
 class BrokerApiMixin(abc.ABC):
@@ -110,18 +78,19 @@ class BrokerApiMixin(abc.ABC):
 class BrokerApiBase(BrokerApiMixin):
     BROKER_NAME = 'unknown'
     BROKER_DISPLAY = '未知'
-    META: list[ApiMeta] = []
 
     def __init__(
             self,
             broker_config: dict,
+            broker_meta: list[BrokerMeta],
             symbol: None | str,
             name: None | str,
             logger: LoggerWrapper = None,
             session: requests.Session = None,
             conid: None | str = None,
     ):
-        self.broker_config = broker_config
+        self.broker_config = broker_config.copy()
+        self.broker_meta = broker_meta.copy()
         self.custom_client = None
         self.symbol = symbol
         self.conid = conid
@@ -205,8 +174,6 @@ class BrokerApiBase(BrokerApiMixin):
 
 
 __all__ = [
-    'BrokerTradeType',
-    'ApiMeta',
     'BrokerApiMixin',
     'BrokerApiBase',
     'BrokerOrder',

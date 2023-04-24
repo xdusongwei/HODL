@@ -16,16 +16,6 @@ from hodl.tools import *
 class OkxRestApi(BrokerApiBase):
     BROKER_NAME = 'okx'
     BROKER_DISPLAY = 'OKX'
-    META = [
-        ApiMeta(
-            trade_type=BrokerTradeType.CRYPTO,
-            share_market_state=False,
-            share_quote=False,
-            market_status_regions={'US', },
-            quote_regions={'US', },
-            trade_regions={'US', },
-        ),
-    ]
     MARKET_STATUS_BUCKET = LeakyBucket(12)
     QUOTE_BUCKET = LeakyBucket(600)
     ORDER_BUCKET = LeakyBucket(120)

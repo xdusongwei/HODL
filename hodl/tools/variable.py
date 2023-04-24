@@ -6,6 +6,7 @@ from hodl.tools.locate import LocateTools
 from hodl.tools.store_config import StoreConfig
 from hodl.tools.tui_config import TuiConfig
 from hodl.tools.p2p_config import P2pConfig
+from hodl.tools.broker_meta import BrokerMeta, BrokerTradeType
 
 
 class VariableTools:
@@ -79,6 +80,27 @@ class VariableTools:
         if not broker:
             return None
         return broker
+
+    def broker_meta(self, name) -> list[BrokerMeta]:
+        """
+        指定broker的功能描述信息
+        """
+        result = list()
+        meta_list: list[dict] = self._config.get('broker_meta', dict()).get(name, list())
+        for meta in meta_list:
+            result.append(
+                BrokerMeta(
+                    trade_type=BrokerTradeType[meta['trade_type'].upper()],
+                    share_market_state=meta.get('share_market_state', False),
+                    share_quote=meta.get('share_quote', False),
+                    market_status_regions=set(meta.get('market_status_regions', list())),
+                    quote_regions=set(meta.get('quote_regions', list())),
+                    trade_regions=set(meta.get('trade_regions', list())),
+                    vix_symbol=meta.get('vix_symbol', None),
+                    need_conid=meta.get('need_conid', False),
+                )
+            )
+        return result
 
     def telegram_updater(self) -> None | Updater:
         """

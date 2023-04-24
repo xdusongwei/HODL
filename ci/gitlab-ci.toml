@@ -73,3 +73,12 @@ sleep_mode = false
 buy_spread = 0.0
 sell_spread = 0.0
 closing_time = '23:00:00'
+
+[[broker_meta.tiger]]
+trade_type = 'stock'
+share_market_state = true
+share_quote = true
+market_status_regions = ['US', 'HK', 'CN', ]
+quote_regions = ['US', 'HK', ]
+trade_regions = ['US', 'HK', ]
+vix_symbol = 'VIX'

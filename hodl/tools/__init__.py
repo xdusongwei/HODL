@@ -9,6 +9,7 @@ from hodl.tools.store_state_base import StoreStateBase
 from hodl.tools.dict_wrapper import DictWrapper
 from hodl.tools.leaky_bucket import LeakyBucket
 from hodl.tools.p2p_config import P2pConfig
+from hodl.tools.broker_meta import BrokerTradeType, BrokerMeta
 
 
 __all__ = [
@@ -25,4 +26,6 @@ __all__ = [
     'DictWrapper',
     'LeakyBucket',
     'P2pConfig',
+    'BrokerTradeType',
+    'BrokerMeta',
 ]
