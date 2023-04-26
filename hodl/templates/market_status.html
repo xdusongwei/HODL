@@ -14,13 +14,13 @@
 
         {% if market_error %}
             <div class="alert alert-dark hodlAlert" role="alert">
-              ❗拉取市场状态错误: {{ market_error['detail'] }}
+              ❗{{ broker_display }}拉取市场状态错误: {{ market_error['detail'] }}
             </div>
         {% endif %}
 
         {% if vix_error %}
             <div class="alert alert-dark hodlAlert" role="alert">
-              ❗拉取恐慌指数错误: {{ vix_error['detail'] }}
+              ❗{{ broker_display }}拉取恐慌指数错误: {{ vix_error['detail'] }}
             </div>
         {% endif %}
         {% if tt_items %}
