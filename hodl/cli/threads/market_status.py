@@ -17,7 +17,7 @@ class MarketStatusThread(ThreadMixin):
         self.error_counter = defaultdict(int)
         self.latest_time = dict()
         self.vix_info = dict()
-        self.broker_names = set()
+        self.broker_names = dict()
 
     def prepare(self):
         print(f'开启异步线程拉取市场状态')
@@ -32,7 +32,7 @@ class MarketStatusThread(ThreadMixin):
                 break
             for t_broker, d in ms.items():
                 broker_name = t_broker.BROKER_NAME
-                self.broker_names.add(broker_name)
+                self.broker_names[broker_name] = t_broker.BROKER_DISPLAY
                 if d.has_error:
                     self.error_counter[broker_name] += 1
                 else:
@@ -46,10 +46,12 @@ class MarketStatusThread(ThreadMixin):
 
     def primary_bar(self) -> list[BarElementDesc]:
         bar = list()
-        for name in sorted(self.broker_names):
+        broker_names = self.broker_names.copy()
+        for name in sorted(broker_names.keys()):
+            display = broker_names[name]
             tooltip = f'上次成功时间: {FormatTool.pretty_dt(self.latest_time.get(name))}'
             elem = BarElementDesc(
-                content=f'{name}:✅{self.ok_counter.get(name, 0)}❌{self.error_counter.get(name, 0)}',
+                content=f'{display}:✅{self.ok_counter.get(name, 0)}❌{self.error_counter.get(name, 0)}',
                 tooltip=tooltip,
             )
             bar.append(elem)
