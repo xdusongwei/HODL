@@ -30,8 +30,8 @@ class BinanceApi(BrokerApiBase):
         else:
             proxies = None
         self.custom_client = Spot(
-            key=api_key,
-            secret=secret_key,
+            api_key=api_key,
+            api_secret=secret_key,
             base_url=base_url,
             timeout=timeout,
             proxies=proxies,
