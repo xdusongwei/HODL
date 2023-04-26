@@ -9,7 +9,7 @@
         <span class="badge bg-secondary" {{ bar.tooltip_attr|safe }}>{{ bar.content }}</span>
         {% endfor %}
     </p>
-    {% for bar in store.warning_alert_bar() %}
+    {% for bar in thread_mixin.warning_alert_bar() %}
         <div class="alert alert-dark hodlAlert" role="alert">
           {{ bar }}
         </div>
