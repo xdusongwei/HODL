@@ -38,19 +38,17 @@ def sort_brokers(
 
 class MarketStatusProxy:
     THREAD_POOL = multiprocessing.pool.ThreadPool()
-    MARKET_STATUS: dict[Type[BrokerApiBase], dict[str, dict[str, str]]] = dict()
+    MARKET_STATUS: dict[Type[BrokerApiBase], BrokerMarketStatusResult] = dict()
 
     @classmethod
-    def _market_status_thread(cls, b: BrokerApiBase) -> tuple[Type[BrokerApiBase], dict[str, dict[str, str]]]:
-        d = dict()
+    def _market_status_thread(cls, b: BrokerApiBase) -> tuple[Type[BrokerApiBase], BrokerMarketStatusResult]:
+        d = BrokerMarketStatusResult()
         if any(meta for meta in b.broker_meta if meta.market_status_regions):
             try:
-                d |= b.fetch_market_status()
+                d.update(b.fetch_market_status())
             except Exception as e:
-                d |= {
-                    '_marketStatusException': {
-                        'detail': str(e),
-                    },
+                d.market_error = {
+                    'detail': str(e),
                 }
         if any(meta for meta in b.broker_meta if meta.vix_symbol):
             vix_symbol = [meta.vix_symbol for meta in b.broker_meta if meta.vix_symbol][0]
@@ -65,19 +63,10 @@ class MarketStatusProxy:
                     session=b.http_session,
                 )
                 quote = broker.fetch_quote()
-                d |= {
-                    'vix': {
-                        'latest': quote.latest_price,
-                        'dayHigh': quote.day_high,
-                        'dayLow': quote.day_low,
-                        'time': int(quote.time.timestamp()),
-                    }
-                }
+                d.append_vix(quote)
             except Exception as e:
-                d |= {
-                    '_vixException': {
-                        'detail': str(e),
-                    },
+                d.vix_error = {
+                    'detail': str(e),
                 }
         return type(b), d
 
@@ -85,7 +74,7 @@ class MarketStatusProxy:
         if not self.market_status_brokers:
             return None
 
-        results: list[tuple[Type[BrokerApiBase], dict[str, dict[str, str]]]] = \
+        results: list[tuple[Type[BrokerApiBase], BrokerMarketStatusResult]] = \
             MarketStatusProxy.THREAD_POOL.map(MarketStatusProxy._market_status_thread, self.market_status_brokers)
         all_status = dict(results)
         MarketStatusProxy.MARKET_STATUS = all_status
@@ -119,10 +108,11 @@ class MarketStatusProxy:
                     continue
                 if store_config.region not in meta.market_status_regions:
                     continue
-                ms = market_status_dict \
-                    .get(type(broker), dict()) \
-                    .get(store_config.trade_type, dict()) \
-                    .get(store_config.region, None)
+                ms = None
+                for msr in market_status_dict.get(type(broker), dict()).get(meta.trade_type.value, list()):
+                    msr: MarketStatusResult = msr
+                    if msr.region == store_config.region:
+                        ms = msr.status
                 if ms:
                     return ms
         else:
@@ -139,8 +129,8 @@ class MarketStatusProxy:
                 if store_config.region not in meta.market_status_regions:
                     continue
                 d_vix = market_status_dict \
-                    .get(type(broker), dict()) \
-                    .get('vix', dict())
+                    .get(type(broker), BrokerMarketStatusResult()) \
+                    .vix
                 if d_vix:
                     tz = TimeTools.region_to_tz(store_config.region)
                     vix_quote = VixQuote(
@@ -286,7 +276,7 @@ class BrokerProxy:
                     continue
                 return broker
         else:
-            raise BrokerMismatchError
+            raise BrokerMismatchError(f'无法匹配到持仓需要的券商接口')
 
     @property
     def trade_broker(self):

@@ -10,6 +10,7 @@ import requests
 from hodl.broker.base import *
 from hodl.exception_tools import QuoteFieldError
 from hodl.quote import Quote
+from hodl.state import *
 from hodl.tools import *
 
 
@@ -131,7 +132,8 @@ class OkxRestApi(BrokerApiBase):
             broker_display=cls.BROKER_DISPLAY,
         )
 
-    def fetch_market_status(self) -> dict:
+    def fetch_market_status(self) -> BrokerMarketStatusResult:
+        result = BrokerMarketStatusResult()
         with self.MARKET_STATUS_BUCKET:
             resp = OkxRestApi.http_request(
                 okx_config=self.broker_config,
@@ -157,11 +159,10 @@ class OkxRestApi(BrokerApiBase):
                 unavailable = True
                 reason = title
                 break
-        return {
-            BrokerTradeType.CRYPTO.value: {
-                'US': f'UNAVAILABLE: {reason}' if unavailable else 'TRADING',
-            }
-        }
+        k = 'US'
+        v = f'UNAVAILABLE: {reason}' if unavailable else 'TRADING'
+        result.append(BrokerTradeType.CRYPTO, [MarketStatusResult(region=k, status=v)])
+        return result
 
     def fetch_quote(self) -> Quote:
         symbol = self.symbol

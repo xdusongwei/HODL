@@ -21,8 +21,8 @@ class SleepMixin(StoreBase, ABC):
 
     def sleep(self):
         secs = self.runtime_state.sleep_secs
+        calendar = self.runtime_state.calendar
         config, state, _ = self.args()
-        calendar = config.trading_calendar
         sleep_mode_active = False
         if config.sleep_mode and calendar and state.market_status != 'TRADING':
             utc_now = TimeTools.utc_now()

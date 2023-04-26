@@ -125,7 +125,7 @@ class Manager(ThreadMixin):
             session=Store.SESSION,
         )
         if var.async_market_status:
-            mkt_thread = MarketStatusThread(ms_proxy)
+            mkt_thread = MarketStatusThread(ms_proxy=ms_proxy, var=var)
             mkt_thread.prepare()
 
             Manager.MARKET_STATUS_THREAD = mkt_thread.start(

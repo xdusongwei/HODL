@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import exchange_calendars
 from requests import Session
 from hodl.tools import *
 
@@ -15,6 +16,7 @@ class StoreState(StoreStateBase):
     state_compare: tuple[str, str] = field(default=('', '', ))
     low_price_compare: tuple[int, float] = field(default=(-1, 0.0, ))
     high_price_compare: tuple[int, float] = field(default=(-1, 0.0, ))
+    calendar: exchange_calendars.ExchangeCalendar = field(default=None)
 
     def __post_init__(self):
         store_config = self.store_config

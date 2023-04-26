@@ -194,15 +194,17 @@ class TigerApi(BrokerApiBase):
             return 'CLOSING'
         return status
 
-    def fetch_market_status(self) -> dict:
+    def fetch_market_status(self) -> BrokerMarketStatusResult:
+        result = BrokerMarketStatusResult()
         client = self.quote_client
         with self.MARKET_STATUS_BUCKET:
             market_status_list: list[MarketStatus] = client.get_market_status(Market.ALL)
-        return {
-            BrokerTradeType.STOCK.value: {
-                ms.market: self._transform_trading_status(ms.trading_status) for ms in market_status_list
-            },
-        }
+        rl = [
+            MarketStatusResult(region=ms.market, status=self._transform_trading_status(ms.trading_status))
+            for ms in market_status_list
+        ]
+        result.append(BrokerTradeType.STOCK, rl)
+        return result
 
     def fetch_quote(self) -> Quote:
         symbol = self.symbol

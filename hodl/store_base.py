@@ -30,6 +30,7 @@ class StoreBase(ThreadMixin):
         self.runtime_state: StoreState = StoreState(
             store_config=store_config,
             http_session=self.SESSION,
+            calendar=store_config.trading_calendar,
         )
         self.thread_context = self.runtime_state
         self.state: State = State.new()

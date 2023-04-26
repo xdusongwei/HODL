@@ -4,7 +4,8 @@ https://binance-docs.github.io/apidocs/spot/cn/
 """
 from binance.spot import Spot
 from hodl.broker.base import *
-from hodl.quote import Quote
+from hodl.quote import *
+from hodl.state import *
 from hodl.tools import *
 
 
@@ -36,7 +37,8 @@ class BinanceApi(BrokerApiBase):
             proxies=proxies,
         )
 
-    def fetch_market_status(self) -> dict:
+    def fetch_market_status(self) -> BrokerMarketStatusResult:
+        result = BrokerMarketStatusResult()
         with self.MARKET_STATUS_BUCKET:
             resp: dict = self.custom_client.system_status()
         status = resp.get('status', -1)
@@ -44,11 +46,10 @@ class BinanceApi(BrokerApiBase):
             market_status = 'TRADING'
         else:
             market_status = 'UNAVAILABLE'
-        return {
-            BrokerTradeType.CRYPTO.value: {
-                'US': market_status,
-            },
-        }
+        result.append(
+            BrokerTradeType.CRYPTO, [MarketStatusResult(region='US', status=market_status)]
+        )
+        return result
 
     def fetch_quote(self) -> Quote:
         symbol = self.symbol

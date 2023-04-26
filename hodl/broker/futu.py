@@ -8,6 +8,7 @@ from hodl.broker.base import *
 from hodl.quote import *
 from hodl.tools import *
 from hodl.exception_tools import *
+from hodl.state import *
 
 
 class FutuApi(BrokerApiBase):
@@ -36,7 +37,8 @@ class FutuApi(BrokerApiBase):
         except Exception as e:
             return False
 
-    def fetch_market_status(self) -> dict:
+    def fetch_market_status(self) -> BrokerMarketStatusResult:
+        result = BrokerMarketStatusResult()
         client = self.quote_client
         with self.MARKET_STATUS_BUCKET:
             ret, data = client.get_global_state()
@@ -54,16 +56,17 @@ class FutuApi(BrokerApiBase):
                 # 如果不映射盘后时段, 盘后时间段不会更新订单信息, 这段时间即不会用来记录lsod当日的有效检查
                 'AFTER_HOURS_BEGIN': 'POST_HOUR_TRADING',
             }
-            result = dict()
+            rl: list[MarketStatusResult] = list()
             for k, v in data.items():
                 if k not in market_map:
                     continue
                 if v in market_status_map:
                     v = market_status_map[v]
-                result[market_map[k]] = v
-            return {
-                BrokerTradeType.STOCK.value: result,
-            }
+                region = market_map[k]
+                rl.append(MarketStatusResult(region=region, status=v))
+
+            result.append(BrokerTradeType.STOCK, rl)
+            return result
         else:
             raise PrepareError(f'富途市场状态接口调用失败: {data}')
 

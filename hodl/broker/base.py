@@ -10,7 +10,7 @@ from hodl.tools.format import FormatTool as FMT
 
 
 class BrokerApiMixin(abc.ABC):
-    def fetch_market_status(self) -> dict:
+    def fetch_market_status(self) -> BrokerMarketStatusResult:
         """
         返回此券商可以获得的市场状态，
         产生以region为键，市场状态为值的字典。

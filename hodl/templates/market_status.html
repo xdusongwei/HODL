@@ -1,0 +1,48 @@
+<div>
+    {% for t, msr in ms.items() %}
+        {% set broker_display = t.BROKER_DISPLAY %}
+        {% set tt_items = msr.trade_type_items() %}
+        {% set vix = msr.vix %}
+        {% set market_error = msr.market_error %}
+        {% set vix_error = msr.vix_error %}
+        {% if vix %}
+            <div class="alert alert-dark hodlAlert" role="alert">
+              ✅{{ broker_display }}恐慌指数当日最高: {{ FMT.pretty_usd(vix['dayHigh'], precision=2) }},
+                更新时间: {{ FMT.pretty_dt(TT.from_timestamp(vix['time'], tz='US/Eastern')) }}
+            </div>
+        {% endif %}
+
+        {% if market_error %}
+            <div class="alert alert-dark hodlAlert" role="alert">
+              ❗拉取市场状态错误: {{ market_error['detail'] }}
+            </div>
+        {% endif %}
+
+        {% if vix_error %}
+            <div class="alert alert-dark hodlAlert" role="alert">
+              ❗拉取恐慌指数错误: {{ vix_error['detail'] }}
+            </div>
+        {% endif %}
+        {% if tt_items %}
+            {% for trade_type, rl in tt_items %}
+                <table class="table table-sm table-dark table-hover caption-top">
+                    <caption>{{ broker_display }}交易品种{{ trade_type }}市场状态</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">地区</th>
+                            <th scope="col">状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for msr in rl %}
+                        <tr>
+                            <th scope="row">{{ msr.region }}</th>
+                            <td>{{ msr.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+</div>
