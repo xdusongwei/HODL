@@ -1,0 +1,21 @@
+<div>
+    <p>
+        {% for bar in thread_mixin.primary_bar() %}
+        <span class="badge bg-secondary" {{ bar.tooltip_attr|safe }}>{{ bar.content }}</span>
+        {% endfor %}
+    </p>
+    <p>
+        {% for bar in thread_mixin.secondary_bar() %}
+        <span class="badge bg-secondary" {{ bar.tooltip_attr|safe }}>{{ bar.content }}</span>
+        {% endfor %}
+    </p>
+    {% for bar in store.warning_alert_bar() %}
+        <div class="alert alert-dark hodlAlert" role="alert">
+          {{ bar }}
+        </div>
+    {% endfor %}
+    {% set extra_html = thread_mixin.extra_html() %}
+    {% if extra_html %}
+        {{ extra_html|safe }}
+    {% endif %}
+</div>

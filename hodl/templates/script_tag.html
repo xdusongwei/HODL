@@ -1,0 +1,140 @@
+<script type="module">
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    const orderTimesYtd = {{ order_times_ytd|safe }}
+    const earnings = {{ earning_json|safe }}
+
+    function currency_color(i) {
+        let currency = i.currency;
+        if(currency==='USD'){
+            return "#198754";
+        }
+        else if(currency==='CNY'){
+            return "#dc3545";
+        }
+        else if(currency==='HKD'){
+            return "#dc3545";
+        }
+        else{
+            return "#198754";
+        }
+    }
+
+    function to_date(i) {
+        let day = i.day.toString();
+        return `${day.slice(0,4)}-${day.slice(4,6)}-${day.slice(6,8)}`;
+    }
+
+    function to_month(i) {
+        let day = i.day.toString();
+        return `${day.slice(0,4)}-${day.slice(4,6)}-1`;
+    }
+
+    function to_region_symbol(i) {
+        return `[${i.region}]${i.symbol}`;
+    }
+
+    function amount_sum(i) {
+        let unit = i ? i[0].unit : '';
+        let amount = i.map(i => i.amount).reduce((j, k) => j + k, 0).toLocaleString('en-US');
+        return`${unit}${amount}`;
+    }
+
+    const marginLeft = 80;
+    const marginRight = 60;
+    const height = 400;
+    const width = 1200;
+    const style = {
+        backgroundColor: "#212529",
+        color: "#ffffff",
+        fontSize: 12,
+    };
+    const color = {
+        legend: true
+    };
+
+    let orderGridYtd = Plot.plot({
+        style,
+        height: 90,
+        x: {
+            axis: null,
+            padding: 0,
+        },
+        y: {
+            axis: null,
+            padding: 0,
+            tickFormat: Plot.formatWeekday("en", "narrow"),
+            tickSize: 0
+        },
+        fy: {
+            reverse: true
+        },
+        color: {
+            type: "linear",
+            scheme: "blues"
+        },
+        marks: [
+            Plot.cell(orderTimesYtd, {
+                x: d => d3.utcWeek.count(d3.utcYear(new Date(d.date)), new Date(d.date)),
+                y: d => (new Date(d.date)).getUTCDay(),
+                fill: (d, i) => d.v ? -d.v : NaN,
+                title: (d, i) => `${d.date}: ${d.v}单`,
+                inset: 0.75
+            })
+        ]
+    })
+    document.getElementById('orderGridYtd').appendChild(orderGridYtd);
+
+    let monthlyEarnings = Plot.plot({
+        marginLeft,
+        marginRight,
+        height,
+        width,
+        style,
+        color,
+        facet: {
+            data: earnings,
+            y: "currency",
+            label: "",
+        },
+        x: {
+            label: "金额",
+            tickFormat: "~s",
+        },
+        y: {
+            grid: true,
+            label: "",
+            transform: i => i ? i.slice(2, 7) : i,
+        },
+        marks: [
+            Plot.barX([3000], {fill: "red", fillOpacity: 0.1}),
+            Plot.ruleX([6000], {stroke: "green", strokeWidth: 2, strokeOpacity: 0.4}),
+            Plot.ruleX([11000], {stroke: "yellow", strokeWidth: 2, strokeOpacity: 0.4}),
+            Plot.barX(earnings, Plot.groupY({x: "sum"}, {x: "amount", y: to_month, fill: currency_color})),
+            Plot.text(earnings, Plot.groupY({x: "sum", text: amount_sum}, {x: "amount", y: to_month})),
+        ]
+    })
+    document.getElementById('monthlyEarnings').appendChild(monthlyEarnings);
+
+    let sumBySymbol = Plot.plot({
+        marginLeft,
+        marginRight,
+        height,
+        width,
+        style,
+        color,
+        x: {
+            label: "金额",
+            tickFormat: "~s",
+        },
+        y: {
+            type: "band",
+            label: "",
+        },
+        marks: [
+            Plot.barX(earnings.slice(), Plot.groupY({x: "sum"}, {x: "amount", y: to_region_symbol, fill: currency_color})),
+            Plot.text(earnings, Plot.groupY({x: "sum", text: amount_sum}, {x: "amount", y: to_region_symbol})),
+        ]
+    })
+    document.getElementById('sumBySymbols').appendChild(sumBySymbol);
+</script>

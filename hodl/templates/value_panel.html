@@ -1,0 +1,45 @@
+<div class="bg-dark p-3 rounded-2 mb-2">
+    <p>
+        <span class="text-bg-dark fs-5">
+            待薅价值
+        </span>
+        <a class="link-primary float-end" data-bs-toggle="collapse" href="#moreValue" role="button" aria-expanded="false" aria-controls="moreValue">
+            更多
+        </a>
+    </p>
+
+    <div class="row">
+        {% for currency, amount in earning_value %}
+        <div class="col-4">
+            <div>
+                <p class="fs-6 text-bg-dark text-center fw-bold mb-0">{{currency}}</p>
+                <p class="fs-6 text-bg-dark text-center text-warning fw-bold">{{ FMT.pretty_usd(amount, currency=currency, only_int=True) }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="collapse" id="moreValue">
+        <p class="text-bg-dark fs-5">持有价值</p>
+        <div class="row">
+            {% for currency, amount in hodl_value %}
+            <div class="col-4">
+                <div>
+                    <p class="fs-6 text-bg-dark text-center fw-bold mb-0">{{currency}}</p>
+                    <p class="fs-6 text-bg-dark text-center text-warning fw-bold">{{ FMT.pretty_usd(amount, currency=currency, only_int=True) }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="text-bg-dark fs-5">卖出价值</p>
+        <div class="row">
+            {% for currency, amount in sell_value %}
+            <div class="col-4">
+                <div>
+                    <p class="fs-6 text-bg-dark text-center fw-bold mb-0">{{currency}}</p>
+                    <p class="fs-6 text-bg-dark text-center text-warning fw-bold">{{ FMT.pretty_usd(amount, currency=currency, only_int=True) }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

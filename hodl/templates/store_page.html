@@ -1,0 +1,12 @@
+<div>
+    {% include 'value_panel.html' %}
+    <div class="rounded-2">
+        <ul class="list-group list-group-item-dark list-group-flush">
+            {% for store in store_list %}
+                <li class="list-group-item list-group-item-dark text-bg-dark border-secondary">
+                    {% include 'store.html' %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,60 @@
+<nav id="navbar-earning" class="navbar bg-dark px-3 mb-3">
+    <ul class="nav nav-pills">
+        <li class="nav-item">
+            <a class="nav-link" href="#totalEarning">总收益</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#monthlyEarning">按月统计</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#sumBySymbol">按标的统计</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#earningRecent">近期获利</a>
+        </li>
+    </ul>
+</nav>
+<div data-bs-spy="scroll" data-bs-target="#navbar-earning" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" class="bg-dark p-3 rounded-2" tabindex="0">
+    <h4 id="totalEarning" class="text-bg-dark">总收益</h4>
+    <div class="row">
+        {% for currency, amount in total_earning %}
+        <div class="col-4 mb-3">
+            <div>
+                <p class="fs-5 text-bg-dark text-center fw-bold mb-0">{{currency}}</p>
+                <p class="fs-3 text-bg-dark text-center text-warning fw-bold">{{ FMT.pretty_usd(amount // 100 * 100, currency=currency, only_int=True) }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <h4 id="monthlyEarning" class="text-bg-dark">按月统计</h4>
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div id="monthlyEarnings"></div>
+        </div>
+    </div>
+    <h4 id="sumBySymbol" class="text-bg-dark">按标的统计</h4>
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div id="sumBySymbols"></div>
+        </div>
+    </div>
+    <h4 id="earningRecent" class="text-bg-dark">近期获利</h4>
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        {% for earning in earning_list %}
+        <div class="col">
+        <div class="card border-0 text-bg-dark h-100">
+            <div class="card-body">
+                <p class="mb-0">
+                    <span class="fs-3 fw-bold {{ earning.style }}">
+                        {{ FMT.pretty_usd(earning.amount, currency=earning.currency, only_int=True) }}
+                    </span>
+                    <span>[{{ earning.region }}]{{ earning.symbol }}</span>
+                </p>
+                <p class="mb-0 text-muted">完成日期: {{ earning.date }}</p>
+                <p class="mb-0 text-muted">买回价格: {{ FMT.pretty_usd(earning.buyback_price, currency=earning.currency) }}</p>
+            </div>
+        </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

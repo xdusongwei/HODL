@@ -1,0 +1,14 @@
+<div>
+    <ul class="list-group list-group-item-dark list-group-flush">
+        {% for thread_mixin in threads if thread_mixin.current_thread %}
+            {% set thread = thread_mixin.current_thread %}
+            <li class="list-group-item list-group-item-dark text-bg-dark border-secondary">
+                <p class="mt-2">
+                    <span class="fs-5">{{ '🧵' if thread.is_alive() else '💀' }}</span>
+                    <span class="fs-5">{{ thread.name }}</span>
+                </p>
+                {% include 'thread_mixin.html' %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
