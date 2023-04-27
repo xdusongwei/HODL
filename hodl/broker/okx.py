@@ -132,6 +132,7 @@ class OkxRestApi(BrokerApiBase):
             broker_display=cls.BROKER_DISPLAY,
         )
 
+    @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
         result = BrokerMarketStatusResult()
         with self.MARKET_STATUS_BUCKET:
@@ -164,6 +165,7 @@ class OkxRestApi(BrokerApiBase):
         result.append(BrokerTradeType.CRYPTO, [MarketStatusResult(region=k, status=v)])
         return result
 
+    @track_api
     def fetch_quote(self) -> Quote:
         symbol = self.symbol
         with self.QUOTE_BUCKET:
@@ -173,6 +175,7 @@ class OkxRestApi(BrokerApiBase):
                 session=self.http_session,
             )
 
+    @track_api
     def query_cash(self):
         okx_config = self.broker_config
         with self.ASSET_BUCKET:
@@ -190,6 +193,7 @@ class OkxRestApi(BrokerApiBase):
                 amount = float(details[0].get('availBal', 0.0))
         return amount
 
+    @track_api
     def query_chips(self):
         okx_config = self.broker_config
         with self.ASSET_BUCKET:

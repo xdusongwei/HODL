@@ -37,6 +37,7 @@ class BinanceApi(BrokerApiBase):
             proxies=proxies,
         )
 
+    @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
         result = BrokerMarketStatusResult()
         with self.MARKET_STATUS_BUCKET:
@@ -51,6 +52,7 @@ class BinanceApi(BrokerApiBase):
         )
         return result
 
+    @track_api
     def fetch_quote(self) -> Quote:
         symbol = self.symbol
         with self.QUOTE_BUCKET:

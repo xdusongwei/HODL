@@ -83,6 +83,7 @@ class CiticsRestApi(BrokerApiBase):
         )
         return d
 
+    @track_api
     def detect_plug_in(self):
         try:
             self._citics_fetch(f'/api/citics/state?ping=1&symbol={self.symbol}')
@@ -90,6 +91,7 @@ class CiticsRestApi(BrokerApiBase):
         except Exception as e:
             return False
 
+    @track_api
     def fetch_quote(self) -> Quote:
         symbol = self.symbol
         citics_state = self._citics_fetch(f'/api/citics/state')
@@ -112,11 +114,13 @@ class CiticsRestApi(BrokerApiBase):
             )
         raise PrepareError(f'中信证券找不到指定的行情:{symbol}')
 
+    @track_api
     def query_cash(self):
         symbol = self.symbol
         citics_state = self._citics_fetch(f'/api/citics/state?symbol={symbol}')
         return citics_state['cashAvailable']
 
+    @track_api
     def query_chips(self):
         symbol = self.symbol
         citics_state = self._citics_fetch(f'/api/citics/state?symbol={symbol}')
@@ -126,6 +130,7 @@ class CiticsRestApi(BrokerApiBase):
                 return p['持仓']
         return 0
 
+    @track_api
     def place_order(self, order: Order):
         args = {
             'symbol': order.symbol,
@@ -144,6 +149,7 @@ class CiticsRestApi(BrokerApiBase):
             raise err
         order.order_id = contract_id
 
+    @track_api
     def cancel_order(self, order: Order):
         args = {
             'contractId': order.order_id,
@@ -157,6 +163,7 @@ class CiticsRestApi(BrokerApiBase):
             err.thread_killer = is_submit
             raise err
 
+    @track_api
     def refresh_order(self, order: Order):
         symbol = self.symbol
         citics_state = self._citics_fetch(f'/api/citics/state?symbol={symbol}')

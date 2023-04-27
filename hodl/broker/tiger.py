@@ -194,6 +194,7 @@ class TigerApi(BrokerApiBase):
             return 'CLOSING'
         return status
 
+    @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
         result = BrokerMarketStatusResult()
         client = self.quote_client
@@ -206,6 +207,7 @@ class TigerApi(BrokerApiBase):
         result.append(BrokerTradeType.STOCK, rl)
         return result
 
+    @track_api
     def fetch_quote(self) -> Quote:
         symbol = self.symbol
         with self.QUOTE_BUCKET:
@@ -214,6 +216,7 @@ class TigerApi(BrokerApiBase):
     def on_init(self):
         self._grab_quote()
 
+    @track_api
     def query_cash(self):
         with self.ASSET_BUCKET:
             portfolio_account: PortfolioAccount = self.trade_client.get_prime_assets()
@@ -223,6 +226,7 @@ class TigerApi(BrokerApiBase):
         cash_balance = s.cash_balance
         return cash_balance
 
+    @track_api
     def query_chips(self):
         symbol = self.symbol
         with self.ASSET_BUCKET:
@@ -234,6 +238,7 @@ class TigerApi(BrokerApiBase):
                     return p.quantity
         return 0
 
+    @track_api
     def place_order(self, order: Order):
         client = self.trade_client
         contract = stock_contract(symbol=order.symbol, currency='USD')
@@ -258,10 +263,12 @@ class TigerApi(BrokerApiBase):
             client.place_order(client_order)
         order.order_id = client_order.id
 
+    @track_api
     def cancel_order(self, order: Order):
         with self.ORDER_BUCKET:
             self.trade_client.cancel_order(id=order.order_id)
 
+    @track_api
     def refresh_order(self, order: Order):
         with self.ORDER_BUCKET:
             tiger_order: TigerOrder = self.trade_client.get_order(id=order.order_id)

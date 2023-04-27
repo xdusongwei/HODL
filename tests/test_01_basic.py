@@ -1,6 +1,8 @@
 import re
+import pytest
 import unittest
 from datetime import datetime
+from hodl.broker.base import *
 from hodl.tools import *
 
 
@@ -100,3 +102,33 @@ class BasicTestCase(unittest.TestCase):
         assert meta.trade_type == BrokerTradeType.STOCK
         assert meta.trade_type.value == store_config.trade_type
         assert store_config.region in meta.trade_regions
+
+    def test_track_api(self):
+        class _MyApi:
+            BROKER_DISPLAY = 'display_name'
+
+            @track_api
+            def my_api(self):
+                return True
+
+            @track_api
+            def my_error_api(self):
+                raise NotImplementedError
+
+        api = _MyApi()
+        api.my_api()
+        with pytest.raises(NotImplementedError):
+            api.my_error_api()
+
+        report_list = track_api_report()
+        ok_api, error_api = report_list[0], report_list[1]
+        assert ok_api.api_name == 'my_api'
+        assert error_api.api_name == 'my_error_api'
+
+        assert ok_api.ok_times == 1 and ok_api.error_times == 0
+        assert 0 <= ok_api.slowest_time < 0.01
+        assert ok_api.frequency <= 1.0 / 600 * 60
+
+        assert error_api.ok_times == 0 and error_api.error_times == 1
+        assert 0 <= error_api.slowest_time < 0.01
+        assert error_api.frequency <= 1.0 / 600 * 60

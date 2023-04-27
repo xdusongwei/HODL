@@ -39,6 +39,7 @@ class InteractiveBrokers(BrokerApiBase):
         resp.raise_for_status()
         return resp.json()
 
+    @track_api
     def detect_plug_in(self):
         try:
             d = self.http_request(
@@ -52,6 +53,7 @@ class InteractiveBrokers(BrokerApiBase):
         except Exception as e:
             return False
 
+    @track_api
     def fetch_quote(self) -> Quote:
         d = self.http_request(
             ib_config=self.broker_config,

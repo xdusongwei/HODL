@@ -1,4 +1,10 @@
+from typing import Type
 import abc
+import time
+import functools
+import threading
+from collections import defaultdict
+from dataclasses import dataclass
 import requests
 from tigeropen.common.consts import OrderStatus
 from tigeropen.trade.domain.order import Order as BrokerOrder
@@ -173,8 +179,123 @@ class BrokerApiBase(BrokerApiMixin):
         order.change_d(new_order)
 
 
+@dataclass
+class TrackApi:
+    api_type: Type[BrokerApiBase]
+    api_name: str
+    ok_times: int
+    error_times: int
+    # 平均TTL时间内每分钟调用次数
+    frequency: int
+    # 最慢的记录, 单位秒
+    slowest_time: float | None
+
+
+class _TrackApi:
+    @dataclass
+    class Node:
+        api_type: Type[BrokerApiBase]
+        api_name: str
+        time: float
+        time_use: float
+        is_ok: bool
+
+        def __hash__(self):
+            return id(self)
+
+    TTL = 600.0
+    LOCK = threading.RLock()
+    TIMES: dict[Type[BrokerApiBase], dict[str, set[Node]]] = defaultdict(dict)
+
+    @classmethod
+    def add(cls, node: Node):
+        with _TrackApi.LOCK:
+            times = _TrackApi.TIMES
+            api_type_dict = times[node.api_type]
+            api_type_dict.setdefault(node.api_name, set())
+            removable = set()
+            api_set = times[node.api_type][node.api_name]
+            api_set.add(node)
+            expiry_time = time.time() - _TrackApi.TTL
+            api_set = _TrackApi.TIMES[node.api_type][node.api_name]
+            for node in api_set:
+                if node.time > expiry_time:
+                    continue
+                removable.add(node)
+            for node in removable:
+                api_set.remove(node)
+
+    @classmethod
+    def _clean_all_set(cls):
+        times = _TrackApi.TIMES
+        with _TrackApi.LOCK:
+            for api_type, api_dict in times.items():
+                for api_name, api_set in api_dict.items():
+                    removable = set()
+                    expiry_time = time.time() - _TrackApi.TTL
+                    for node in api_set:
+                        if node.time > expiry_time:
+                            continue
+                        removable.add(node)
+                    for node in removable:
+                        api_set.remove(node)
+
+    @classmethod
+    def api_report(cls):
+        with _TrackApi.LOCK:
+            cls._clean_all_set()
+            ttl = _TrackApi.TTL
+            times = _TrackApi.TIMES
+            result = list()
+            for api_type, api_dict in times.items():
+                for api_name, api_set in api_dict.items():
+                    result.append(TrackApi(
+                        api_type=api_type,
+                        api_name=api_name,
+                        ok_times=sum(1 for i in api_set if i.is_ok),
+                        error_times=sum(1 for i in api_set if not i.is_ok),
+                        frequency=int(len(api_set) / ttl * 60),
+                        slowest_time=max(i.time_use for i in api_set) if api_set else None,
+                    ))
+            result.sort(key=lambda i: (i.api_type.BROKER_DISPLAY, i.api_name, ))
+            return result
+
+
+def track_api(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        api_type = type(self)
+        api_name = func.__name__
+        is_ok = True
+        start_time = time.time()
+        try:
+            return func(self, *args, **kwargs)
+        except Exception as e:
+            is_ok = False
+            raise e
+        finally:
+            end_time = time.time()
+            time_use = FormatTool.adjust_precision(max(0.0, end_time - start_time), precision=3)
+            node = _TrackApi.Node(
+                api_type=api_type,
+                api_name=api_name,
+                time=start_time,
+                time_use=time_use,
+                is_ok=is_ok,
+            )
+            _TrackApi.add(node)
+
+    return wrapper
+
+
+def track_api_report():
+    return _TrackApi.api_report()
+
+
 __all__ = [
     'BrokerApiMixin',
     'BrokerApiBase',
     'BrokerOrder',
+    'track_api',
+    'track_api_report',
 ]

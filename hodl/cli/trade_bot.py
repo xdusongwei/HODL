@@ -7,6 +7,7 @@ from hodl.storage import *
 from hodl.store import Store
 from hodl.quote_mixin import QuoteMixin
 from hodl.thread_mixin import *
+from hodl.broker.base import *
 from hodl.broker.broker_proxy import *
 from hodl.tools import *
 from hodl.exception_tools import *
@@ -23,8 +24,13 @@ class Manager(ThreadMixin):
     HTML_THREAD: Thread = None
     JSON_THREAD: Thread = None
     PSUTIL_THREAD: Thread = None
-    P2P_THREAD: Thread = None
     PACKAGE_LIST: list[dict] = list()
+
+    def __init__(self):
+        self.var = VariableTools()
+        env = self.var.jinja_env
+        template = env.get_template("api_status.html")
+        self.template = template
 
     @classmethod
     def monitor_alert(cls, stores: list[Store]):
@@ -91,9 +97,23 @@ class Manager(ThreadMixin):
             bar.append(BarElementDesc(content=f'📦{name}({version})'))
         return bar
 
+    @classmethod
+    def _extra_html(cls, template, rl):
+        html = template.render(
+            rl=rl,
+            FMT=FormatTool,
+            TT=TimeTools,
+        )
+        return html
+
+    def extra_html(self) -> None | str:
+        template = self.template
+        rl = track_api_report()
+        return self._extra_html(template, rl)
+
     def run(self):
         super(Manager, self).run()
-        var = VariableTools()
+        var = self.var
         store_configs = var.store_configs
         if not store_configs:
             print('没有任何持仓配置')
@@ -198,10 +218,11 @@ class Manager(ThreadMixin):
                 print(f'读取配置文件出错: {e}')
 
 
-try:
-    import subprocess
-    j = subprocess.run(['pdm', 'list', '--json'], capture_output=True).stdout
-    Manager.PACKAGE_LIST = sorted(FormatTool.json_loads(j), key=lambda i: i['name'].lower())
-finally:
-    instance = Manager()
-    instance.run()
+if __name__ == '__main__':
+    try:
+        import subprocess
+        j = subprocess.run(['pdm', 'list', '--json'], capture_output=True).stdout
+        Manager.PACKAGE_LIST = sorted(FormatTool.json_loads(j), key=lambda i: i['name'].lower())
+    finally:
+        instance = Manager()
+        instance.run()

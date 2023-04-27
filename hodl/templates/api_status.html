@@ -1,0 +1,27 @@
+<div>
+    <table class="table table-sm table-dark table-hover">
+        <caption>结果来自于10分钟的样本统计</caption>
+        <thead>
+            <tr>
+                <th scope="col">通道</th>
+                <th scope="col">接口</th>
+                <th scope="col">成功数</th>
+                <th scope="col">失败数</th>
+                <th scope="col">频率</th>
+                <th scope="col">最慢时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in rl %}
+            <tr>
+                <th scope="row">{{ report.api_type.BROKER_DISPLAY }}</th>
+                <td>{{ report.api_name }}</td>
+                <td>{{ report.ok_times }}</td>
+                <td>{{ report.error_times }}</td>
+                <td>{{ report.frequency }}次/分钟</td>
+                <td>{{ report.slowest_time or '--'}}秒</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

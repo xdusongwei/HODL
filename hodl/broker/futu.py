@@ -29,6 +29,7 @@ class FutuApi(BrokerApiBase):
             FutuApi.QUOTE_CLIENT = quote_ctx
         self.quote_client = FutuApi.QUOTE_CLIENT
 
+    @track_api
     def detect_plug_in(self):
         try:
             client = self.quote_client
@@ -37,6 +38,7 @@ class FutuApi(BrokerApiBase):
         except Exception as e:
             return False
 
+    @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
         result = BrokerMarketStatusResult()
         client = self.quote_client
@@ -70,6 +72,7 @@ class FutuApi(BrokerApiBase):
         else:
             raise PrepareError(f'富途市场状态接口调用失败: {data}')
 
+    @track_api
     def fetch_quote(self) -> Quote:
         symbol = self.symbol
         client = self.quote_client
