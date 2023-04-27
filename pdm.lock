@@ -204,6 +204,11 @@ requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 summary = "Get MAC addresses of remote hosts and local interfaces"
 
 [[package]]
+name = "google-cloud"
+version = "0.34.0"
+summary = "API Client library for Google Cloud"
+
+[[package]]
 name = "h11"
 version = "0.12.0"
 requires_python = ">=3.6"
@@ -552,15 +557,17 @@ dependencies = [
 
 [[package]]
 name = "tigeropen"
-version = "2.3.1"
+version = "2.3.7"
 summary = "TigerBrokers Open API"
 dependencies = [
     "backoff",
     "cryptography",
     "delorean",
     "getmac",
+    "google-cloud",
     "jproperties",
     "pandas",
+    "protobuf",
     "pyasn1",
     "python-dateutil",
     "pytz",
@@ -660,7 +667,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "test"]
-content_hash = "sha256:bd00606f3de891cd557153170235aaf752bd9ceff82359c7b93b8327b537835b"
+content_hash = "sha256:8321bc708f28dd690c009f421aa1f0f67271c63dd6d7095f4a70b03cd93ffb29"
 
 [metadata.files]
 "anyio 3.6.1" = [
@@ -888,6 +895,10 @@ content_hash = "sha256:bd00606f3de891cd557153170235aaf752bd9ceff82359c7b93b8327b
 "getmac 0.8.3" = [
     {url = "https://mirrors.aliyun.com/pypi/packages/66/9b/a23f8ea858716fe9969190f6dbfb2b7680039079b8eec0c7a7fb3be48a42/getmac-0.8.3.tar.gz", hash = "sha256:6e38f9023b9792f53ef982cce6be65d84fea656be87100ab2f2d0376563af486"},
     {url = "https://mirrors.aliyun.com/pypi/packages/ea/ad/7821cbe819079c037a1e1a89a41d9e43b767052307fa474ed0b425394fcb/getmac-0.8.3-py2.py3-none-any.whl", hash = "sha256:95f5cbdf521a1045e3073f546a523d2adb2933f2ce647450c0a4b5c358ca85ca"},
+]
+"google-cloud 0.34.0" = [
+    {url = "https://mirrors.aliyun.com/pypi/packages/47/0e/8bf108fa9e3e036fe37a86598f1315e7b8de90b89012fd65704dc30ac6ad/google-cloud-0.34.0.tar.gz", hash = "sha256:01430187cf56df10a9ba775dd547393185d4b40741db0ea5889301f8e7a9d5d3"},
+    {url = "https://mirrors.aliyun.com/pypi/packages/ba/b1/7c54d1950e7808df06642274e677dbcedba57f75307adf2e5ad8d39e5e0e/google_cloud-0.34.0-py2.py3-none-any.whl", hash = "sha256:fb1ab7b0548fe44b3d538041f0a374505b7f990d448a935ea36649c5ccab5acf"},
 ]
 "h11 0.12.0" = [
     {url = "https://mirrors.aliyun.com/pypi/packages/60/0f/7a0eeea938eaf61074f29fed9717f2010e8d0e0905d36b38d3275a1e4622/h11-0.12.0-py3-none-any.whl", hash = "sha256:36a3cb8c0a032f56e2da7084577878a035d3b61d104230d4bd49c0c6b555a9c6"},
@@ -1344,8 +1355,8 @@ content_hash = "sha256:bd00606f3de891cd557153170235aaf752bd9ceff82359c7b93b8327b
     {url = "https://mirrors.aliyun.com/pypi/packages/02/0e/95e14cc9e3f51c410c9cae261958d6bd95d415d29659e3957dde6bede321/stomp.py-8.0.1.tar.gz", hash = "sha256:d2bc55b4596604feb51d56895d93431ff8ee159b31b28d9038a2310777bbd3fa"},
     {url = "https://mirrors.aliyun.com/pypi/packages/83/07/d53fe1c223afb394dd35d6e1e90756ce5e1ae888748b111a51115c912dd6/stomp.py-8.0.1-py3-none-any.whl", hash = "sha256:69eb189f89a0e843d23d27b030ffb654007bbc57e899ac32183b401c0e0a4623"},
 ]
-"tigeropen 2.3.1" = [
-    {url = "https://mirrors.aliyun.com/pypi/packages/1d/f6/f99dc49dbeb91e1f0dbae3a1fc759ffa22a4a2706a7fa2244eed162b20e5/tigeropen-2.3.1.tar.gz", hash = "sha256:d002fcf81adc02ba1e1434f842686395efa6b9561a7c5df18a26fd1f96b20836"},
+"tigeropen 2.3.7" = [
+    {url = "https://mirrors.aliyun.com/pypi/packages/a8/a3/c30ffbfb0944cc5cead7ec962da03172912353cb588f311ea32547253e2c/tigeropen-2.3.7.tar.gz", hash = "sha256:9923de5ba30bed3efb0bc0cce24037fc173bf07ff65cea494b8711353b0ad816"},
 ]
 "toml 0.10.2" = [
     {url = "https://mirrors.aliyun.com/pypi/packages/44/6f/7120676b6d73228c96e17f1f794d8ab046fc910d781c8d151120c3f1569e/toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
