@@ -187,6 +187,7 @@ class TrackApi:
     error_times: int
     # 平均TTL时间内每分钟调用次数
     frequency: float
+    avg_time: float | None
     # 最慢的记录, 单位秒
     slowest_time: float | None
 
@@ -268,12 +269,14 @@ class _TrackApi:
                             api_name = '刷新订单'
                         case _:
                             api_name = api_name
+                    avg_time = sum(i.time_use for i in api_set) / len(api_set) if api_set else None
                     result.append(TrackApi(
                         api_type=api_type,
                         api_name=api_name,
                         ok_times=sum(1 for i in api_set if i.is_ok),
                         error_times=sum(1 for i in api_set if not i.is_ok),
                         frequency=FormatTool.adjust_precision(len(api_set) / ttl * 60, precision=1),
+                        avg_time=FormatTool.adjust_precision(avg_time, precision=3) if api_set else None,
                         slowest_time=max(i.time_use for i in api_set) if api_set else None,
                     ))
             result.sort(key=lambda i: (i.api_type.BROKER_DISPLAY, i.api_name, ))

@@ -8,6 +8,7 @@
                 <th scope="col">成功数</th>
                 <th scope="col">失败数</th>
                 <th scope="col">频率</th>
+                <th scope="col">平均时间</th>
                 <th scope="col">最慢时间</th>
             </tr>
         </thead>
@@ -19,6 +20,13 @@
                 <td>{{ report.ok_times }}</td>
                 <td>{{ report.error_times }}</td>
                 <td>{{ report.frequency }}次/分钟</td>
+                <td>
+                    {% if report.avg_time is none %}
+                        --
+                    {% else %}
+                        {{ report.avg_time }}秒
+                    {% endif %}
+                </td>
                 <td>
                     {% if report.slowest_time is none %}
                         --
