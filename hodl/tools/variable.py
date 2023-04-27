@@ -4,8 +4,6 @@ from telegram.ext import Updater
 from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.locate import LocateTools
 from hodl.tools.store_config import StoreConfig
-from hodl.tools.tui_config import TuiConfig
-from hodl.tools.p2p_config import P2pConfig
 from hodl.tools.broker_meta import BrokerMeta, BrokerTradeType
 
 
@@ -58,16 +56,6 @@ class VariableTools:
         """
         store_config_list = [StoreConfig(d) for d in self._config.get('store', dict()).values()]
         return {store_config.symbol: store_config for store_config in store_config_list}
-
-    @property
-    def p2p_config(self) -> P2pConfig:
-        """
-        交易机器人的P2P网络设定
-        Returns
-        -------
-
-        """
-        return P2pConfig(self._config.get('p2p', dict()))
 
     def broker_config_dict(self, name):
         """
@@ -131,11 +119,6 @@ class VariableTools:
         telegram: dict = self._config.get('telegram', dict())
         chat_id = telegram.get('chat_id')
         return chat_id
-
-    @property
-    def tui_configs(self) -> list[TuiConfig]:
-        tui_config_list = [TuiConfig(d) for d in self._config.get('tui', list())]
-        return tui_config_list
 
     @property
     def manager_state_path(self):

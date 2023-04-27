@@ -1,8 +1,7 @@
 import unittest
 import pytest
 from hodl.exception_tools import *
-from hodl.simulation.fake_quote import *
-from hodl.simulation.main import *
+from hodl.unit_test import *
 
 
 class RiskControlTestCase(unittest.TestCase):

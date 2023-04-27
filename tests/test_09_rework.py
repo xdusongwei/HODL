@@ -1,7 +1,6 @@
 import unittest
 from hodl.tools import *
-from hodl.simulation.fake_quote import *
-from hodl.simulation.main import *
+from hodl.unit_test import *
 
 
 class ReworkTestCase(unittest.TestCase):

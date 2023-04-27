@@ -1,7 +1,7 @@
 import os
 import unittest
 from hodl.plan_calc import *
-from hodl.simulation.main import start_simulation, SimulationStore
+from hodl.unit_test import *
 from hodl.state import *
 from hodl.tools import *
 

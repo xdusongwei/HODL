@@ -19,6 +19,7 @@ class MarketStatusResult(dict):
 
 class BrokerMarketStatusResult(dict):
     def append(self, trade_type: BrokerTradeType, rl: list[MarketStatusResult]):
+        rl = sorted(rl, key=lambda i: i.region)
         self[trade_type.value] = rl
 
     def trade_type_items(self) -> list[tuple[str, list[MarketStatusResult]]]:

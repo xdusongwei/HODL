@@ -1,5 +1,5 @@
 import unittest
-from hodl.simulation.fake_quote import *
+from hodl.unit_test import *
 from hodl.tools import *
 from hodl.sleep_mixin import *
 

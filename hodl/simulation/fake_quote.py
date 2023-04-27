@@ -1,7 +1,6 @@
 import re
 import csv
 import random
-from decimal import Decimal
 from collections import namedtuple
 from dataclasses import *
 from datetime import timedelta, datetime

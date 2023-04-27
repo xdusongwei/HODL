@@ -14,7 +14,6 @@ from hodl.cli.threads.market_status import *
 from hodl.cli.threads.ps_util import *
 from hodl.cli.threads.html_writer import *
 from hodl.cli.threads.json_writer import *
-from hodl.cli.threads.p2p import *
 
 
 class Manager(ThreadMixin):
@@ -156,15 +155,6 @@ class Manager(ThreadMixin):
         print(f'json刷新线程已启动')
 
         Manager.PSUTIL_THREAD = PsUtilThread().start(name='psutil')
-
-        if var.p2p_config.enable:
-            Manager.P2P_THREAD = P2pThread(
-                p2p_config=var.p2p_config,
-                stores=stores,
-            ).start(
-                name='libp2pNode',
-            )
-            print(f'libp2p线程已启动')
 
         while True:
             try:

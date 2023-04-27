@@ -1,7 +1,6 @@
 import unittest
 from hodl.quote import *
-from hodl.simulation.fake_quote import *
-from hodl.simulation.main import *
+from hodl.unit_test import *
 from hodl.storage import *
 from hodl.tools import *
 
