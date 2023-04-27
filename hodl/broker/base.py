@@ -186,7 +186,7 @@ class TrackApi:
     ok_times: int
     error_times: int
     # 平均TTL时间内每分钟调用次数
-    frequency: int
+    frequency: float
     # 最慢的记录, 单位秒
     slowest_time: float | None
 
@@ -249,12 +249,31 @@ class _TrackApi:
             result = list()
             for api_type, api_dict in times.items():
                 for api_name, api_set in api_dict.items():
+                    match api_name:
+                        case 'detect_plug_in':
+                            api_name = '连通测试'
+                        case 'fetch_market_status':
+                            api_name = '市场状态'
+                        case 'fetch_quote':
+                            api_name = '行情快照'
+                        case 'query_cash':
+                            api_name = '可用资金'
+                        case 'query_chips':
+                            api_name = '持仓量'
+                        case 'place_order':
+                            api_name = '下单'
+                        case 'cancel_order':
+                            api_name = '撤单'
+                        case 'refresh_order':
+                            api_name = '刷新订单'
+                        case _:
+                            api_name = api_name
                     result.append(TrackApi(
                         api_type=api_type,
                         api_name=api_name,
                         ok_times=sum(1 for i in api_set if i.is_ok),
                         error_times=sum(1 for i in api_set if not i.is_ok),
-                        frequency=int(len(api_set) / ttl * 60),
+                        frequency=FormatTool.adjust_precision(len(api_set) / ttl * 60, precision=1),
                         slowest_time=max(i.time_use for i in api_set) if api_set else None,
                     ))
             result.sort(key=lambda i: (i.api_type.BROKER_DISPLAY, i.api_name, ))

@@ -1,5 +1,5 @@
-<div>
-    <table class="table table-sm table-dark table-hover">
+<div class="table-responsive">
+    <table class="table table-dark table-hover">
         <caption>结果来自于10分钟的样本统计</caption>
         <thead>
             <tr>
@@ -19,7 +19,13 @@
                 <td>{{ report.ok_times }}</td>
                 <td>{{ report.error_times }}</td>
                 <td>{{ report.frequency }}次/分钟</td>
-                <td>{{ report.slowest_time or '--'}}秒</td>
+                <td>
+                    {% if report.slowest_time is none %}
+                        --
+                    {% else %}
+                        {{ report.slowest_time }}秒
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

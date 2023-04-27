@@ -7,7 +7,7 @@
         {% set vix_error = msr.vix_error %}
         {% if vix %}
             <div class="alert alert-dark hodlAlert" role="alert">
-              ✅{{ broker_display }}恐慌指数当日最高: {{ FMT.pretty_usd(vix['dayHigh'], precision=2) }},
+              ℹ️{{ broker_display }}恐慌指数当日最高: {{ FMT.pretty_usd(vix['dayHigh'], precision=2) }},
                 更新时间: {{ FMT.pretty_dt(TT.from_timestamp(vix['time'], tz='US/Eastern')) }}
             </div>
         {% endif %}
@@ -25,7 +25,7 @@
         {% endif %}
         {% if tt_items %}
             {% for trade_type, rl in tt_items %}
-                <table class="table table-sm table-dark table-hover caption-top">
+                <table class="table table-dark table-hover caption-top">
                     <caption>{{ broker_display }}交易品种{{ trade_type }}的市场状态</caption>
                     <thead>
                         <tr>
