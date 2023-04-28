@@ -45,27 +45,13 @@ class FutuApi(BrokerApiBase):
         with self.MARKET_STATUS_BUCKET:
             ret, data = client.get_global_state()
         if ret == RET_OK:
-            market_map = {
-                'market_sh': 'CN',
-                'market_hk': 'HK',
-                'market_us': 'US',
-            }
-            market_status_map = {
-                'CLOSED': 'CLOSING',
-                'AFTER_HOURS_END': 'CLOSING',
-                'MORNING': 'TRADING',
-                'AFTERNOON': 'TRADING',
-                # 如果不映射盘后时段, 盘后时间段不会更新订单信息, 这段时间即不会用来记录lsod当日的有效检查
-                'AFTER_HOURS_BEGIN': 'POST_HOUR_TRADING',
-            }
             rl: list[MarketStatusResult] = list()
             for k, v in data.items():
-                if k not in market_map:
+                if k not in self.MS_REGION_TABLE:
                     continue
-                if v in market_status_map:
-                    v = market_status_map[v]
-                region = market_map[k]
-                rl.append(MarketStatusResult(region=region, status=v))
+                region = self.MS_REGION_TABLE[k]
+                status = v
+                rl.append(MarketStatusResult(region=region, status=status))
 
             result.append(BrokerTradeType.STOCK, rl)
             return result

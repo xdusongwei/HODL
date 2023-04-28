@@ -186,14 +186,6 @@ class TigerApi(BrokerApiBase):
                 broker_display=cls.BROKER_DISPLAY,
             )
 
-    @classmethod
-    def _transform_trading_status(cls, status: str) -> str:
-        if status == 'EARLY_CLOSED':
-            return 'CLOSING'
-        if status == 'MARKET_CLOSED':
-            return 'CLOSING'
-        return status
-
     @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
         result = BrokerMarketStatusResult()
@@ -201,8 +193,12 @@ class TigerApi(BrokerApiBase):
         with self.MARKET_STATUS_BUCKET:
             market_status_list: list[MarketStatus] = client.get_market_status(Market.ALL)
         rl = [
-            MarketStatusResult(region=ms.market, status=self._transform_trading_status(ms.trading_status))
+            MarketStatusResult(
+                region=self.MS_REGION_TABLE[ms.market],
+                status=ms.trading_status,
+            )
             for ms in market_status_list
+            if ms.market in self.MS_REGION_TABLE
         ]
         result.append(BrokerTradeType.STOCK, rl)
         return result
