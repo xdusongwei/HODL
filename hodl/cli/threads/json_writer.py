@@ -11,13 +11,11 @@ class JsonWriterThread(ThreadMixin):
     def __init__(
             self,
             sleep_secs: int,
-            stores: list[Store],
             ms_proxy: MarketStatusProxy,
             html_thread: threading.Thread,
             ms_thread: threading.Thread,
     ):
         self.sleep_secs = sleep_secs
-        self.stores = stores
         self.total_write = 0
         self.market_status_proxy = ms_proxy
         self.html_thread = html_thread
@@ -35,7 +33,7 @@ class JsonWriterThread(ThreadMixin):
     def run(self):
         super(JsonWriterThread, self).run()
         sleep_secs = self.sleep_secs
-        stores = self.stores
+        stores: list[Store] = self.find_by_type(Store)
         pid = os.getpid()
         while True:
             time.sleep(4)

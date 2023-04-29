@@ -1,3 +1,4 @@
+from typing import Type, Self
 import threading
 from dataclasses import dataclass
 from typing import Optional
@@ -76,6 +77,9 @@ class ThreadMixin:
         return method(**kwargs)
 
     def thread_tags(self) -> tuple:
+        thread: threading.Thread = getattr(self, '__thread', None)
+        if thread:
+            return (thread.native_id, )
         return tuple()
 
     @classmethod
@@ -85,6 +89,16 @@ class ThreadMixin:
             if thread.thread_tags() == tags:
                 return thread
         return None
+
+    @classmethod
+    def find_by_type(cls, t: Type) -> list:
+        result = list()
+        threads = ThreadMixin._THREADS.copy()
+        for thread in threads:
+            if isinstance(thread, t):
+                result.append(thread)
+        result.sort(key=lambda i: i.thread_tags())
+        return result
 
 
 __all__ = ['BarElementDesc', 'ThreadMixin', ]

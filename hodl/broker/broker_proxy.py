@@ -54,8 +54,6 @@ class MarketStatusProxy:
             vix_symbol = [meta.vix_symbol for meta in b.broker_meta if meta.vix_symbol][0]
             try:
                 broker = type(b)(
-                    broker_config=b.broker_config,
-                    broker_meta=b.broker_meta,
                     symbol=vix_symbol,
                     conid=vix_symbol,
                     name='VIX',
@@ -86,8 +84,6 @@ class MarketStatusProxy:
         broker_info = sort_brokers(var=var, prefer_list=prefer_list)
         brokers = [
             t(
-                broker_config=d,
-                broker_meta=m,
                 symbol=None,
                 name='MarketStatus',
                 logger=None,
@@ -235,8 +231,6 @@ class BrokerProxy:
         broker_info = sort_brokers(var=var, prefer_list=prefer_list)
         brokers = [
             t(
-                broker_config=d,
-                broker_meta=m,
                 symbol=store_config.symbol,
                 name=store_config.name,
                 logger=self.runtime_state.log.logger(),
@@ -253,8 +247,6 @@ class BrokerProxy:
         broker_info = sort_brokers(var=var)
         brokers = [
             t(
-                broker_config=d,
-                broker_meta=m,
                 symbol=store_config.symbol,
                 name=store_config.name,
                 logger=self.runtime_state.log.logger(),

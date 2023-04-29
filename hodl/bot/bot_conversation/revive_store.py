@@ -64,9 +64,8 @@ class ReviveStore(TelegramBotBase):
                     else:
                         raise ValueError(f'找不到持仓对应的线程')
 
-                    with open(state_path, mode='r', encoding='utf8') as f:
-                        text = f.read()
-                        state = FormatTool.json_loads(text)
+                    text = LocateTools.read_file(state_path)
+                    state = FormatTool.json_loads(text)
                     state = State(state)
                     if state.risk_control_break:
                         state.risk_control_break = False
@@ -79,8 +78,7 @@ class ReviveStore(TelegramBotBase):
                     state.cash_day = None
                     state.chip_day = None
                     text = FormatTool.json_dumps(state)
-                    with open(state_path, mode='w', encoding='utf8') as f:
-                        f.write(text)
+                    LocateTools.write_file(state_path, text)
                     store.start(name=f'Store([{region}]{symbol})')
                     update.message.reply_text(
                         f'已创建新线程',

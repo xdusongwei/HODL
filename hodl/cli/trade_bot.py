@@ -31,6 +31,7 @@ class Manager(ThreadMixin):
         env = self.var.jinja_env
         template = env.get_template("api_status.html")
         self.template = template
+        BrokerApiBase.set_up_var(var=self.var)
 
     @classmethod
     def monitor_alert(cls, stores: list[Store]):
@@ -157,7 +158,6 @@ class Manager(ThreadMixin):
             variable=var,
             db=db,
             template=template,
-            stores=stores,
         ).start(
             name='htmlWriter',
         )
@@ -165,7 +165,6 @@ class Manager(ThreadMixin):
 
         Manager.JSON_THREAD = JsonWriterThread(
             sleep_secs=var.sleep_limit,
-            stores=stores,
             ms_proxy=ms_proxy,
             ms_thread=Manager.MARKET_STATUS_THREAD,
             html_thread=Manager.HTML_THREAD,
@@ -188,6 +187,7 @@ class Manager(ThreadMixin):
                 if len(store_configs) != len(stores):
                     print(f'运行中的持仓对象数量和配置文件中的持仓配置数量不一致')
                     return
+                BrokerApiBase.set_up_var(var=variable)
                 for store in stores:
                     symbol = store.store_config.symbol
                     new_config = store_configs.get(symbol)

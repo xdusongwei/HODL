@@ -111,16 +111,38 @@ class BrokerApiBase(BrokerApiMixin):
         'MARKET_CLOSED': 'CLOSING',
     }
 
+    @classmethod
+    def set_up_var(cls, var: VariableTools):
+        setattr(BrokerApiBase, '__var', var)
+
+    @classmethod
+    def query_broker_config(cls) -> dict:
+        var: VariableTools = getattr(BrokerApiBase, '__var', None)
+        if var is None:
+            var = VariableTools()
+        return var.broker_config_dict(cls.BROKER_NAME)
+
+    @classmethod
+    def query_broker_meta(cls) -> list[BrokerMeta]:
+        var: VariableTools = getattr(BrokerApiBase, '__var', None)
+        if var is None:
+            var = VariableTools()
+        return var.broker_meta(cls.BROKER_NAME)
+
     def __init__(
             self,
-            broker_config: dict,
-            broker_meta: list[BrokerMeta],
             symbol: None | str,
             name: None | str,
+            broker_config: dict = None,
+            broker_meta: list[BrokerMeta] = None,
             logger: LoggerWrapper = None,
             session: requests.Session = None,
             conid: None | str = None,
     ):
+        if broker_config is None:
+            broker_config = self.query_broker_config()
+        if broker_meta is None:
+            broker_meta = self.query_broker_meta()
         self.broker_config = broker_config.copy()
         self.broker_meta = broker_meta.copy()
         self.custom_client = None

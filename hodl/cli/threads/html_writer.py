@@ -43,11 +43,10 @@ class HtmlWriterThread(ThreadMixin):
                 return dataclasses.asdict(o)
             raise TypeError
 
-    def __init__(self, variable: VariableTools, db: LocalDb, template, stores: list[Store]):
+    def __init__(self, variable: VariableTools, db: LocalDb, template):
         self.variable = variable
         self.db = db
         self.template = template
-        self.stores = stores
         self.total_write = 0
         self.current_hash = ''
         self.recent_earnings = list()
@@ -152,7 +151,8 @@ class HtmlWriterThread(ThreadMixin):
             html_file_path = self.variable.html_file_path
             template = self.template
             db = self.db
-            store_list: list[Store] = [store for store in self.stores if store.store_config.visible]
+            stores: list[Store] = self.find_by_type(Store)
+            store_list: list[Store] = [store for store in stores if store.store_config.visible]
             new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
             if self.current_hash != new_hash:
                 if db:
