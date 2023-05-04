@@ -149,6 +149,7 @@ class HtmlWriterThread(ThreadMixin):
         new_hash = self.current_hash
         try:
             html_file_path = self.variable.html_file_path
+            html_manifest_path = self.variable.html_manifest_path
             template = self.template
             db = self.db
             stores: list[Store] = self.find_by_type(Store)
@@ -187,9 +188,9 @@ class HtmlWriterThread(ThreadMixin):
                 hodl_value=hodl_list,
                 sell_value=sell_list,
                 earning_value=earning_list,
+                html_manifest_path=html_manifest_path,
             ).encode('utf8')
-            with open(html_file_path, "wb") as f:
-                f.write(html)
+            LocateTools.write_file(html_file_path, html, mode='wb')
             self.total_write += len(html)
         except Exception:
             traceback.print_exc()

@@ -192,6 +192,16 @@ class VariableTools:
         """
         return self._config.get('html_file_path', None)
 
+    @property
+    def html_manifest_path(self) -> str:
+        """
+        PWA清单文件的站点位置
+        Returns
+        -------
+
+        """
+        return self._config.get('html_manifest_path', None)
+
     def log_root(self, broker: str, region: str, symbol: str) -> str:
         """
         指定一个目录，用来专门保存持仓的日志

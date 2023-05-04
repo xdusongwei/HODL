@@ -78,7 +78,11 @@ class MarketStatusProxy:
         MarketStatusProxy.MARKET_STATUS = all_status
         return all_status
 
-    def __init__(self, var: VariableTools, session: Session = None):
+    def __init__(
+            self,
+            var: VariableTools,
+            session: Session = None,
+    ):
         self.market_status_brokers: list[BrokerApiBase] = list()
         prefer_list = var.prefer_market_state_brokers
         broker_info = sort_brokers(var=var, prefer_list=prefer_list)
@@ -220,9 +224,9 @@ class BrokerProxy:
 
     def __init__(
             self,
-            store_config: StoreConfig,
             runtime_state: StoreState,
     ):
+        store_config = runtime_state.store_config
         var = runtime_state.variable
         self.runtime_state = runtime_state
         self.store_config = store_config

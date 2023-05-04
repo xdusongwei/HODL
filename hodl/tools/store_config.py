@@ -196,11 +196,15 @@ class StoreConfig(dict):
         如果买入价 >= 现价*因子 时，才会触发下单动作
         :return:
         """
-        return self.get('buy_order_rate', 0.975)
+        v = self.get('buy_order_rate', 0.975)
+        assert v <= 1.0
+        return v
 
     @property
     def sell_order_rate(self) -> float:
-        return self.get('sell_order_rate', 1.025)
+        v = self.get('sell_order_rate', 1.025)
+        assert v >= 1.0
+        return v
 
     @property
     def precision(self) -> int:

@@ -95,8 +95,7 @@ class JsonWriterThread(ThreadMixin):
                     for store in stores if store.state and store.store_config.visible],
             }
             body = FormatTool.json_dumps(d, binary=True)
-            with open(path, 'wb') as f:
-                f.write(body)
+            LocateTools.write_file(path, body, mode='wb')
             self.total_write += len(body)
 
 

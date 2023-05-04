@@ -46,8 +46,14 @@ class LocateTools:
             return None
 
     @classmethod
-    def write_file(cls, path: str, text: str):
-        with open(path, 'w', encoding='utf8') as f:
+    def write_file(cls, path: str, text: str, mode: str = 'w'):
+        args = dict(
+            file=path,
+            mode=mode,
+        )
+        if mode == 'w':
+            args |= dict(encoding='utf8')
+        with open(**args) as f:
             f.write(text)
 
 
