@@ -147,6 +147,7 @@ class HtmlWriterThread(ThreadMixin):
     def write_html(self):
         currency_list = ('USD', 'CNY', 'HKD',)
         new_hash = self.current_hash
+        locks = list()
         try:
             html_file_path = self.variable.html_file_path
             html_manifest_path = self.variable.html_manifest_path
@@ -154,6 +155,9 @@ class HtmlWriterThread(ThreadMixin):
             db = self.db
             stores: list[Store] = self.find_by_type(Store)
             store_list: list[Store] = [store for store in stores if store.store_config.visible]
+            for store in store_list:
+                store.lock.acquire()
+                locks.append(store.lock)
             new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
             if self.current_hash != new_hash:
                 if db:
@@ -196,6 +200,8 @@ class HtmlWriterThread(ThreadMixin):
             traceback.print_exc()
         finally:
             self.current_hash = new_hash
+            for lock in locks:
+                lock.release()
 
     def run(self):
         super(HtmlWriterThread, self).run()

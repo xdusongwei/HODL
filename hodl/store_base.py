@@ -35,7 +35,7 @@ class StoreBase(ThreadMixin):
         self.thread_context = self.runtime_state
         self.state: State = State.new()
         self.db = db
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         self.on_state_changed = set()
 
         variable = self.runtime_state.variable

@@ -294,7 +294,7 @@ class State(dict):
 
     @property
     def sleep_mode_active(self):
-        return self.get('sleepModeActive', True)
+        return self.get('sleepModeActive', False)
 
     @sleep_mode_active.setter
     def sleep_mode_active(self, v: bool):
