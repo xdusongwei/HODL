@@ -98,7 +98,7 @@ class MarketStatusProxy:
         ]
         self.market_status_brokers = brokers
 
-    def query_status(self, store_config: StoreConfig) -> str:
+    def query_status(self, store_config: StoreConfig) -> tuple[str, str, str, ]:
         market_status_dict = self.all_status
         for broker in self.brokers:
             for meta in broker.broker_meta:
@@ -116,7 +116,7 @@ class MarketStatusProxy:
                         status = BrokerApiBase.MS_STATUS_TABLE.get(status, status)
                         ms = status
                 if ms:
-                    return ms
+                    return broker.BROKER_NAME, broker.BROKER_DISPLAY, ms
         else:
             raise BrokerMismatchError(f'配置的所有broker没有任何可支持该品种获取其对应的市场状态')
 

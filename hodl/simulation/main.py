@@ -180,7 +180,7 @@ class SimulationStore(Store):
                 pool_order.filled_qty = pool_order.qty
 
     def market_status_mock(self):
-        return self.current_fake_quote.market_status
+        return '--', '--', self.current_fake_quote.market_status
 
     def current_chip_mock(self) -> int:
         orders = self.state.plan.orders

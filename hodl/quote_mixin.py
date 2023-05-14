@@ -27,7 +27,7 @@ class QuoteMixin(StoreBase, ABC):
         else:
             self.market_status_proxy.pull_market_status()
 
-    def current_market_status(self) -> str:
+    def current_market_status(self) -> tuple[str, str, str, ]:
         if not self.runtime_state.variable.async_market_status:
             self._pull_market_status()
         return self.market_status_proxy.query_status(self.store_config)

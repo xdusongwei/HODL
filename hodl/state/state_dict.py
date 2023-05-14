@@ -193,6 +193,22 @@ class State(dict):
         self._set_snapshot('latestSnapshot', 'marketStatus', v)
 
     @property
+    def market_status_name(self) -> str:
+        return self._get_snapshot('latestSnapshot', 'marketStatusName', '--')
+
+    @market_status_name.setter
+    def market_status_name(self, v: str):
+        self._set_snapshot('latestSnapshot', 'marketStatusName', v)
+
+    @property
+    def market_status_display(self) -> str:
+        return self._get_snapshot('latestSnapshot', 'marketStatusDisplay', '--')
+
+    @market_status_display.setter
+    def market_status_display(self, v: str):
+        self._set_snapshot('latestSnapshot', 'marketStatusDisplay', v)
+
+    @property
     def reset_day(self) -> str:
         return self.get('resetDay', '0001-01-01')
 
