@@ -144,6 +144,14 @@ class HtmlWriterThread(ThreadMixin):
         earning_list = [(k, v,) for k, v in earning_dict.items()]
         return hodl_list, sell_list, earning_list
 
+    @classmethod
+    def _sort_stores(cls, stores: list[Store]):
+        def _key(store: Store):
+            sc, s, _ = store.args()
+            return s.market_status != 'TRADING', sc.full_name
+
+        stores.sort(key=_key)
+
     def write_html(self):
         currency_list = ('USD', 'CNY', 'HKD',)
         new_hash = self.current_hash
@@ -154,6 +162,8 @@ class HtmlWriterThread(ThreadMixin):
             template = self.template
             db = self.db
             stores: list[Store] = self.find_by_type(Store)
+            self._sort_stores(stores)
+
             store_list: list[Store] = [store for store in stores if store.store_config.visible]
             for store in store_list:
                 store.lock.acquire()

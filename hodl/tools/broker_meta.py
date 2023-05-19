@@ -11,8 +11,8 @@ class BrokerTradeType(enum.Enum):
 class BrokerMeta:
     """
     描述broker类型可以做什么，以便持仓配置可以匹配到正确的broker。
-    一个Broker可以支持多个ApiMeta，例如即是可以做证券交易，也可以做加密货币交易。
-    每个ApiMeta，定义了broker允许的行为：
+    一个Broker可以支持多个BrokerMeta，例如即是可以做证券交易，也可以做加密货币交易。
+    每个BrokerMeta，定义了broker允许的行为：
     参与何种交易品种；
     是否可以共享市场状态信息给其他有需要的持仓；
     是否可以共享行情信息给其他有需要的持仓；
