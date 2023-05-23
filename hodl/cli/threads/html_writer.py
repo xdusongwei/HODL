@@ -203,6 +203,7 @@ class HtmlWriterThread(ThreadMixin):
                 sell_value=sell_list,
                 earning_value=earning_list,
                 html_manifest_path=html_manifest_path,
+                auto_refresh_time=self.variable.html_auto_refresh_time,
             ).encode('utf8')
             LocateTools.write_file(html_file_path, html, mode='wb')
             self.total_write += len(html)

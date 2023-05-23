@@ -202,6 +202,13 @@ class VariableTools:
         """
         return self._config.get('html_manifest_path', None)
 
+    @property
+    def html_auto_refresh_time(self) -> int | None:
+        """
+        网页文件自带刷新时间间隔，单位毫秒
+        """
+        return self._config.get('html_auto_refresh_time', None)
+
     def log_root(self, broker: str, region: str, symbol: str) -> str:
         """
         指定一个目录，用来专门保存持仓的日志

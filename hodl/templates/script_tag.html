@@ -138,3 +138,10 @@
     })
     document.getElementById('sumBySymbols').appendChild(sumBySymbol);
 </script>
+{% if auto_refresh_time is number %}
+<script type="module">
+setTimeout(function(){
+    location.reload();
+}, {{ auto_refresh_time }});
+</script>
+{% endif %}
