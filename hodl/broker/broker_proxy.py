@@ -96,6 +96,7 @@ class MarketStatusProxy:
             for t, d, m in broker_info
             if any(meta for meta in m if meta.market_status_regions or meta.vix_symbol)
         ]
+        random.shuffle(brokers)
         self.market_status_brokers = brokers
 
     def query_status(self, store_config: StoreConfig) -> tuple[str, str, str, ]:
