@@ -150,5 +150,14 @@ class FormatTool:
 
         return 0.0
 
+    @classmethod
+    def html_broker_name(cls, broker_icon_path: str, broker_name: str, broker_display: str) -> str:
+        if not broker_name or broker_name == '--':
+            return broker_display
+        elif not broker_icon_path:
+            return broker_display
+        else:
+            return f'<image src="{broker_icon_path}/{broker_name}.png" style="height: 15px;" class="align-middle" alt="{broker_name}" >{broker_display}'
+
 
 __all__ = ['FormatTool', ]

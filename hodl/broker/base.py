@@ -137,7 +137,6 @@ class BrokerApiBase(BrokerApiMixin):
             broker_meta: list[BrokerMeta] = None,
             logger: LoggerWrapper = None,
             session: requests.Session = None,
-            conid: None | str = None,
     ):
         if broker_config is None:
             broker_config = self.query_broker_config()
@@ -147,7 +146,6 @@ class BrokerApiBase(BrokerApiMixin):
         self.broker_meta = broker_meta.copy()
         self.custom_client = None
         self.symbol = symbol
-        self.conid = conid
         self.name = name
         self.http_session = session
         self.logger = logger

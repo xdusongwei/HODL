@@ -85,7 +85,6 @@ class VariableTools:
                     quote_regions=set(meta.get('quote_regions', list())),
                     trade_regions=set(meta.get('trade_regions', list())),
                     vix_symbol=meta.get('vix_symbol', None),
-                    need_conid=meta.get('need_conid', False),
                 )
             )
         return result
@@ -208,6 +207,13 @@ class VariableTools:
         网页文件自带刷新时间间隔，单位毫秒
         """
         return self._config.get('html_auto_refresh_time', None)
+
+    @property
+    def broker_icon_path(self) -> str | None:
+        """
+        交易通道的图标目录路径
+        """
+        return self._config.get('broker_icon_path', None)
 
     def log_root(self, broker: str, region: str, symbol: str) -> str:
         """

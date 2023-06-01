@@ -13,15 +13,21 @@
     </p>
     <p class="mb-0">[{{ store_config.region }}]{{ store_config.symbol }}<span class="text-muted ms-2">{{ FMT.pretty_dt(state.quote_time, region=store_config.region, with_year=True, with_tz=True)[:24] }}</span></p>
     <p class="text-muted fs-6">
+        {% if broker_icon_path %}
+            <span class="badge bg-secondary">市场:{{ FMT.html_broker_name(broker_icon_path, state.market_status_name, state.market_status_display)|safe }}</span>
+            <span class="badge bg-secondary">行情:{{ FMT.html_broker_name(broker_icon_path, state.quote_broker, state.quote_broker_display)|safe }}</span>
+            <span class="badge bg-secondary">交易:{{ FMT.html_broker_name(broker_icon_path, state.trade_broker, state.trade_broker_display)|safe }}</span>
+        {% else %}
         <span class="me-2">
             市场:{{ state.market_status_display }}
-        </span>
-        <span class="me-2">
-            交易:{{ state.trade_broker_display }}
         </span>
         <span>
             行情:{{ state.quote_broker_display }}
         </span>
+        <span class="me-2">
+            交易:{{ state.trade_broker_display }}
+        </span>
+        {% endif %}
     </p>
     {% set thread_mixin = store %}
     {% include 'thread_mixin.html' %}

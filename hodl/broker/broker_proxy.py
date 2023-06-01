@@ -55,7 +55,6 @@ class MarketStatusProxy:
             try:
                 broker = type(b)(
                     symbol=vix_symbol,
-                    conid=vix_symbol,
                     name='VIX',
                     logger=b.logger,
                     session=b.http_session,
@@ -177,8 +176,6 @@ class BrokerProxy:
                     continue
                 if store_config.region not in meta.quote_regions:
                     continue
-                if meta.need_conid and not store_config.conid:
-                    continue
                 try:
                     quote = broker.fetch_quote()
                 except Exception as e:
@@ -240,7 +237,6 @@ class BrokerProxy:
                 name=store_config.name,
                 logger=self.runtime_state.log.logger(),
                 session=self.runtime_state.http_session,
-                conid=store_config.conid,
             )
             for t, d, m in broker_info
             if any(meta for meta in m if meta.quote_regions)

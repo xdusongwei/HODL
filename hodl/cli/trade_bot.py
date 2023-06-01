@@ -154,11 +154,12 @@ class Manager(ThreadMixin):
 
         env = var.jinja_env
         template = env.get_template("index.html")
-        Manager.HTML_THREAD = HtmlWriterThread(
+        html_thread = HtmlWriterThread(
             variable=var,
             db=db,
             template=template,
-        ).start(
+        )
+        Manager.HTML_THREAD = html_thread.start(
             name='htmlWriter',
         )
         print(f'HTML刷新线程已启动')
@@ -188,6 +189,7 @@ class Manager(ThreadMixin):
                     print(f'运行中的持仓对象数量和配置文件中的持仓配置数量不一致')
                     return
                 BrokerApiBase.set_up_var(var=variable)
+                html_thread.variable = variable
                 for store in stores:
                     symbol = store.store_config.symbol
                     new_config = store_configs.get(symbol)

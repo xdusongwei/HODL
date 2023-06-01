@@ -32,6 +32,10 @@ class QuoteFieldError(PrepareError):
     pass
 
 
+class IbkrConidMissingError(PrepareError):
+    pass
+
+
 class QuoteScheduleOver(PrepareError):
     pass
 
@@ -67,6 +71,7 @@ __all__ = [
     'PlugInError',
     'QuoteOutdatedError',
     'QuoteFieldError',
+    'IbkrConidMissingError',
     'QuoteScheduleOver',
     'OrderOutdatedError',
     'TradingError',

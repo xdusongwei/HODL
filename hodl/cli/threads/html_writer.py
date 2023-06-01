@@ -153,12 +153,13 @@ class HtmlWriterThread(ThreadMixin):
         stores.sort(key=_key)
 
     def write_html(self):
+        variable = self.variable
         currency_list = ('USD', 'CNY', 'HKD',)
         new_hash = self.current_hash
         locks = list()
         try:
-            html_file_path = self.variable.html_file_path
-            html_manifest_path = self.variable.html_manifest_path
+            html_file_path = variable.html_file_path
+            html_manifest_path = variable.html_manifest_path
             template = self.template
             db = self.db
             stores: list[Store] = self.find_by_type(Store)
@@ -203,7 +204,8 @@ class HtmlWriterThread(ThreadMixin):
                 sell_value=sell_list,
                 earning_value=earning_list,
                 html_manifest_path=html_manifest_path,
-                auto_refresh_time=self.variable.html_auto_refresh_time,
+                auto_refresh_time=variable.html_auto_refresh_time,
+                broker_icon_path=variable.broker_icon_path,
             ).encode('utf8')
             LocateTools.write_file(html_file_path, html, mode='wb')
             self.total_write += len(html)
