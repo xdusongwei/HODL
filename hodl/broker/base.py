@@ -16,6 +16,14 @@ from hodl.tools.format import FormatTool as FMT
 
 
 class BrokerApiMixin(abc.ABC):
+    """
+    券商通道包含8个重要的操作方法, 和on_init, 用于交易持仓相关的初始化函数
+    8个方法,可根据对券商的实际需要进行部分开发, 比如这个券商只提供行情数据, 不提供交易, 那么仅实现行情获取功能即可.
+    关于市场状态: fetch_market_status;
+    关于行情: fetch_quote;
+    关于交易: place_order cancel_order refresh_order query_chips query_cash detect_plug_in;
+    """
+
     def fetch_market_status(self) -> BrokerMarketStatusResult:
         """
         返回此券商可以获得的市场状态，
@@ -50,6 +58,7 @@ class BrokerApiMixin(abc.ABC):
         """
         根据订单号更新订单。
         将订单需要的信息使用 self.modify_order_fields 方法填充进来。
+        如果即方法引发了非项目定制的异常, 此次持仓循环将中止.
         """
         raise NotImplementedError
 
@@ -76,7 +85,8 @@ class BrokerApiMixin(abc.ABC):
         每当创建了一个持仓对象后，此方法会被调用。
         这里的场景多用于执行券商的交易操作的初始化动作，比如正式使用前必须创建交易对象；
         而BrokerApiBase.__post_init__多用于构建券商通道对象的成员变量。
-        这两者不能混淆，如果初始化工作部分偏交易相关, 使用on_init; 如果初始化工作偏行情、市场状态, 应使用__post_init__。
+        这两者不能混淆，如果初始化工作部分是持仓交易相关的, 应使用on_init, 每个持仓线程启动后会执行一次;
+        如果初始化工作有关行情、市场状态, 因为它们可能因为配置上的原因, 和持仓线程并不是耦合的, 应使用__post_init__。
         """
         pass
 
@@ -84,6 +94,17 @@ class BrokerApiMixin(abc.ABC):
 class BrokerApiBase(BrokerApiMixin):
     BROKER_NAME = 'unknown'
     BROKER_DISPLAY = '未知'
+    """
+    是否在持仓进程启动后开始做broker联通性检查。
+    通常建议每个持仓都需要执行检查，保证市场状态/行情/持仓/资金可正常访问， 否则持仓线程中止。
+
+    注意：
+    有些持仓的broker联通方面可能需要其他的维护动作，例如券商通道服务不是24小时随时可用，如果在broker对应的券商系统并未准备好的情况下，
+    启动了本系统，该持仓的联通性检查必然失败，导致持仓线程自杀；
+    反而需要等到券商通道可用时，本系统进程方可开始启动, 搞得事情很复杂，所以不需要启用这种检查。
+    另外的，对于这类broker，建议完善 detect_plug_in 方法，使得在持仓线程循环里提前ping一下broker系统，
+    如果不可用时不影响持仓线程存活，而是中止此次循环。
+    """
     ENABLE_BOOTING_CHECK = False
 
     # 该转换表用于将各通道的地区格式进行转换, 不在此表中的地区将被忽略

@@ -78,6 +78,16 @@ class InteractiveBrokers(BrokerApiBase):
                 session=self.http_session,
             )
             authenticated = d.get('iserver', dict()).get('authStatus', dict()).get('authenticated', False)
+            connected = d.get('iserver', dict()).get('authStatus', dict()).get('connected', False)
+            if not authenticated and connected:
+                self.reauthenticate()
+                d = self.http_request(
+                    ib_config=self.broker_config,
+                    path='/v1/api/tickle',
+                    method='POST',
+                    session=self.http_session,
+                )
+                authenticated = d.get('iserver', dict()).get('authStatus', dict()).get('authenticated', False)
             return authenticated
         except Exception as e:
             return False

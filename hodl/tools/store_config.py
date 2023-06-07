@@ -219,24 +219,6 @@ class StoreConfig(dict):
         return self.get('legal_rate_daily', None)
 
     @property
-    def booting_check(self) -> bool:
-        """
-        是否在持仓进程启动后开始做broker联通性检查。
-        通常建议每个持仓都需要执行检查，保证市场状态/行情/持仓/资金可正常访问， 否则持仓线程中止。
-
-        注意：
-        有些持仓的broker联通方面可能需要其他的维护动作，例如服务不是24小时随时可用，如果在broker对应的下游系统并未准备好的情况下，
-        启动了本系统，该持仓的联通性检查会失败，导致持仓线程自杀；
-        反而需要等到下游系统可用时，本系统进程方可开始启动, 搞得很复杂，所以不需要启用这种检查。
-        另外的，对于这类broker，建议完善 detect_plug_in 方法，使得在持仓线程循环里提前ping一下broker系统，
-        如果不可用时不影响持仓线程存活，而是中止此次循环。
-        Returns
-        -------
-
-        """
-        return self.get('booting_check', False)
-
-    @property
     def base_price_last_buy(self) -> bool:
         """
         设置此项后，上次平仓买入的价格也可以是 base_price 的参考选项
