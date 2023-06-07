@@ -14,6 +14,7 @@ from hodl.state import *
 class FutuApi(BrokerApiBase):
     BROKER_NAME = 'futu'
     BROKER_DISPLAY = '富途证券'
+    ENABLE_BOOTING_CHECK = True
 
     QUOTE_CLIENT: OpenQuoteContext = None
     MARKET_STATUS_BUCKET = LeakyBucket(10)

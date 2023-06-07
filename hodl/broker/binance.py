@@ -12,6 +12,7 @@ from hodl.tools import *
 class BinanceApi(BrokerApiBase):
     BROKER_NAME = 'binance'
     BROKER_DISPLAY = '币安'
+    ENABLE_BOOTING_CHECK = True
     MARKET_STATUS_BUCKET = LeakyBucket(12)
     QUOTE_BUCKET = LeakyBucket(600)
 

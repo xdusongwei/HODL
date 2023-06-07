@@ -10,6 +10,7 @@ from hodl.tools import *
 class CiticsRestApi(BrokerApiBase):
     BROKER_NAME = 'citics'
     BROKER_DISPLAY = '中信证券'
+    ENABLE_BOOTING_CHECK = False
 
     @classmethod
     def http_request(

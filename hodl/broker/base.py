@@ -84,6 +84,7 @@ class BrokerApiMixin(abc.ABC):
 class BrokerApiBase(BrokerApiMixin):
     BROKER_NAME = 'unknown'
     BROKER_DISPLAY = '未知'
+    ENABLE_BOOTING_CHECK = False
 
     # 该转换表用于将各通道的地区格式进行转换, 不在此表中的地区将被忽略
     MS_REGION_TABLE = {

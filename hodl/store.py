@@ -13,6 +13,9 @@ from hodl.tools import FormatTool as FMT
 
 class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
     def booting_check(self):
+        trade_broker = self.broker_proxy.trade_broker
+        if not trade_broker.ENABLE_BOOTING_CHECK:
+            return
         try:
             self.logger.info(f'检查券商系统对接')
             self.broker_proxy.query_quote()
@@ -386,7 +389,7 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         self.clear_error()
 
         while True:
-            if self.store_config.booting_check and not is_checked:
+            if self.ENABLE_BROKER and not is_checked:
                 try:
                     self.booting_check()
                 except Exception as e:
@@ -416,11 +419,11 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
                         self.prepare_plan()
                         self.prepare_plug_in()
                         self.prepare_market_status()
-                        if self.state.market_status in [
+                        if self.state.market_status in {
                             'TRADING',
                             'POST_HOUR_TRADING',
                             'CLOSING',
-                        ]:
+                        }:
                             self.refresh_orders()
                             order_checked = True
                         self.prepare_quote()

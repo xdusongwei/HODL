@@ -17,6 +17,7 @@ class InteractiveBrokers(BrokerApiBase):
 
     BROKER_NAME = 'interactiveBrokers'
     BROKER_DISPLAY = '盈透证券'
+    ENABLE_BOOTING_CHECK = False
 
     PLUGIN_BUCKET = LeakyBucket(60)
     ACCOUNT_BUCKET = LeakyBucket(60)

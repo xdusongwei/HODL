@@ -90,6 +90,7 @@ class SpeedupTradeClient(TradeClient, _SpeedupMixin):
 class TigerApi(BrokerApiBase):
     BROKER_NAME = 'tiger'
     BROKER_DISPLAY = '老虎国际'
+    ENABLE_BOOTING_CHECK = True
 
     HAS_GRAB = False
     GRAB_LOCK = threading.Lock()
