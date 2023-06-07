@@ -22,6 +22,8 @@ class InteractiveBrokers(BrokerApiBase):
     ACCOUNT_BUCKET = LeakyBucket(60)
     ORDER_BUCKET = LeakyBucket(120)
 
+    LATEST_REAUTH_TIME: int = 0
+
     @classmethod
     def http_request(
             cls,
@@ -53,20 +55,40 @@ class InteractiveBrokers(BrokerApiBase):
     def account_id(self) -> str:
         return self.broker_config.get('account_id')
 
+    def reauthenticate(self) -> bool:
+        try:
+            d = self.http_request(
+                ib_config=self.broker_config,
+                path='/v1/api/iserver/reauthenticate',
+                method='POST',
+                session=self.http_session,
+            )
+            message = d.get('message', '')
+            return message == 'triggered'
+        except Exception as e:
+            return False
+
+    def tickle(self):
+        try:
+            d = self.http_request(
+                ib_config=self.broker_config,
+                path='/v1/api/tickle',
+                method='POST',
+                session=self.http_session,
+            )
+            authenticated = d.get('iserver', dict()).get('authStatus', dict()).get('authenticated', False)
+            return authenticated
+        except Exception as e:
+            return False
+
     @track_api
     def detect_plug_in(self):
         with self.PLUGIN_BUCKET:
-            try:
-                d = self.http_request(
-                    ib_config=self.broker_config,
-                    path='/v1/api/tickle',
-                    method='POST',
-                    session=self.http_session,
-                )
-                authenticated = d.get('iserver', dict()).get('authStatus', dict()).get('authenticated', False)
-                return authenticated
-            except Exception as e:
-                return False
+            now_ts = int(TimeTools.utc_now().timestamp())
+            if InteractiveBrokers.LATEST_REAUTH_TIME + 3600 < now_ts:
+                InteractiveBrokers.LATEST_REAUTH_TIME = now_ts
+                self.reauthenticate()
+            return self.tickle()
 
     @track_api
     def query_cash(self) -> float:
@@ -204,25 +226,28 @@ class InteractiveBrokers(BrokerApiBase):
     @track_api
     def refresh_order(self, order: Order):
         with self.ORDER_BUCKET:
-            d: dict = self.http_request(
-                ib_config=self.broker_config,
-                path=f'/v1/api/iserver/account/order/status/{order.order_id}',
-                method='GET',
-                session=self.http_session,
-            )
-            order_status = d.get('order_status', '')
-            qty = int(float(d.get('size')))
-            filled_qty = int(float(d.get('cum_fill')))
-            avg_fill_price = float(d.get('average_price', 0.0))
-            self.modify_order_fields(
-                order=order,
-                qty=qty,
-                filled_qty=filled_qty,
-                avg_fill_price=avg_fill_price,
-                trade_timestamp=None,
-                reason='',
-                is_cancelled=order_status=='Cancelled',
-            )
+            try:
+                d: dict = self.http_request(
+                    ib_config=self.broker_config,
+                    path=f'/v1/api/iserver/account/order/status/{order.order_id}',
+                    method='GET',
+                    session=self.http_session,
+                )
+                order_status = d.get('order_status', '')
+                qty = int(float(d.get('size')))
+                filled_qty = int(float(d.get('cum_fill')))
+                avg_fill_price = float(d.get('average_price', 0.0))
+                self.modify_order_fields(
+                    order=order,
+                    qty=qty,
+                    filled_qty=filled_qty,
+                    avg_fill_price=avg_fill_price,
+                    trade_timestamp=None,
+                    reason='',
+                    is_cancelled=order_status=='Cancelled',
+                )
+            except Exception as e:
+                raise OrderRefreshError(f'更新盈透证券订单{order.order_id}失败: {e}')
 
     @track_api
     def fetch_quote(self) -> Quote:

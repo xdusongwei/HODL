@@ -44,6 +44,10 @@ class OrderOutdatedError(PrepareError):
     pass
 
 
+class OrderRefreshError(PrepareError):
+    pass
+
+
 class TradingError(BotError):
     pass
 
@@ -74,6 +78,7 @@ __all__ = [
     'IbkrConidMissingError',
     'QuoteScheduleOver',
     'OrderOutdatedError',
+    'OrderRefreshError',
     'TradingError',
     'CiticsError',
     'RiskControlError',
