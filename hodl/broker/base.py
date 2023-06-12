@@ -38,13 +38,14 @@ class BrokerApiMixin(abc.ABC):
 
     def fetch_quote(self) -> Quote:
         """
-        根据 self.symbol 拉取执行行情，返回已填充的 Quote 对象。
+        根据 self.symbol 拉取执行行情，返回已填充好的 Quote 对象。
         """
         raise NotImplementedError
 
     def place_order(self, order: Order):
         """
         根据订单参数完成下单，并将订单号填充进 Order.order_id。
+        注意系统支持限价单和市价单，这两种下单种类必须都支持。
         """
         raise NotImplementedError
 

@@ -209,6 +209,13 @@ class VariableTools:
         return self._config.get('html_auto_refresh_time', None)
 
     @property
+    def html_monthly_earnings_currency(self) -> list[str]:
+        """
+        网页文件中按月统计收益图表的货币品种限制
+        """
+        return self._config.get('html_monthly_earnings_currency', ['USD', 'CNY', ])
+
+    @property
     def broker_icon_path(self) -> str | None:
         """
         交易通道的图标目录路径

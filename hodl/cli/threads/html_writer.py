@@ -160,6 +160,7 @@ class HtmlWriterThread(ThreadMixin):
         try:
             html_file_path = variable.html_file_path
             html_manifest_path = variable.html_manifest_path
+            html_monthly_earnings_currency = variable.html_monthly_earnings_currency
             template = self.template
             db = self.db
             stores: list[Store] = self.find_by_type(Store)
@@ -206,6 +207,7 @@ class HtmlWriterThread(ThreadMixin):
                 html_manifest_path=html_manifest_path,
                 auto_refresh_time=variable.html_auto_refresh_time,
                 broker_icon_path=variable.broker_icon_path,
+                monthly_earning_currency=FormatTool.json_dumps(html_monthly_earnings_currency),
             ).encode('utf8')
             LocateTools.write_file(html_file_path, html, mode='wb')
             self.total_write += len(html)

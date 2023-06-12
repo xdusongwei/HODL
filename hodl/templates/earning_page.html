@@ -21,7 +21,7 @@
         <div class="col-4 mb-3">
             <div>
                 <p class="fs-5 text-bg-dark text-center fw-bold mb-0">{{currency}}</p>
-                <p class="fs-3 text-bg-dark text-center text-warning fw-bold">{{ FMT.pretty_usd(amount // 100 * 100, currency=currency, only_int=True) }}</p>
+                <p class="fs-4 text-bg-dark text-center text-warning fw-bold">{{ FMT.pretty_usd(amount // 100 * 100, currency=currency, only_int=True) }}</p>
             </div>
         </div>
         {% endfor %}

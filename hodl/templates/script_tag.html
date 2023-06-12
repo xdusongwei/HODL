@@ -85,6 +85,8 @@
     })
     document.getElementById('orderGridYtd').appendChild(orderGridYtd);
 
+    let monthlyEarningsCurrency = {{ monthly_earning_currency | safe }};
+    let monthlyEarningsItems = earnings.filter(i => monthlyEarningsCurrency.includes(i.currency));
     let monthlyEarnings = Plot.plot({
         marginLeft,
         marginRight,
@@ -93,7 +95,7 @@
         style,
         color,
         facet: {
-            data: earnings,
+            data: monthlyEarningsItems,
             y: "currency",
             label: "",
         },
@@ -110,8 +112,8 @@
             Plot.barX([3000], {fill: "red", fillOpacity: 0.1}),
             Plot.ruleX([6000], {stroke: "green", strokeWidth: 2, strokeOpacity: 0.4}),
             Plot.ruleX([11000], {stroke: "yellow", strokeWidth: 2, strokeOpacity: 0.4}),
-            Plot.barX(earnings, Plot.groupY({x: "sum"}, {x: "amount", y: to_month, fill: currency_color})),
-            Plot.text(earnings, Plot.groupY({x: "sum", text: amount_sum}, {x: "amount", y: to_month})),
+            Plot.barX(monthlyEarningsItems, Plot.groupY({x: "sum"}, {x: "amount", y: to_month, fill: currency_color})),
+            Plot.text(monthlyEarningsItems, Plot.groupY({x: "sum", text: amount_sum}, {x: "amount", y: to_month})),
         ]
     })
     document.getElementById('monthlyEarnings').appendChild(monthlyEarnings);
