@@ -27,6 +27,7 @@ dependencies = [
     "orjson>=3.8.3",
     "exchange-calendars>=4.2.4",
     "futu-api>=7.1.3308",
+    "ib-insync>=0.9.85",
 ]
 
 requires-python = ">=3.11"

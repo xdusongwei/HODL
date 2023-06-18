@@ -360,7 +360,10 @@ def track_api(func):
         is_ok = True
         start_time = time.time()
         try:
-            return func(self, *args, **kwargs)
+            result = func(self, *args, **kwargs)
+            if api_name == 'detect_plug_in' and result is False:
+                is_ok = False
+            return result
         except Exception as e:
             is_ok = False
             raise e
