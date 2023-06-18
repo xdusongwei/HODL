@@ -78,16 +78,21 @@ class InteractiveBrokers(BrokerApiBase):
             ib_socket = InteractiveBrokers.GATEWAY_SOCKET
             if ib_socket:
                 try:
-                    AsyncProxyThread.call_from_sync(ib_socket.reqAccountSummary)
+                    AsyncProxyThread.call(ib_socket.accountSummaryAsync(account=self.account_id()))
+                    assert ib_socket.isConnected()
                     return
                 except Exception as e:
                     pass
+            if ib_socket:
+                ib_socket.disconnect()
+                ib = ib_socket
+            else:
+                ib = ib_insync.IB()
             host = self.broker_config.get('host', '127.0.0.1')
             port = self.broker_config.get('port', 4001)
             client_id = self.broker_config.get('client_id', 0)
             timeout = self.broker_config.get('timeout', 8)
             account_id = self.account_id()
-            ib = ib_insync.IB()
             AsyncProxyThread.call(
                 ib.connectAsync(
                     host=host,
