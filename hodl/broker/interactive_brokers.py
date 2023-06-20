@@ -78,7 +78,8 @@ class InteractiveBrokers(BrokerApiBase):
             ib_socket = InteractiveBrokers.GATEWAY_SOCKET
             if ib_socket:
                 try:
-                    AsyncProxyThread.call(ib_socket.accountSummaryAsync(account=self.account_id()))
+                    with self.ACCOUNT_BUCKET:
+                        AsyncProxyThread.call(ib_socket.accountSummaryAsync(account=self.account_id()))
                     assert ib_socket.isConnected()
                     return
                 except Exception as e:

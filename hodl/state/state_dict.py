@@ -460,6 +460,13 @@ class State(dict):
     def trade_broker_display(self, v: str):
         self['tradeBrokerDisplay'] = v
 
+    @property
+    def full_name(self) -> str:
+        broker_display = self.trade_broker_display
+        symbol = self.quote_symbol
+        name = self.name
+        return f'[{broker_display}]{symbol}({name})'
+
 
 __all__ = [
     'State',

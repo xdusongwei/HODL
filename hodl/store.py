@@ -156,11 +156,11 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         state.trade_broker = self.broker_proxy.trade_broker.BROKER_NAME
         state.trade_broker_display = self.broker_proxy.trade_broker.BROKER_DISPLAY
         if self.broker_proxy.detect_plug_in():
-            text = f"""✅{self.store_config.full_name}连通已恢复"""
+            text = f"""✅{state.full_name}连通已恢复"""
             state.is_plug_in = True
             self.bot.unset_alarm(AlertBot.K_TRADE_SERVICE, text=text)
         else:
-            text = f"""🔌{self.store_config.full_name}连通测试失败"""
+            text = f"""🔌{state.full_name}连通测试失败"""
             state.is_plug_in = False
             self.bot.set_alarm(AlertBot.K_TRADE_SERVICE, text=text)
             raise PlugInError()

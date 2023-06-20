@@ -29,7 +29,7 @@ class AsyncProxyThread(ThreadMixin):
     def _try_create(cls):
         with AsyncProxyThread.LOCK:
             if AsyncProxyThread.THREAD is None:
-                thread = AsyncProxyThread().start(name='AsyncProxyThread')
+                thread = AsyncProxyThread().start(name='asyncProxyThread')
                 AsyncProxyThread.THREAD = thread
             cls.instance().ready.wait()
 
