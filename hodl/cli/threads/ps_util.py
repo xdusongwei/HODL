@@ -26,7 +26,7 @@ class PsUtilThread(ThreadMixin):
         io_counter = process.io_counters()
         total_read = FormatTool.number_to_size(io_counter.read_bytes)
         total_write = FormatTool.number_to_size(io_counter.write_bytes)
-        new_bar.append(BarElementDesc(content=f'start: {running_time}'))
+        new_bar.append(BarElementDesc(content=f'time: {running_time}'))
         new_bar.append(BarElementDesc(content=f'cpu: {cpu_percent}'))
         new_bar.append(BarElementDesc(content=f'memory: {memory_usage}'))
         new_bar.append(BarElementDesc(content=f'threads: {process.num_threads()}'))
