@@ -9,10 +9,13 @@ class TodayOrders(TelegramBotBase):
         timestamp = int(TimeTools.us_time_now().timestamp()) - 24 * 60 * 60
         result = '没有数据库用于查询'
         if db := self.db:
-            result = '近24小时订单如下:\n'
             orders = OrderRow.items_after_create_time(con=db.conn, create_time=timestamp)
-            for order_row in orders:
-                result += f'{order_row.summary()}\n'
+            if orders:
+                result = '近24小时订单如下:\n'
+                for order_row in orders:
+                    result += f'{order_row.summary()}\n'
+            else:
+                result = '近24小时没有订单'
         update.message.reply_text(result)
 
     @classmethod

@@ -67,7 +67,7 @@ class ThreadMixin:
             thread.start()
         return thread
 
-    def thread_lock(self) -> Optional[threading.Lock]:
+    def thread_lock(self) -> Optional[threading.RLock]:
         return None
 
     def thread_action(self, method: str, **kwargs):

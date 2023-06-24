@@ -395,6 +395,8 @@ class StoreBase(ThreadMixin):
         state = self.state
         if not state.is_plug_in:
             result.append(f'🔌券商系统需要恢复联通')
+        if state.quote_outdated:
+            result.append(f'⚠️行情的快照数据过时.')
         if state.ta_tumble_protect_flag:
             ma5 = FormatTool.pretty_price(state.ta_tumble_protect_ma5, config=config)
             ma10 = FormatTool.pretty_price(state.ta_tumble_protect_ma10, config=config)
@@ -407,7 +409,7 @@ class StoreBase(ThreadMixin):
             result.append(f'🚫{rsi_day}盘中触及到RSI暴跌保护，{rsi_name}高于{limit}时恢复卖出计划.')
         return result
 
-    def thread_lock(self) -> threading.Lock:
+    def thread_lock(self) -> threading.RLock:
         return self.lock
 
     def thread_tags(self) -> tuple:

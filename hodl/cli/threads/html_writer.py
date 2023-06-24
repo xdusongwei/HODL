@@ -147,14 +147,14 @@ class HtmlWriterThread(ThreadMixin):
     @classmethod
     def _sort_stores(cls, stores: list[Store]):
         def _key(store: Store):
-            sc, s, _ = store.args()
-            return s.market_status != 'TRADING', sc.full_name
+            state = store.state
+            return state.market_status != 'TRADING', state.full_name
 
         stores.sort(key=_key)
 
     def write_html(self):
         variable = self.variable
-        currency_list = ('USD', 'CNY', 'HKD',)
+        currency_list = ('USD', 'CNY', 'HKD', )
         new_hash = self.current_hash
         locks = list()
         try:

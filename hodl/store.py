@@ -75,7 +75,14 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
 
     def prepare_quote(self):
         state = self.state
-        quote = self.current_quote()
+
+        try:
+            quote = self.current_quote()
+            state.quote_outdated = False
+        except QuoteOutdatedError as ex:
+            state.quote_outdated = True
+            raise ex
+
         if not quote.open or quote.open <= 0:
             raise QuoteFieldError(f'{self.store_config.symbol}开盘价不正确: {quote.open}')
         if not quote.pre_close or quote.pre_close <= 0:

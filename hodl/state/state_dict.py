@@ -185,6 +185,14 @@ class State(dict):
         self._set_snapshot('latestSnapshot', 'quoteHighPrice', v)
 
     @property
+    def quote_outdated(self):
+        return self._get_snapshot('latestSnapshot', 'quoteOutdated', default=False)
+
+    @quote_outdated.setter
+    def quote_outdated(self, v: bool):
+        self._set_snapshot('latestSnapshot', 'quoteOutdated', v)
+
+    @property
     def market_status(self) -> str:
         return self._get_snapshot('latestSnapshot', 'marketStatus')
 
