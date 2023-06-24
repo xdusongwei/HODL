@@ -10,32 +10,6 @@ from hodl.tools import *
 
 
 class HtmlWriterThread(ThreadMixin):
-    class _ProfitRowTool:
-        def __init__(self, store: Store):
-            self.price = store.state.quote_latest_price
-            self.store_config = store.store_config
-            self.plan = store.state.plan
-            self.filled_level = 0
-            self.rows = list()
-            self.buy_percent = None
-            self.sell_percent = None
-            self.has_table = self.plan.table_ready
-            if self.has_table:
-                self.filled_level = self.plan.current_sell_level_filled()
-                self.rows = Store.build_table(store_config=self.store_config, plan=self.plan)
-            if self.filled_level and self.price:
-                idx = self.filled_level - 1
-                rate = abs(self.price - self.rows[idx].buy_at) / self.price
-                self.buy_percent = rate
-            if self.filled_level < len(self.rows):
-                idx = self.filled_level
-                rate = abs(self.price - self.rows[idx].sell_at) / self.price
-                self.sell_percent = rate
-
-        def earning_forecast(self, rate: float) -> int:
-            base_value = (self.plan.total_chips or 0) * (self.plan.base_price or 0.0)
-            return int(base_value * (rate - 1))
-
     class _EnhancedJSONEncoder:
         @staticmethod
         def default(o):
@@ -196,7 +170,7 @@ class HtmlWriterThread(ThreadMixin):
                 order_times_ytd=self.order_times_ytd_json,
                 store_list=store_list,
                 FMT=FormatTool,
-                ProfitRowTool=self._ProfitRowTool,
+                ProfitRowTool=Store.ProfitRowTool,
                 earning_list=self.earning_list,
                 earning_json=self.earning_json,
                 threads=ThreadMixin.threads(),

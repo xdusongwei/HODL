@@ -1,7 +1,7 @@
 {% set state = store.state %}
 {% set store_config = store.store_config %}
 {% set total_chips = state.plan.total_chips %}
-{% set row_tool = ProfitRowTool(store=store) %}
+{% set row_tool = ProfitRowTool(config=store_config, state=state) %}
 <div>
     <p class="mb-0 mt-2">
         <span class="fs-4">{{ store_config.name }}</span>

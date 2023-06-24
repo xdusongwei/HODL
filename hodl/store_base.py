@@ -467,5 +467,39 @@ class StoreBase(ThreadMixin):
     def args(self) -> tuple[StoreConfig, State, Plan, ]:
         return self.store_config, self.state, self.state.plan,
 
+    class ProfitRowTool:
+        def __init__(self, config: StoreConfig, state: State):
+            self.price = state.quote_latest_price
+            self.store_config = config
+            self.plan = state.plan
+            self.filled_level = 0
+            self.rows = list()
+            self.buy_percent = None
+            self.sell_percent = None
+            self.buy_at = None
+            self.sell_at = None
+            self.has_table = self.plan.table_ready
+            if self.has_table:
+                self.filled_level = self.plan.current_sell_level_filled()
+                self.rows = StoreBase.build_table(store_config=self.store_config, plan=self.plan)
+            if self.filled_level and self.price:
+                idx = self.filled_level - 1
+                rate = abs(self.price - self.rows[idx].buy_at) / self.price
+                self.buy_percent = rate
+                self.buy_at = self.rows[idx].buy_at
+            if self.filled_level < len(self.rows):
+                idx = self.filled_level
+                rate = abs(self.price - self.rows[idx].sell_at) / self.price
+                self.sell_percent = rate
+                self.sell_at = self.rows[idx].sell_at
+
+        def earning_forecast(self, rate: float) -> int:
+            base_value = (self.plan.total_chips or 0) * (self.plan.base_price or 0.0)
+            return int(base_value * (rate - 1))
+
+    @classmethod
+    def profit_tool(cls, config: StoreConfig, state: State) -> ProfitRowTool:
+        return StoreBase.ProfitRowTool(config=config, state=state)
+
 
 __all__ = ['StoreBase', ]

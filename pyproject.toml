@@ -55,6 +55,7 @@ build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
 bot = {cmd = "pdm run python -m hodl.cli.trade_bot"}
+tui = {cmd = "pdm run python -m hodl.cli.tui"}
 test = {cmd = "pdm run coverage run --source=./hodl -m pytest --disable-pytest-warnings tests"}
 html = {cmd = "pdm run coverage html"}
 report = {cmd = "pdm run coverage report"}

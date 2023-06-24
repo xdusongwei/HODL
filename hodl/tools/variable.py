@@ -5,6 +5,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.locate import LocateTools
 from hodl.tools.store_config import StoreConfig
 from hodl.tools.broker_meta import BrokerMeta, BrokerTradeType
+from hodl.tools.tui_config import TuiConfig
 
 
 class VariableTools:
@@ -118,6 +119,10 @@ class VariableTools:
         telegram: dict = self._config.get('telegram', dict())
         chat_id = telegram.get('chat_id')
         return chat_id
+
+    @property
+    def tui_config(self) -> TuiConfig:
+        return TuiConfig(self._config.get('tui', dict()))
 
     @property
     def manager_state_path(self):
