@@ -89,7 +89,9 @@ class PlanPanel(Widget):
                 total_rate = profit_tool.rows.row_by_level(profit_tool.filled_level).total_rate
                 earning = profit_tool.earning_forecast(rate=total_rate)
                 earning = FormatTool.pretty_price(earning, config=config, only_int=True)
-                text.append(f'[{config.region}]{config.symbol} 💰{earning}\n')
+                id_title = f'[{config.region}]{config.symbol}'
+                level = f'{profit_tool.filled_level}/{len(profit_tool.rows)}'
+                text.append(f'{id_title}#{level} 💰{earning}\n')
             else:
                 text.append(f'[{config.region}]{config.symbol} ⚓️{base_price}\n')
 
@@ -99,10 +101,17 @@ class PlanPanel(Widget):
                 sell_percent = profit_tool.sell_percent
                 buy_at = profit_tool.buy_at
                 buy_percent = profit_tool.buy_percent
-            sell_percent = FormatTool.factor_to_percent(sell_percent, fmt='{:.2%}')
-            buy_percent = FormatTool.factor_to_percent(buy_percent, fmt='{:.2%}')
-            text.append(f'卖出价: {FormatTool.pretty_price(sell_at, config=config)}(距离{sell_percent})\n')
-            text.append(f'买回价: {FormatTool.pretty_price(buy_at, config=config)}(距离{buy_percent})\n')
+            sell_percent = FormatTool.factor_to_percent(sell_percent, fmt='{:.1%}')
+            buy_percent = FormatTool.factor_to_percent(buy_percent, fmt='{:.1%}')
+            text.append(f'卖出价: {FormatTool.pretty_price(sell_at, config=config)}')
+            if profit_tool.sell_percent is not None:
+                text.append(f'(距离{sell_percent})')
+            text.append('\n')
+            text.append(f'买回价: {FormatTool.pretty_price(buy_at, config=config)}')
+            if profit_tool.buy_percent is not None:
+                text.append(f'(距离{buy_percent})')
+            text.append('\n')
+
             parts.append(text)
         return Align.left(Group(*parts))
 

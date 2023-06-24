@@ -1,6 +1,7 @@
 from abc import ABC
 from collections import defaultdict
 from dataclasses import dataclass, field, asdict
+import numpy
 from hodl.quote import *
 from hodl.store_base import *
 from hodl.storage import *
@@ -46,6 +47,8 @@ class BasePriceMixin(StoreBase, ABC):
             return max
         elif state.bp_function == 'min':
             return min
+        elif state.bp_function == 'median':
+            return numpy.median
         else:
             return min
 
@@ -107,6 +110,7 @@ class BasePriceMixin(StoreBase, ABC):
         state.bp_items = [asdict(item) for item in items]
         func = self._get_bp_function()
         price = func([item.v for item in items])
+        price = FormatTool.adjust_precision(price, precision=store_config.precision)
 
         assert price > 0.0
         return price
@@ -199,6 +203,9 @@ class BasePriceMixin(StoreBase, ABC):
                     state.ta_tumble_protect_rsi_period = rsi_period
                     state.ta_tumble_protect_rsi_day = rsi_day
                     self._set_bp_function('max')
+                elif store_config.tumble_protect_rsi_warning_limit is not None:
+                    if rsi <= store_config.tumble_protect_rsi_warning_limit:
+                        self._set_bp_function('median')
             if rsi_points:
                 state.ta_tumble_protect_rsi_current = rsi_points[-1][1]
         else:

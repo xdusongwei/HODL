@@ -314,6 +314,19 @@ class StoreConfig(dict):
         return limit
 
     @property
+    def tumble_protect_rsi_warning_limit(self) -> int:
+        """
+        如果需要根据RSI低于指定阈值时,调整基准价格的比较函数为中位数函数,
+        这里设定一个RSI警戒阈值;
+        Returns
+        -------
+
+        """
+        limit = self.get('tumble_protect_rsi_unlock_limit', None)
+        assert limit is None or 0 <= limit <= 100
+        return limit
+
+    @property
     def lock_position(self) -> bool:
         """
         设置此项后，如果每日风控核对持仓数量不能跟配置 max_shares 一致，否则会触发风控异常
