@@ -1,4 +1,6 @@
+import sys
 import asyncio
+import threading
 import httpx
 from rich.align import Align
 from rich.console import Group
@@ -10,10 +12,12 @@ from textual.screen import Screen
 from textual.widget import Widget
 from textual.widgets import Header, Footer, DataTable, Static
 from textual.binding import Binding
+from textual.reactive import reactive
 from hodl.store import *
 from hodl.tools import *
 from hodl.state import *
 from hodl.store_base import *
+from textual.widgets._header import HeaderClock, HeaderTitle, HeaderClockSpace
 
 
 PAIRS_LIST: list[tuple[dict, dict, StoreConfig, State]] = list()
@@ -23,10 +27,51 @@ def default_style(state: State):
     return 'white' if state.market_status == 'TRADING' else 'grey50'
 
 
+class HodlHeaderClock(HeaderClock):
+    DEFAULT_CSS = """
+        HodlHeaderClock {
+            width: 26;
+            opacity: 90%;
+        }
+        """
+
+    def render(self):
+        cst_time = TimeTools.us_time_now(tz='Asia/Shanghai')
+        if 9 <= cst_time.hour <= 15:
+            tz_name = 'CST'
+            time = cst_time
+        else:
+            tz_name = 'EDT'
+            time = TimeTools.us_time_now()
+        time = time.isoformat(timespec='milliseconds')
+        time = time[:-10]
+        return Text(f'{tz_name}: {time}', style="green")
+
+
+class HodlHeaderTitle(HeaderTitle):
+    DEFAULT_CSS = """
+    HodlHeaderTitle {
+        content-align: left middle;
+        text-opacity: 75%;
+        padding: 0 1;
+    }
+    """
+
+
+class HodlHeader(Header):
+    def compose(self):
+        yield HodlHeaderTitle()
+        yield HodlHeaderClock() if self._show_clock else HeaderClockSpace()
+
+
 class StorePanel(Widget):
+    pairs_list: reactive[list[tuple[dict, dict, StoreConfig, State]]] = reactive(list)
+
     def render(self):
         parts = list()
-        for thread, store, config, state in PAIRS_LIST:
+        for item in self.pairs_list:
+            item: tuple[dict, dict, StoreConfig, State] = item
+            thread, store, config, state = item
             default_color = default_style(state)
             text = Text(style=default_color)
             text.append(f'[{state.trade_broker_display}]{config.symbol} {config.name}\n')
@@ -34,11 +79,14 @@ class StorePanel(Widget):
             tags = list()
             prudent = '惜售' if state.plan.prudent else '超卖'
             tags.append(prudent)
-            tags.append('昨收')
+            args = list()
+            args.append('昨收')
+            args.append('开盘')
             if config.get('basePriceLastBuy'):
-                tags.append('买回')
+                args.append('买回')
             if config.get('basePriceDayLow'):
-                tags.append('日低')
+                args.append('日低')
+            tags.append(f'{state.bp_function}({",".join(args)})')
             text.append(f'策略: {"|".join(tags)}\n')
             state_bar = StoreBase.state_bar(
                 thread_alive=not thread.get('dead'),
@@ -51,9 +99,13 @@ class StorePanel(Widget):
 
 
 class StatusPanel(Widget):
+    pairs_list: reactive[list[tuple[dict, dict, StoreConfig, State]]] = reactive(list)
+
     def render(self):
         parts = list()
-        for thread, store, config, state in PAIRS_LIST:
+        for item in self.pairs_list:
+            item: tuple[dict, dict, StoreConfig, State] = item
+            thread, store, config, state = item
             default_color = default_style(state)
             dt = f'{FormatTool.pretty_dt(state.quote_time, region=config.region, with_year=FormatTool)[:-10]}'
             latest = FormatTool.pretty_price(state.quote_latest_price, config=config)
@@ -78,22 +130,35 @@ class StatusPanel(Widget):
 
 
 class PlanPanel(Widget):
+    pairs_list: reactive[list[tuple[dict, dict, StoreConfig, State]]] = reactive(list)
+
     def render(self):
         parts = list()
-        for thread, store, config, state in PAIRS_LIST:
+        for item in self.pairs_list:
+            item: tuple[dict, dict, StoreConfig, State] = item
+            thread, store, config, state = item
             default_color = default_style(state)
             base_price = FormatTool.pretty_price(state.plan.base_price, config=config)
             profit_tool = Store.ProfitRowTool(config=config, state=state)
             text = Text(style=default_color)
+            id_title = f'[{config.region}]{config.symbol}'
             if profit_tool.has_table and profit_tool.filled_level:
                 total_rate = profit_tool.rows.row_by_level(profit_tool.filled_level).total_rate
                 earning = profit_tool.earning_forecast(rate=total_rate)
                 earning = FormatTool.pretty_price(earning, config=config, only_int=True)
-                id_title = f'[{config.region}]{config.symbol}'
                 level = f'{profit_tool.filled_level}/{len(profit_tool.rows)}'
                 text.append(f'{id_title}#{level} 💰{earning}\n')
             else:
-                text.append(f'[{config.region}]{config.symbol} ⚓️{base_price}\n')
+                if rework_price := state.plan.rework_price:
+                    rework_price = FormatTool.pretty_price(rework_price, config=config)
+                    text.append(f'{id_title} 🔁{rework_price}\n')
+                else:
+                    tp_text = ''
+                    if state.ta_tumble_protect_flag:
+                        tp_text += '⚠️MA'
+                    if state.ta_tumble_protect_rsi:
+                        tp_text += '🚫RSI'
+                    text.append(f'{id_title} ⚓️{base_price}{tp_text}\n')
 
             sell_at = sell_percent = buy_at = buy_percent = None
             if profit_tool.has_table:
@@ -117,8 +182,14 @@ class PlanPanel(Widget):
 
 
 class StoreScreen(Screen):
+    def on_screen_resume(self):
+        global PAIRS_LIST
+        self.query_one(StorePanel).pairs_list = PAIRS_LIST
+        self.query_one(StatusPanel).pairs_list = PAIRS_LIST
+        self.query_one(PlanPanel).pairs_list = PAIRS_LIST
+
     def compose(self) -> ComposeResult:
-        yield Header(name='HODL', show_clock=True)
+        yield HodlHeader(name='HODL', show_clock=True)
         store = Vertical(classes="box", id='ssStore')
         store.border_title = '持仓'
         store.mount(StorePanel())
@@ -135,29 +206,115 @@ class StoreScreen(Screen):
 
 
 class OrderScreen(Screen):
+    pairs_list: reactive[list[tuple[dict, dict, StoreConfig, State]]] = reactive(list)
+    order_filled_dict: dict[str, bool] = dict()
+    windows_notification_client = None
+
+    def _notify_filled_msg(self, order: Order, state: State):
+        try:
+            if sys.platform != 'win32':
+                return
+            if self.windows_notification_client is None:
+                from win10toast import ToastNotifier
+                self.windows_notification_client = ToastNotifier()
+            direction = order.direction
+            price = FormatTool.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision)
+            qty = FormatTool.pretty_number(order.filled_qty)
+            msg = f'[{state.full_name} {direction} {price}@{qty}成交'
+            args = dict(
+                title='HODL',
+                msg=msg,
+                duration=8,
+                threaded=False,
+            )
+            thread = threading.Thread(
+                name=f'orderFilled:{order.unique_id}',
+                daemon=True,
+                target=self.windows_notification_client.show_toast,
+                kwargs=args,
+            )
+            thread.start()
+        except Exception as ex:
+            pass
+
+    def on_screen_resume(self):
+        global PAIRS_LIST
+        self.pairs_list = PAIRS_LIST
+
+    def watch_pairs_list(self, pairs: list[tuple[dict, dict, StoreConfig, State]]):
+        orders: list[tuple[Order, State]] = list()
+        try:
+            table = self.query_one(DataTable)
+
+            for thread, store, config, state in pairs:
+                items = [(order, state,) for order in state.plan.orders]
+                orders.extend(items)
+            orders.sort(key=lambda i: i[0].create_timestamp, reverse=True)
+
+            table.clear()
+            for idx, item in enumerate(orders):
+                order, state = item
+                if order.unique_id not in self.order_filled_dict:
+                    self.order_filled_dict[order.unique_id] = order.is_filled
+                if order.is_filled and not self.order_filled_dict.get(order.unique_id):
+                    self.order_filled_dict[order.unique_id] = order.is_filled
+                    self._notify_filled_msg(order=order, state=state)
+                tz = TimeTools.region_to_tz(order.region)
+                time = TimeTools.from_timestamp(order.create_timestamp, tz=tz)
+                date = TimeTools.us_time_now(tz=tz)
+                day = date.strftime('%Y-%m-%d')
+                is_today = day == order.order_day
+                style = 'grey66'
+                if not is_today:
+                    style = 'grey50'
+                limit_price = '市价'
+                if order.limit_price:
+                    limit_price = FormatTool.pretty_usd(
+                        order.limit_price,
+                        currency=order.currency,
+                        precision=order.precision,
+                    )
+                table.add_row(
+                    Text(order.order_emoji, style=style),
+                    Text(f'{time.strftime("%y-%m-%d")}T{time.strftime("%H:%M:%S")}', style=style),
+                    Text(state.name, justify="center", style=style),
+                    Text(state.trade_broker_display, justify="left", style=style),
+                    Text(f'[{order.region}]{order.symbol}', justify="left", style=style),
+                    Text(f'{order.direction}#{order.level}', justify="left", style=style),
+                    Text(f'{limit_price}', justify="right", style=style),
+                    Text(FormatTool.pretty_number(order.qty), justify="right", style=style),
+                    Text(
+                        f'{FormatTool.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision)}',
+                        justify="right", style=style),
+                    Text(f'{FormatTool.pretty_number(order.filled_qty)}', justify="right", style=style),
+                    height=1,
+                )
+            table.refresh()
+        except NoMatches as ex:
+            pass
+
     def compose(self) -> ComposeResult:
-        yield Header(name='HODL', show_clock=True)
-        table = DataTable(name='订单')
+        yield HodlHeader(name='HODL', show_clock=True)
+        table = DataTable(name='订单', zebra_stripes=True, show_cursor=False)
         table.add_columns(
-            '#',
-            '时间',
-            '通道',
-            '标的',
-            '方向',
-            '订单价',
-            '订单量',
-            '成交价',
-            '成交量',
+            Text('#', style='grey66'),
+            Text('时间', style='grey66'),
+            Text('通道', style='grey66'),
+            Text('名称', style='grey66'),
+            Text('标的', style='grey66'),
+            Text('方向', style='grey66'),
+            Text('订单价', style='grey66'),
+            Text('订单量', style='grey66'),
+            Text('成交价', style='grey66'),
+            Text('成交量', style='grey66'),
         )
-        table.zebra_stripes = True
-        table.cursor_type = 'row'
         yield table
         yield Footer()
 
 
 class EarningScreen(Screen):
     def compose(self) -> ComposeResult:
-        yield Header(name='HODL', show_clock=True)
+        yield HodlHeader(name='HODL', show_clock=True)
         earning = Static("收益", classes="box")
         yield earning
         yield Footer()
@@ -179,53 +336,25 @@ class HODL(App):
     ]
 
     def action_home_page(self, switch=True):
+        global PAIRS_LIST
         try:
             if switch:
                 self.switch_screen('StoreScreen')
-            self.query_one(StorePanel).refresh(layout=True)
-            self.query_one(StatusPanel).refresh(layout=True)
-            self.query_one(PlanPanel).refresh(layout=True)
+            else:
+                self.query_one(StorePanel).pairs_list = PAIRS_LIST
+                self.query_one(StatusPanel).pairs_list = PAIRS_LIST
+                self.query_one(PlanPanel).pairs_list = PAIRS_LIST
         except NoMatches as ex:
             pass
 
     def action_order_page(self, switch=True):
         global PAIRS_LIST
-        if switch:
-            self.switch_screen('OrderScreen')
-        orders = list()
         try:
-            screen: OrderScreen = self.SCREENS['OrderScreen']
-            table = screen.query_one(DataTable)
-
-            for thread, store, config, state in PAIRS_LIST:
-                orders.extend(state.plan.orders)
-            orders.sort(key=lambda i: i.create_timestamp, reverse=True)
-
-            table.clear()
-            for idx, order in enumerate(orders):
-                tz = TimeTools.region_to_tz(order.region)
-                time = TimeTools.from_timestamp(order.create_timestamp, tz=tz)
-                limit_price = '市价'
-                if order.limit_price:
-                    limit_price = FormatTool.pretty_usd(
-                        order.limit_price,
-                        currency=order.currency,
-                        precision=order.precision,
-                    )
-                table.add_row(
-                    Text(order.order_emoji),
-                    Text(f'{time.strftime("%y-%m-%d")}T{time.strftime("%H:%M:%S")}'),
-                    Text(order.broker, justify="left"),
-                    Text(f'[{order.region}]{order.symbol}', justify="left"),
-                    Text(f'{order.direction}#{order.level}', justify="left"),
-                    Text(f'{limit_price}', justify="right"),
-                    Text(FormatTool.pretty_number(order.qty), justify="right"),
-                    Text(
-                        f'{FormatTool.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision)}',
-                        justify="right"),
-                    Text(f'{FormatTool.pretty_number(order.filled_qty)}', justify="right"),
-                )
-            table.refresh(layout=True)
+            if switch:
+                self.switch_screen('OrderScreen')
+            else:
+                screen = self.query_one(OrderScreen)
+                screen.pairs_list = PAIRS_LIST
         except NoMatches as ex:
             pass
 
@@ -241,7 +370,7 @@ class HODL(App):
         self.run_worker(self.worker(), exclusive=True)
 
     def compose(self) -> ComposeResult:
-        yield Header(name='HODL', show_clock=True)
+        yield HodlHeader(name='HODL', show_clock=True)
         yield Footer()
 
     async def worker(self):

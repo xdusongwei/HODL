@@ -43,6 +43,7 @@ test = [
 ]
 tui = [
     "textual>=0.28.1",
+    "win10toast>=0.9; sys_platform == 'win32'",
 ]
 
 [tool]
