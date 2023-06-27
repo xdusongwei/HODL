@@ -78,11 +78,14 @@ class InteractiveBrokers(BrokerApiBase):
             ib_socket = InteractiveBrokers.GATEWAY_SOCKET
             if ib_socket:
                 try:
-                    with self.ACCOUNT_BUCKET:
-                        AsyncProxyThread.call(ib_socket.accountSummaryAsync(account=self.account_id()))
+                    ib_dt = AsyncProxyThread.call_coro_func(ib_socket.reqCurrentTimeAsync)
+                    now = TimeTools.us_time_now(tz='UTC')
+                    if TimeTools.timedelta(ib_dt, seconds=15) <= now:
+                        raise TimeoutError
                     assert ib_socket.isConnected()
                     return
                 except Exception as e:
+                    print(f'has error {e}')
                     pass
             if ib_socket:
                 ib_socket.disconnect()

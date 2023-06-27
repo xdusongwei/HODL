@@ -18,12 +18,14 @@
                     <tr>
                         <th scope="col" class="text-end">#</th>
                         <th scope="col">时间</th>
+                        <th scope="col">通道</th>
+                        <th scope="col">名称</th>
                         <th scope="col">标的</th>
                         <th scope="col">方向</th>
                         <th scope="col" class="text-end">订单价</th>
-                        <th scope="col" class="text-end d-none d-sm-table-cell">订单量</th>
-                        <th scope="col" class="text-end d-none d-sm-table-cell">成交价</th>
-                        <th scope="col" class="text-end d-none d-sm-table-cell">成交量</th>
+                        <th scope="col" class="text-end">订单量</th>
+                        <th scope="col" class="text-end">成交价</th>
+                        <th scope="col" class="text-end">成交量</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -40,12 +42,30 @@
                             <span class="badge bg-secondary">{{ FMT.pretty_dt(order.create_timestamp, region=order.region,
                                 with_year=True, with_tz=False)[11:-10] }}</span>
                         </td>
+                        <td>
+                            {% set text = '--' %}
+                            {% for state in state_list %}
+                                {% if state.trade_broker == order.broker and state.quote_symbol == order.symbol %}
+                                    {% set text = state.trade_broker_display %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ text }}
+                        </td>
+                        <td>
+                            {% set text = '--' %}
+                            {% for state in state_list %}
+                                {% if state.trade_broker == order.broker and state.quote_symbol == order.symbol %}
+                                    {% set text = state.name %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ text }}
+                        </td>
                         <td>[{{ order.region }}]{{ order.symbol }}</td>
                         <td>{{ order.direction }}#{{ order.level }}</td>
                         <td class="text-end">{{ FMT.pretty_usd(order.limit_price, currency=order.currency, precision=order.precision) if order.order_type == 'limit' else '市价' }}</td>
-                        <td class="text-end d-none d-sm-table-cell">{{ FMT.pretty_number(order.qty) }}</td>
-                        <td class="text-end d-none d-sm-table-cell">{{ FMT.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision) }}</td>
-                        <td class="text-end d-none d-sm-table-cell">{{ FMT.pretty_number(order.filled_qty) }}</td>
+                        <td class="text-end">{{ FMT.pretty_number(order.qty) }}</td>
+                        <td class="text-end">{{ FMT.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision) }}</td>
+                        <td class="text-end">{{ FMT.pretty_number(order.filled_qty) }}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
