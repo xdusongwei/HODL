@@ -207,35 +207,6 @@ class StoreScreen(Screen):
 
 class OrderScreen(Screen):
     pairs_list: reactive[list[tuple[dict, dict, StoreConfig, State]]] = reactive(list)
-    order_filled_dict: dict[str, bool] = dict()
-    windows_notification_client = None
-
-    def _notify_filled_msg(self, order: Order, state: State):
-        try:
-            if sys.platform != 'win32':
-                return
-            if self.windows_notification_client is None:
-                from win10toast import ToastNotifier
-                self.windows_notification_client = ToastNotifier()
-            direction = order.direction
-            price = FormatTool.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision)
-            qty = FormatTool.pretty_number(order.filled_qty)
-            msg = f'[{state.full_name} {direction} {price}@{qty}成交'
-            args = dict(
-                title='HODL',
-                msg=msg,
-                duration=8,
-                threaded=False,
-            )
-            thread = threading.Thread(
-                name=f'orderFilled:{order.unique_id}',
-                daemon=True,
-                target=self.windows_notification_client.show_toast,
-                kwargs=args,
-            )
-            thread.start()
-        except Exception as ex:
-            pass
 
     def on_screen_resume(self):
         global PAIRS_LIST
@@ -254,11 +225,6 @@ class OrderScreen(Screen):
             table.clear()
             for idx, item in enumerate(orders):
                 order, state = item
-                if order.unique_id not in self.order_filled_dict:
-                    self.order_filled_dict[order.unique_id] = order.is_filled
-                if order.is_filled and not self.order_filled_dict.get(order.unique_id):
-                    self.order_filled_dict[order.unique_id] = order.is_filled
-                    self._notify_filled_msg(order=order, state=state)
                 tz = TimeTools.region_to_tz(order.region)
                 time = TimeTools.from_timestamp(order.create_timestamp, tz=tz)
                 date = TimeTools.us_time_now(tz=tz)
@@ -334,6 +300,35 @@ class HODL(App):
         ("a", "auto_play", "滚动模式"),
         Binding("q", "quit", "退出", priority=True),
     ]
+    order_filled_dict: dict[str, bool] = dict()
+    windows_notification_client = None
+
+    def _notify_filled_msg(self, order: Order, state: State):
+        try:
+            if sys.platform != 'win32':
+                return
+            if self.windows_notification_client is None:
+                from win10toast import ToastNotifier
+                self.windows_notification_client = ToastNotifier()
+            direction = order.direction
+            price = FormatTool.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision)
+            qty = FormatTool.pretty_number(order.filled_qty)
+            msg = f'[{state.full_name} {direction} {price}@{qty}成交'
+            args = dict(
+                title='HODL',
+                msg=msg,
+                duration=8,
+                threaded=False,
+            )
+            thread = threading.Thread(
+                name=f'orderFilled:{order.unique_id}',
+                daemon=True,
+                target=self.windows_notification_client.show_toast,
+                kwargs=args,
+            )
+            thread.start()
+        except Exception as ex:
+            pass
 
     def action_home_page(self, switch=True):
         global PAIRS_LIST
@@ -393,6 +388,18 @@ class HODL(App):
 
                 self.action_home_page(switch=False)
                 self.action_order_page(switch=False)
+
+                orders: list[tuple[Order, State]] = list()
+                for thread, store, config, state in pairs_list:
+                    items = [(order, state,) for order in state.plan.orders]
+                    orders.extend(items)
+                for item in orders:
+                    order, state = item
+                    if order.unique_id not in self.order_filled_dict:
+                        self.order_filled_dict[order.unique_id] = order.is_filled
+                    if order.is_filled and not self.order_filled_dict.get(order.unique_id):
+                        self.order_filled_dict[order.unique_id] = order.is_filled
+                        self._notify_filled_msg(order=order, state=state)
             except Exception as ex:
                 pass
             await asyncio.sleep(tui_config.period_seconds)
