@@ -28,7 +28,6 @@ class JsonWriterThread(ThreadMixin):
 
     def run(self):
         super(JsonWriterThread, self).run()
-        d = dict()
         sleep_secs = self.sleep_secs
         stores: list[Store] = self.find_by_type(Store)
         pid = os.getpid()
@@ -39,40 +38,38 @@ class JsonWriterThread(ThreadMixin):
                 return
             locks = list()
             try:
-                for store in stores:
-                    is_locked = store.lock.acquire(timeout=4)
-                    if not is_locked:
-                        raise LockError
-                    locks.append(store.lock)
-                ms = self.market_status_proxy.all_status or dict()
-                ms = {broker_type.BROKER_NAME: detail for broker_type, detail in ms.items()}
-                d = {
-                    'type': 'manager',
-                    'pid': pid,
-                    'time': FormatTool.adjust_precision(TimeTools.us_time_now().timestamp(), precision=3),
-                    'storeSleepSecs': sleep_secs,
-                    'marketStatus': ms,
-                    'items': [
-                        {
-                            'symbol': store.store_config.symbol,
-                            'thread': {
-                                'name': store.current_thread.name,
-                                'id': store.current_thread.native_id,
-                                'dead': not store.current_thread.is_alive(),
-                            },
-                            'store': {
-                                'state': store.state,
-                                'exception': str(store.exception or ''),
-                                'hasDb': bool(store.db),
-                                'hasAlertBot': store.bot.is_alive,
-                                'processTime': store.process_time,
-                            },
-                            'config': store.store_config.copy(),
-                        }
-                        for store in stores if store.state and store.store_config.visible],
-                }
-            except LockError as ex:
-                return
+                    with Store.STORES_LOCK:
+                        for store in stores:
+                            lock = store.lock
+                            lock.acquire()
+                            locks.append(lock)
+                    ms = self.market_status_proxy.all_status or dict()
+                    ms = {broker_type.BROKER_NAME: detail for broker_type, detail in ms.items()}
+                    d = {
+                        'type': 'manager',
+                        'pid': pid,
+                        'time': FormatTool.adjust_precision(TimeTools.us_time_now().timestamp(), precision=3),
+                        'storeSleepSecs': sleep_secs,
+                        'marketStatus': ms,
+                        'items': [
+                            {
+                                'symbol': store.store_config.symbol,
+                                'thread': {
+                                    'name': store.current_thread.name,
+                                    'id': store.current_thread.native_id,
+                                    'dead': not store.current_thread.is_alive(),
+                                },
+                                'store': {
+                                    'state': store.state,
+                                    'exception': str(store.exception or ''),
+                                    'hasDb': bool(store.db),
+                                    'hasAlertBot': store.bot.is_alive,
+                                    'processTime': store.process_time,
+                                },
+                                'config': store.store_config.copy(),
+                            }
+                            for store in stores if store.state and store.store_config.visible],
+                    }
             finally:
                 for lock in locks:
                     lock.release()

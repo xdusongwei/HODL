@@ -4,10 +4,6 @@ class ConfigReadError(ValueError):
     pass
 
 
-class LockError(ValueError):
-    pass
-
-
 class BotError(ValueError):
     @property
     def thread_killer(self) -> bool:
@@ -33,10 +29,6 @@ class QuoteOutdatedError(PrepareError):
 
 
 class QuoteFieldError(PrepareError):
-    pass
-
-
-class IbkrConidMissingError(PrepareError):
     pass
 
 
@@ -74,13 +66,11 @@ class BrokerMismatchError(BotError):
 
 __all__ = [
     'ConfigReadError',
-    'LockError',
     'BotError',
     'PrepareError',
     'PlugInError',
     'QuoteOutdatedError',
     'QuoteFieldError',
-    'IbkrConidMissingError',
     'QuoteScheduleOver',
     'OrderOutdatedError',
     'OrderRefreshError',
