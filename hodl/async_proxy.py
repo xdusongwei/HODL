@@ -15,11 +15,31 @@ class AsyncProxyThread(ThreadMixin):
     LOCK = threading.RLock()
     THREAD = None
     INSTANCE = None
+    COUNTER_CORO_FUNC = 0
+    COUNTER_FROM_SYNC = 0
+    COUNTER_CALL = 0
 
     def __init__(self):
         self.loop: asyncio.AbstractEventLoop = None
         self.ready = threading.Event()
         AsyncProxyThread.INSTANCE = self
+
+    def primary_bar(self) -> list[BarElementDesc]:
+        bar = [
+            BarElementDesc(
+                content=f'call: {AsyncProxyThread.COUNTER_CALL}',
+                tooltip=f'异步函数处理量',
+            ),
+            BarElementDesc(
+                content=f'future: {AsyncProxyThread.COUNTER_CORO_FUNC}',
+                tooltip=f'Future构造函数处理量',
+            ),
+            BarElementDesc(
+                content=f'sync: {AsyncProxyThread.COUNTER_FROM_SYNC}',
+                tooltip=f'阻塞函数处理量',
+            ),
+        ]
+        return bar
 
     @classmethod
     def instance(cls) -> Self:
@@ -53,6 +73,7 @@ class AsyncProxyThread(ThreadMixin):
                     resp.ex = ex
                 finally:
                     evt.set()
+                    AsyncProxyThread.COUNTER_CORO_FUNC += 1
 
             instance.loop.call_soon_threadsafe(
                 instance.loop.create_task, _aio_wrap()
@@ -85,6 +106,7 @@ class AsyncProxyThread(ThreadMixin):
                 resp.ex = ex
             finally:
                 evt.set()
+                AsyncProxyThread.COUNTER_FROM_SYNC += 1
 
         instance.loop.call_soon_threadsafe(
             _wrap, response,
@@ -114,6 +136,7 @@ class AsyncProxyThread(ThreadMixin):
                     resp.ex = ex
                 finally:
                     evt.set()
+                    AsyncProxyThread.COUNTER_CALL += 1
 
             instance.loop.call_soon_threadsafe(
                 instance.loop.create_task, _aio_wrap()

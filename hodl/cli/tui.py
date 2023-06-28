@@ -82,9 +82,9 @@ class StorePanel(Widget):
             args = list()
             args.append('昨收')
             args.append('开盘')
-            if config.get('basePriceLastBuy'):
+            if config.base_price_last_buy:
                 args.append('买回')
-            if config.get('basePriceDayLow'):
+            if config.base_price_day_low:
                 args.append('日低')
             tags.append(f'{state.bp_function}({",".join(args)})')
             text.append(f'策略: {"|".join(tags)}\n')
@@ -147,7 +147,8 @@ class PlanPanel(Widget):
                 earning = profit_tool.earning_forecast(rate=total_rate)
                 earning = FormatTool.pretty_price(earning, config=config, only_int=True)
                 level = f'{profit_tool.filled_level}/{len(profit_tool.rows)}'
-                text.append(f'{id_title}#{level} 💰{earning}\n')
+                text.append(f'{id_title}#{level} ')
+                text.append(f'💰{earning}\n', style='bright_green')
             else:
                 if rework_price := state.plan.rework_price:
                     rework_price = FormatTool.pretty_price(rework_price, config=config)
@@ -161,20 +162,35 @@ class PlanPanel(Widget):
                     text.append(f'{id_title} ⚓️{base_price}{tp_text}\n')
 
             sell_at = sell_percent = buy_at = buy_percent = None
+            sell_percent_color = buy_percent_color = 'red'
             if profit_tool.has_table:
                 sell_at = profit_tool.sell_at
                 sell_percent = profit_tool.sell_percent
+                if sell_percent is not None:
+                    if sell_percent < 0.05:
+                        sell_percent_color = 'yellow1'
+                    if sell_percent < 0.01:
+                        sell_percent_color = 'bright_green'
                 buy_at = profit_tool.buy_at
                 buy_percent = profit_tool.buy_percent
+                if buy_percent is not None:
+                    if buy_percent < 0.05:
+                        buy_percent_color = 'yellow1'
+                    if buy_percent < 0.01:
+                        buy_percent_color = 'bright_green'
             sell_percent = FormatTool.factor_to_percent(sell_percent, fmt='{:.1%}')
             buy_percent = FormatTool.factor_to_percent(buy_percent, fmt='{:.1%}')
             text.append(f'卖出价: {FormatTool.pretty_price(sell_at, config=config)}')
             if profit_tool.sell_percent is not None:
-                text.append(f'(距离{sell_percent})')
+                text.append(f'(距离')
+                text.append(sell_percent, style=sell_percent_color)
+                text.append(f')')
             text.append('\n')
             text.append(f'买回价: {FormatTool.pretty_price(buy_at, config=config)}')
             if profit_tool.buy_percent is not None:
-                text.append(f'(距离{buy_percent})')
+                text.append(f'(距离')
+                text.append(buy_percent, style=buy_percent_color)
+                text.append(f')')
             text.append('\n')
 
             parts.append(text)

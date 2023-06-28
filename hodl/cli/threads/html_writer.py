@@ -3,6 +3,7 @@ import datetime
 import dataclasses
 import traceback
 import pytz
+from hodl.exception_tools import *
 from hodl.storage import *
 from hodl.store import Store
 from hodl.thread_mixin import *
@@ -142,7 +143,9 @@ class HtmlWriterThread(ThreadMixin):
 
             store_list: list[Store] = [store for store in stores if store.store_config.visible]
             for store in store_list:
-                store.lock.acquire()
+                is_locked = store.lock.acquire(timeout=4)
+                if not is_locked:
+                    raise LockError
                 locks.append(store.lock)
             new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
             if self.current_hash != new_hash:

@@ -29,7 +29,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% set state_list = store_list|map(attribute='state') %}
+                    {% set state_list = store_list|map(attribute='state')|list %}
                     {% set plan_list = state_list|map(attribute='template_plan') %}
                     {% set order_list = plan_list|map(attribute='orders')|sum(start=[]) %}
                     {% set orders = order_list|sort(attribute="create_timestamp", reverse=True) %}
@@ -43,22 +43,18 @@
                                 with_year=True, with_tz=False)[11:-10] }}</span>
                         </td>
                         <td>
-                            {% set text = '--' %}
                             {% for state in state_list %}
                                 {% if state.trade_broker == order.broker and state.quote_symbol == order.symbol %}
-                                    {% set text = state.trade_broker_display %}
+                                    {{ state.trade_broker_display }}
                                 {% endif %}
                             {% endfor %}
-                            {{ text }}
                         </td>
                         <td>
-                            {% set text = '--' %}
                             {% for state in state_list %}
                                 {% if state.trade_broker == order.broker and state.quote_symbol == order.symbol %}
-                                    {% set text = state.name %}
+                                    {{ state.name }}
                                 {% endif %}
                             {% endfor %}
-                            {{ text }}
                         </td>
                         <td>[{{ order.region }}]{{ order.symbol }}</td>
                         <td>{{ order.direction }}#{{ order.level }}</td>

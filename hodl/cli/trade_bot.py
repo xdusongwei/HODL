@@ -162,8 +162,6 @@ class Manager(ThreadMixin):
         Manager.JSON_THREAD = JsonWriterThread(
             sleep_secs=var.sleep_limit,
             ms_proxy=ms_proxy,
-            ms_thread=Manager.MARKET_STATUS_THREAD,
-            html_thread=Manager.HTML_THREAD,
         ).start(
             name='jsonWriter',
         )

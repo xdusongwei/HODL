@@ -264,7 +264,7 @@ class StoreBase(ThreadMixin):
         bar = list()
         plan = state.plan
 
-        if config.get('lockPosition') or config.lock_position:
+        if config.lock_position:
             lock_position = '🔒'
             bar.append(BarElementDesc(content=lock_position, tooltip='持仓量核对已纳入风控，不可随时加仓'))
 
@@ -301,7 +301,7 @@ class StoreBase(ThreadMixin):
             price_rate_text = f'🎢{FormatTool.factor_to_percent(price_rate)}'
             bar.append(BarElementDesc(content=price_rate_text, tooltip='按缩放系数重新调整买卖价格的幅度'))
 
-        if rate := config.get('marketPriceRate') or config.market_price_rate:
+        if rate := config.market_price_rate:
             market_price_set = '⚡'
             tooltip = f'市场价格偏离超过预期幅度{FormatTool.factor_to_percent(rate)}触发市价单'
             bar.append(BarElementDesc(content=market_price_set, tooltip=tooltip))
