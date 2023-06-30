@@ -45,9 +45,10 @@ class CiticsRestApi(BrokerApiBase):
         except requests.JSONDecodeError:
             return dict()
 
-    def _citics_fetch(self, uri: str) -> dict:
+    def _citics_fetch(self, uri: str, timeout: int = None) -> dict:
         base_site = self.broker_config.get('url')
-        timeout = self.broker_config.get('timeout', 20)
+        if timeout is None:
+            timeout = self.broker_config.get('timeout', 20)
         token = self.broker_config.get('token', '')
         url = urljoin(base_site, uri)
         try:
@@ -87,7 +88,7 @@ class CiticsRestApi(BrokerApiBase):
     @track_api
     def detect_plug_in(self):
         try:
-            self._citics_fetch(f'/api/citics/state?ping=1&symbol={self.symbol}')
+            self._citics_fetch(f'/api/citics/state?ping=1&symbol={self.symbol}', timeout=5)
             return True
         except Exception as e:
             return False
