@@ -45,7 +45,7 @@ class HodlHeaderClock(HeaderClock):
             time = TimeTools.us_time_now()
         time = time.isoformat(timespec='milliseconds')
         time = time[:-10]
-        return Text(f'{tz_name}: {time}', style="green")
+        return Text(f'{tz_name}: {time}', style="bright_green")
 
 
 class HodlHeaderTitle(HeaderTitle):
@@ -246,7 +246,7 @@ class OrderScreen(Screen):
                 date = TimeTools.us_time_now(tz=tz)
                 day = date.strftime('%Y-%m-%d')
                 is_today = day == order.order_day
-                style = 'grey66'
+                style = 'white'
                 if not is_today:
                     style = 'grey50'
                 limit_price = '市价'
@@ -416,8 +416,9 @@ class HODL(App):
                     if order.is_filled and not self.order_filled_dict.get(order.unique_id):
                         self.order_filled_dict[order.unique_id] = order.is_filled
                         self._notify_filled_msg(order=order, state=state)
+                self.query_one(HodlHeaderTitle).sub_text = ''
             except Exception as ex:
-                pass
+                self.query_one(HodlHeaderTitle).sub_text = '无连接'
             await asyncio.sleep(tui_config.period_seconds)
 
 

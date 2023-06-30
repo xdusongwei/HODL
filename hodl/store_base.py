@@ -21,8 +21,6 @@ class StoreBase(ThreadMixin):
     SHOW_EXCEPTION_DETAIL = False
 
     SESSION = requests.Session()
-    # 防止锁定全部持仓对象是产生死锁，应首先竞争此锁
-    STORES_LOCK = threading.RLock()
 
     def __init__(
             self,

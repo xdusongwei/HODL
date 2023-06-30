@@ -131,7 +131,6 @@ class HtmlWriterThread(ThreadMixin):
         variable = self.variable
         currency_list = ('USD', 'CNY', 'HKD', )
         new_hash = self.current_hash
-        locks = list()
         try:
             html_file_path = variable.html_file_path
             html_manifest_path = variable.html_manifest_path
@@ -142,11 +141,6 @@ class HtmlWriterThread(ThreadMixin):
             self._sort_stores(stores)
 
             store_list: list[Store] = [store for store in stores if store.store_config.visible]
-            with Store.STORES_LOCK:
-                for store in store_list:
-                    lock = store.lock
-                    lock.acquire()
-                    locks.append(lock)
             new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
             if self.current_hash != new_hash:
                 if db:
@@ -192,8 +186,6 @@ class HtmlWriterThread(ThreadMixin):
             traceback.print_exc()
         finally:
             self.current_hash = new_hash
-            for lock in locks:
-                lock.release()
 
     def run(self):
         super(HtmlWriterThread, self).run()
