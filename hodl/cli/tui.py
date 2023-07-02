@@ -6,7 +6,7 @@ from rich.align import Align
 from rich.console import Group
 from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.containers import Vertical
+from textual.containers import Vertical, HorizontalScroll, Container, Grid
 from textual.css.query import NoMatches
 from textual.screen import Screen
 from textual.widget import Widget
@@ -21,6 +21,7 @@ from textual.widgets._header import HeaderClock, HeaderTitle, HeaderClockSpace
 
 
 PAIRS_LIST: list[tuple[dict, dict, StoreConfig, State]] = list()
+RECENT_EARNINGS_LIST: list[dict] = list()
 
 
 def default_style(state: State):
@@ -118,7 +119,7 @@ class StatusPanel(Widget):
             text = Text(style=default_color)
             text.append(f'[{config.region}]{config.symbol} {dt}\n')
             text.append(f'报价: ')
-            text.append(f'{latest}({rate})\n', style=color)
+            text.append(f'{latest} {rate}\n', style=color)
             buff_bar = StoreBase.buff_bar(
                 config=config,
                 state=state,
@@ -145,10 +146,17 @@ class PlanPanel(Widget):
             if profit_tool.has_table and profit_tool.filled_level:
                 total_rate = profit_tool.rows.row_by_level(profit_tool.filled_level).total_rate
                 earning = profit_tool.earning_forecast(rate=total_rate)
-                earning = FormatTool.pretty_price(earning, config=config, only_int=True)
+                earning_text = FormatTool.pretty_price(earning, config=config, only_int=True)
                 level = f'{profit_tool.filled_level}/{len(profit_tool.rows)}'
                 text.append(f'{id_title}#{level} ')
-                text.append(f'💰{earning}\n', style='bright_green')
+                icon = '🪙'
+                if earning >= 500:
+                    icon = '💰'
+                if earning >= 1000:
+                    icon = '💵'
+                if earning >= 2000:
+                    icon = '💎'
+                text.append(f'{icon}{earning_text}\n', style='bright_green')
             else:
                 if rework_price := state.plan.rework_price:
                     rework_price = FormatTool.pretty_price(rework_price, config=config)
@@ -182,15 +190,13 @@ class PlanPanel(Widget):
             buy_percent = FormatTool.factor_to_percent(buy_percent, fmt='{:.1%}')
             text.append(f'卖出价: {FormatTool.pretty_price(sell_at, config=config)}')
             if profit_tool.sell_percent is not None:
-                text.append(f'(距离')
+                text.append(f' 距离')
                 text.append(sell_percent, style=sell_percent_color)
-                text.append(f')')
             text.append('\n')
             text.append(f'买回价: {FormatTool.pretty_price(buy_at, config=config)}')
             if profit_tool.buy_percent is not None:
-                text.append(f'(距离')
+                text.append(f' 距离')
                 text.append(buy_percent, style=buy_percent_color)
-                text.append(f')')
             text.append('\n')
 
             parts.append(text)
@@ -206,13 +212,13 @@ class StoreScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield HodlHeader(name='HODL', show_clock=True)
-        store = Vertical(classes="box", id='ssStore')
+        store = Vertical(classes="hPanel", id='ssStore')
         store.border_title = '持仓'
         store.mount(StorePanel())
-        quote = Vertical(classes="box", id='ssQuote')
+        quote = Vertical(classes="hPanel", id='ssQuote')
         quote.border_title = '状态'
         quote.mount(StatusPanel())
-        plan = Vertical(classes="box", id='ssPlan')
+        plan = Vertical(classes="hPanel", id='ssPlan')
         plan.border_title = '计划'
         plan.mount(PlanPanel())
         yield store
@@ -294,12 +300,43 @@ class OrderScreen(Screen):
         yield Footer()
 
 
+class EarningItem(Static):
+    d: reactive[dict] = reactive(dict)
+
+    def render(self):
+        currency = self.d.get('currency', None)
+        earning = self.d.get('earning', None)
+        symbol = self.d.get('symbol', None)
+        region = self.d.get('region', None)
+        day = self.d.get('day', None)
+        name = self.d.get('name', None)
+        text = Text()
+        text.append(f'{FormatTool.pretty_usd(earning, currency=currency, only_int=True)}\n', style='green')
+        if region and symbol:
+            text.append(f'[{region}]{symbol}\n')
+        else:
+            text.append(f'{name}{currency}\n')
+        text.append(f'完成日期: {day}')
+        return text
+
+
 class EarningScreen(Screen):
+    recent_earnings_list: reactive[list[dict]] = reactive(list)
+
     def compose(self) -> ComposeResult:
+        global RECENT_EARNINGS_LIST
         yield HodlHeader(name='HODL', show_clock=True)
-        earning = Static("收益", classes="box")
-        yield earning
+        with Container():
+            with Grid(classes='earningGrid'):
+                for d in RECENT_EARNINGS_LIST:
+                    widget = EarningItem(classes='earningItem')
+                    widget.d = d
+                    yield widget
         yield Footer()
+
+    def render(self):
+        global RECENT_EARNINGS_LIST
+        return f'{len(RECENT_EARNINGS_LIST)}'
 
 
 class HODL(App):
@@ -310,9 +347,9 @@ class HODL(App):
         "EarningScreen": EarningScreen(),
     }
     BINDINGS = [
-        ("h", "home_page()", "持仓"),
-        ("o", "order_page()", "订单"),
-        ("e", "earning_page()", "收益"),
+        ("h", "home_page", "持仓"),
+        ("o", "order_page", "订单"),
+        ("e", "earning_page", "收益"),
         ("a", "auto_play", "滚动模式"),
         Binding("q", "quit", "退出", priority=True),
     ]
@@ -329,7 +366,7 @@ class HODL(App):
             direction = order.direction
             price = FormatTool.pretty_usd(order.avg_price, currency=order.currency, precision=order.precision)
             qty = FormatTool.pretty_number(order.filled_qty)
-            msg = f'[{state.full_name} {direction} {price}@{qty}成交'
+            msg = f'🎉{state.full_name} {direction} {price}@{qty}已成交'
             args = dict(
                 title='HODL',
                 msg=msg,
@@ -370,21 +407,29 @@ class HODL(App):
             pass
 
     def action_earning_page(self, switch=True):
-        if switch:
-            self.switch_screen('EarningScreen')
+        global RECENT_EARNINGS_LIST
+        try:
+            if switch:
+                self.switch_screen('EarningScreen')
+            else:
+                screen = self.query_one(EarningScreen)
+                screen.recent_earnings_list = RECENT_EARNINGS_LIST
+        except NoMatches as ex:
+            pass
 
     def action_auto_play(self):
         pass
 
     def on_mount(self) -> None:
         self.push_screen('StoreScreen')
-        self.run_worker(self.worker(), exclusive=True)
+        self.run_worker(self.state_worker())
+        self.run_worker(self.earning_worker())
 
     def compose(self) -> ComposeResult:
         yield HodlHeader(name='HODL', show_clock=True)
         yield Footer()
 
-    async def worker(self):
+    async def state_worker(self):
         global PAIRS_LIST
         var = VariableTools()
         tui_config = var.tui_config
@@ -392,6 +437,8 @@ class HODL(App):
         while True:
             try:
                 url = tui_config.manager_url
+                if not url:
+                    continue
                 response = await session.get(url)
                 d = response.json()
                 resp_items = d.get('items', list())
@@ -419,7 +466,28 @@ class HODL(App):
                 self.query_one(HodlHeaderTitle).sub_text = ''
             except Exception as ex:
                 self.query_one(HodlHeaderTitle).sub_text = '无连接'
-            await asyncio.sleep(tui_config.period_seconds)
+            finally:
+                await asyncio.sleep(tui_config.period_seconds)
+
+    async def earning_worker(self):
+        global RECENT_EARNINGS_LIST
+        var = VariableTools()
+        tui_config = var.tui_config
+        session = httpx.AsyncClient(timeout=tui_config.period_seconds, http2=True, trust_env=False)
+        while True:
+            try:
+                url = tui_config.earning_url
+                if not url:
+                    continue
+                response = await session.get(url)
+                d = response.json()
+                recent_earnings: list[dict] = d.get('recentEarnings', list())
+                RECENT_EARNINGS_LIST = recent_earnings
+                self.action_earning_page(switch=False)
+            except Exception as ex:
+                pass
+            finally:
+                await asyncio.sleep(tui_config.period_seconds * 4)
 
 
 if __name__ == "__main__":

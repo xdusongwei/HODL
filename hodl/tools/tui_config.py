@@ -9,6 +9,10 @@ class TuiConfig(dict):
         return self.get('manager_url')
 
     @property
+    def earning_url(self):
+        return self.get('earning_url')
+
+    @property
     def profit_url(self):
         """
         profit json文件的url地址，这是tui命令必要的

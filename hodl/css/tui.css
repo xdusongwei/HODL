@@ -2,9 +2,20 @@ Screen {
     layout: horizontal;
 }
 
-.box {
+.hPanel {
     height: 100%;
     width: 1fr;
     border: solid yellow;
     opacity: 70%;
+}
+
+.earningItem {
+    height: 1fr;
+    width: 1fr;
+    border: solid yellow;
+}
+
+.earningGrid {
+    layout: grid;
+    grid-size: 3;
 }
