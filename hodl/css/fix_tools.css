@@ -1,0 +1,22 @@
+IndexScreen {
+    align: center middle;
+}
+
+OrderLinkScreen {
+    layout: vertical;
+}
+
+.container {
+    align-horizontal: center;
+}
+
+.indexListView {
+    width: 30;
+    height: auto;
+    margin: 2 2;
+}
+
+.indexLabel {
+    padding: 1 2;
+    width: 100%;
+}

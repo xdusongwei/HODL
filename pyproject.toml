@@ -61,8 +61,8 @@ test = {cmd = "pdm run coverage run --source=./hodl -m pytest --disable-pytest-w
 html = {cmd = "pdm run coverage html"}
 report = {cmd = "pdm run coverage report"}
 xml = {cmd = "pdm run coverage xml"}
+fixtools = {cmd = "pdm run python -m hodl.cli.fix_tools"}
 shootoff = {cmd = "pdm run python -m hodl.cli.shoot_off"}
-orderlink = {cmd = "pdm run python -m hodl.cli.order_link"}
 earninglink = {cmd = "pdm run python -m hodl.cli.earning_link"}
 refreshearnings = {cmd = "pdm run python -m hodl.cli.refresh_earnings"}
 cashdividend = {cmd = "pdm run python -m hodl.cli.cash_dividend"}

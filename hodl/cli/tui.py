@@ -6,18 +6,18 @@ from rich.align import Align
 from rich.console import Group
 from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.containers import Vertical, HorizontalScroll, Container, Grid
+from textual.containers import Vertical, Container, Grid
 from textual.css.query import NoMatches
 from textual.screen import Screen
 from textual.widget import Widget
 from textual.widgets import Header, Footer, DataTable, Static
 from textual.binding import Binding
 from textual.reactive import reactive
+from textual.widgets._header import HeaderClock, HeaderTitle, HeaderClockSpace
 from hodl.store import *
 from hodl.tools import *
 from hodl.state import *
 from hodl.store_base import *
-from textual.widgets._header import HeaderClock, HeaderTitle, HeaderClockSpace
 
 
 PAIRS_LIST: list[tuple[dict, dict, StoreConfig, State]] = list()
@@ -133,6 +133,17 @@ class StatusPanel(Widget):
 class PlanPanel(Widget):
     pairs_list: reactive[list[tuple[dict, dict, StoreConfig, State]]] = reactive(list)
 
+    @classmethod
+    def cash_to_emoji(cls, n: int):
+        icon = '🪙'
+        if n >= 500:
+            icon = '💰'
+        if n >= 1000:
+            icon = '💵'
+        if n >= 2000:
+            icon = '💎'
+        return icon
+
     def render(self):
         parts = list()
         for item in self.pairs_list:
@@ -149,18 +160,19 @@ class PlanPanel(Widget):
                 earning_text = FormatTool.pretty_price(earning, config=config, only_int=True)
                 level = f'{profit_tool.filled_level}/{len(profit_tool.rows)}'
                 text.append(f'{id_title}#{level} ')
-                icon = '🪙'
-                if earning >= 500:
-                    icon = '💰'
-                if earning >= 1000:
-                    icon = '💵'
-                if earning >= 2000:
-                    icon = '💎'
-                text.append(f'{icon}{earning_text}\n', style='bright_green')
+                icon = self.cash_to_emoji(earning)
+                text.append(f'预计{icon}{earning_text}\n', style='bright_green')
             else:
-                if rework_price := state.plan.rework_price:
-                    rework_price = FormatTool.pretty_price(rework_price, config=config)
-                    text.append(f'{id_title} 🔁{rework_price}\n')
+                text.append(id_title)
+                if earning := state.plan.earning:
+                    icon = self.cash_to_emoji(earning)
+                    earning_text = FormatTool.pretty_price(earning, config=config, only_int=True)
+                    earning_text = f' 套利{icon}{earning_text}'
+                    text.append(f'{earning_text}', style='bright_green')
+                    if rework_price := state.plan.rework_price:
+                        rework_price = FormatTool.pretty_price(rework_price, config=config)
+                        text.append(f' 🔁{rework_price}')
+                    text.append(f'\n')
                 else:
                     tp_text = ''
                     if state.ta_tumble_protect_flag:
@@ -265,8 +277,8 @@ class OrderScreen(Screen):
                 table.add_row(
                     Text(order.order_emoji, style=style),
                     Text(f'{time.strftime("%y-%m-%d")}T{time.strftime("%H:%M:%S")}', style=style),
-                    Text(state.name, justify="center", style=style),
                     Text(state.trade_broker_display, justify="left", style=style),
+                    Text(state.name, justify="center", style=style),
                     Text(f'[{order.region}]{order.symbol}', justify="left", style=style),
                     Text(f'{order.direction}#{order.level}', justify="left", style=style),
                     Text(f'{limit_price}', justify="right", style=style),
@@ -355,6 +367,7 @@ class HODL(App):
     ]
     order_filled_dict: dict[str, bool] = dict()
     windows_notification_client = None
+    auto_play_on = False
 
     def _notify_filled_msg(self, order: Order, state: State):
         try:
@@ -418,12 +431,13 @@ class HODL(App):
             pass
 
     def action_auto_play(self):
-        pass
+        self.auto_play_on = not self.auto_play_on
 
     def on_mount(self) -> None:
         self.push_screen('StoreScreen')
         self.run_worker(self.state_worker())
         self.run_worker(self.earning_worker())
+        self.run_worker(self.auto_play_worker())
 
     def compose(self) -> ComposeResult:
         yield HodlHeader(name='HODL', show_clock=True)
@@ -488,6 +502,22 @@ class HODL(App):
                 pass
             finally:
                 await asyncio.sleep(tui_config.period_seconds * 4)
+
+    async def auto_play_worker(self):
+        actions = [
+            self.action_home_page,
+            self.action_order_page,
+            self.action_earning_page,
+        ]
+        idx = 0
+        assert actions
+        while True:
+            if self.auto_play_on:
+                func = actions[idx]
+                func()
+            await asyncio.sleep(16)
+            idx += 1
+            idx %= len(actions)
 
 
 if __name__ == "__main__":

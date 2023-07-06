@@ -12,6 +12,13 @@ class TradeStrategyEnum(enum.Enum):
 
 class StoreConfig(dict):
     @property
+    def group(self) -> str:
+        """
+        持仓的分组识别名，如果这个系统工作于多个用户，需要彼此隔离数据，此处可以分别将各种持仓标识成组
+        """
+        return self.get('group', 'default')
+
+    @property
     def region(self) -> str:
         """
         证券市场所属地区

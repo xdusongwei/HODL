@@ -91,6 +91,7 @@ class TigerApi(BrokerApiBase):
     BROKER_NAME = 'tiger'
     BROKER_DISPLAY = '老虎国际'
     ENABLE_BOOTING_CHECK = True
+    ORDER_ID_TYPE = int
 
     HAS_GRAB = False
     GRAB_LOCK = threading.Lock()

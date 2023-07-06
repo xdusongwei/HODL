@@ -108,6 +108,13 @@ class BrokerApiBase(BrokerApiMixin):
     """
     ENABLE_BOOTING_CHECK = False
 
+    """
+    交易通道的订单编号数据类型，
+    默认订单号是字符串，
+    如果有些交易通道必须使用数字型为参数，那么这个变量需要覆盖为int，以便系统存储合适的数据类型
+    """
+    ORDER_ID_TYPE = str
+
     # 该转换表用于将各通道的地区格式进行转换, 不在此表中的地区将被忽略
     MS_REGION_TABLE = {
         # futu region
