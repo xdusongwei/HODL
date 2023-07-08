@@ -308,9 +308,9 @@ class StoreConfigIndexScreen(Screen):
         if message.item is None:
             return
         elem: StoreConfigIndexScreen.ConfigListItem = message.item
-        screen: StoreConfigScreen = self.app.SCREENS['StoreConfigScreen']
+        screen = StoreConfigScreen()
         screen.config = elem.config
-        self.app.push_screen('StoreConfigScreen')
+        self.app.push_screen(screen)
 
 
 __all__ = ['StoreConfigScreen', 'StoreConfigIndexScreen', ]

@@ -15,7 +15,7 @@ class IndexScreen(Screen):
             ListItem(Label("2.补录收益信息", classes='indexLabel'), id='indexMenuEarningLink'),
             ListItem(Label("3.刷新收益json文件", classes='indexLabel'), id='indexMenuRefreshEarnings'),
             ListItem(Label("4.弹射持仓", classes='indexLabel'), id='indexMenuShootOff'),
-            ListItem(Label("0.持仓设定", classes='indexLabel'), id='indexMenuStoreConfig'),
+            ListItem(Label("0.查看持仓设定", classes='indexLabel'), id='indexMenuStoreConfig'),
             initial_index=None,
             classes='indexListView',
         )
