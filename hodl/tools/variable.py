@@ -50,12 +50,16 @@ class VariableTools:
         )
         return env
 
+    def store_config_list(self):
+        store_config_list = [StoreConfig(d) for d in self._config.get('store', dict()).values()]
+        return store_config_list
+
     @property
     def store_configs(self) -> dict[str, StoreConfig]:
         """
         所有持仓配置的字典结构
         """
-        store_config_list = [StoreConfig(d) for d in self._config.get('store', dict()).values()]
+        store_config_list = self.store_config_list()
         return {store_config.symbol: store_config for store_config in store_config_list}
 
     def store_configs_by_group(self, group_name: str = 'default') -> dict[tuple[str, str], StoreConfig]:
@@ -63,10 +67,9 @@ class VariableTools:
         根据分组返回持仓配置的字典结构，
         前面的方法有问题，一个持仓的唯一编码是由 分组名，券商通道和标的，即group, broker, symbol三元组合成的
         """
-        store_config_list = [StoreConfig(d) for d in self._config.get('store', dict()).values()]
+        store_config_list = self.store_config_list()
         return {(store_config.broker, store_config.symbol, ): store_config
                 for store_config in store_config_list if store_config.group == group_name}
-
 
     def broker_config_dict(self, name):
         """

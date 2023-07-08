@@ -521,5 +521,6 @@ class HODL(App):
 
 
 if __name__ == "__main__":
+    StoreConfig.READONLY = True
     app = HODL()
     app.run()

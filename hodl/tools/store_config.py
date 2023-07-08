@@ -11,6 +11,8 @@ class TradeStrategyEnum(enum.Enum):
 
 
 class StoreConfig(dict):
+    READONLY = False
+
     @property
     def group(self) -> str:
         """
@@ -147,7 +149,8 @@ class StoreConfig(dict):
                 symbol=self.symbol,
             )
             path = os.path.expanduser(path)
-            os.makedirs(path, exist_ok=True)
+            if not StoreConfig.READONLY:
+                os.makedirs(path, exist_ok=True)
         return path
 
     @property
@@ -329,7 +332,7 @@ class StoreConfig(dict):
         -------
 
         """
-        limit = self.get('tumble_protect_rsi_unlock_limit', None)
+        limit = self.get('tumble_protect_rsi_warning_limit', None)
         assert limit is None or 0 <= limit <= 100
         return limit
 

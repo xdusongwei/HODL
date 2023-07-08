@@ -1,4 +1,4 @@
-IndexScreen {
+IndexScreen, StoreConfigIndexScreen {
     align: center middle;
 }
 
@@ -11,7 +11,7 @@ OrderLinkScreen {
 }
 
 .indexListView {
-    width: 30;
+    width: 45;
     height: auto;
     margin: 2 2;
 }
@@ -20,3 +20,4 @@ OrderLinkScreen {
     padding: 1 2;
     width: 100%;
 }
+
