@@ -270,9 +270,30 @@ class StoreConfigScreen(Screen):
 
 
 class StoreConfigIndexScreen(Screen):
+    DEFAULT_CSS = """
+            StoreConfigIndexScreen {
+                align: center middle;
+            }
+            
+            .indexListView {
+                width: 45;
+                height: auto;
+                margin: 2 2;
+            }
+            
+            .indexLabel {
+                padding: 1 2;
+                width: 100%;
+            }
+            """
+
     BINDINGS = [
         Binding("b", "back", "返回"),
     ]
+
+    def __init__(self, config_list: list[StoreConfig] = None):
+        super().__init__()
+        self.config_list = config_list
 
     def action_back(self):
         self.app.pop_screen()
@@ -281,8 +302,12 @@ class StoreConfigIndexScreen(Screen):
         config = reactive[StoreConfig](None)
 
     def compose(self) -> ComposeResult:
-        var = VariableTools()
-        store_list = var.store_config_list()
+        if self.config_list is None:
+            var = VariableTools()
+            config_list = var.store_config_list()
+        else:
+            config_list = self.config_list
+
         yield Header(show_clock=True)
 
         items = [
@@ -291,9 +316,9 @@ class StoreConfigIndexScreen(Screen):
                     f'分组{config.group} {config.full_name}',
                     classes='indexLabel',
                 ),
-            ) for idx, config in enumerate(store_list)
+            ) for idx, config in enumerate(config_list)
         ]
-        for idx, config in enumerate(store_list):
+        for idx, config in enumerate(config_list):
             items[idx].config = config
 
         menu = ListView(

@@ -18,6 +18,7 @@ from hodl.store import *
 from hodl.tools import *
 from hodl.state import *
 from hodl.store_base import *
+from hodl.cli.fix_screens.store_config_detail import *
 
 
 PAIRS_LIST: list[tuple[dict, dict, StoreConfig, State]] = list()
@@ -363,6 +364,7 @@ class HODL(App):
         ("o", "order_page", "订单"),
         ("e", "earning_page", "收益"),
         ("a", "auto_play", "滚动模式"),
+        ("c", "view_config", "持仓配置"),
         Binding("q", "quit", "退出", priority=True),
     ]
     order_filled_dict: dict[str, bool] = dict()
@@ -395,6 +397,12 @@ class HODL(App):
             thread.start()
         except Exception as ex:
             pass
+
+    def action_view_config(self):
+        global PAIRS_LIST
+        config_list = [item[2] for item in PAIRS_LIST]
+        self.auto_play_on = False
+        self.push_screen(StoreConfigIndexScreen(config_list))
 
     def action_home_page(self, switch=True):
         global PAIRS_LIST
@@ -477,9 +485,13 @@ class HODL(App):
                     if order.is_filled and not self.order_filled_dict.get(order.unique_id):
                         self.order_filled_dict[order.unique_id] = order.is_filled
                         self._notify_filled_msg(order=order, state=state)
-                self.query_one(HodlHeaderTitle).sub_text = ''
+                if self.query(HodlHeaderTitle):
+                    header_widget = self.query_one(HodlHeaderTitle)
+                    header_widget.sub_text = ''
             except Exception as ex:
-                self.query_one(HodlHeaderTitle).sub_text = '无连接'
+                if self.query(HodlHeaderTitle):
+                    header_widget = self.query_one(HodlHeaderTitle)
+                    header_widget.sub_text = '无连接'
             finally:
                 await asyncio.sleep(tui_config.period_seconds)
 
