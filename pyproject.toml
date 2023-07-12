@@ -38,11 +38,11 @@ homepage = "https://github.com/xdusongwei/HODL"
 
 [project.optional-dependencies]
 test = [
-    "coverage>=6.3.2",
-    "pytest>=7.1.0",
+    "coverage>=7.2.7",
+    "pytest>=7.4.0",
 ]
 tui = [
-    "textual>=0.28.1",
+    "textual==0.28.1",
     "win10toast>=0.9; sys_platform == 'win32'",
 ]
 

@@ -248,7 +248,7 @@ class TradeMixin(StoreBase, ABC):
         sell_order_rate = self.store_config.sell_order_rate
         legal_rate_daily = self.store_config.legal_rate_daily
         pre_close_price = state.quote_pre_close
-        if limit_price > sell_order_rate * latest_price:
+        if limit_price * (1 - sell_order_rate) > latest_price:
             fire_state.enable_sell = False
         elif not self._legal_price_limit(
                     target_price=limit_price,
@@ -383,7 +383,7 @@ class TradeMixin(StoreBase, ABC):
             market_price_rate=fire_state.market_price_rate,
         )
         fire_state.buy_market_price = use_market_price
-        if limit_price < buy_order_rate * latest_price:
+        if limit_price * (1 + buy_order_rate) < latest_price:
             fire_state.enable_buy = False
         elif not self._legal_price_limit(
                     target_price=limit_price,

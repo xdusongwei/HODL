@@ -8,25 +8,27 @@ class SubmitOrderTestCase(unittest.TestCase):
         config = VariableTools().store_configs['TEST']
         pc = 10.0
         p0 = pc
+        p1_sell = pc * 1.03
+        p1_buy = p0
         p_not_sell = FormatTool.adjust_precision(
-            pc * 1.03 / (config.sell_order_rate + 0.001),
+            p1_sell * (1 - config.sell_order_rate - 0.001),
             precision=config.precision
         )
 
         p_submit_sell = FormatTool.adjust_precision(
-            pc * 1.03 / config.sell_order_rate,
+            p1_sell * (1 - config.sell_order_rate),
             precision=config.precision
         )
         p_sell = FormatTool.adjust_precision(
-            pc * 1.03,
+            p1_sell,
             precision=config.precision
         )
         p_not_buy = FormatTool.adjust_precision(
-            pc / (config.buy_order_rate - 0.001),
+            p1_buy * (config.buy_order_rate + 1 + 0.001),
             precision=config.precision
         )
         p_submit_buy = FormatTool.adjust_precision(
-            pc / config.buy_order_rate,
+            p1_buy * (config.buy_order_rate + 1),
             precision=config.precision
         )
         p_buy = pc
