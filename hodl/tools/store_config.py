@@ -190,26 +190,20 @@ class StoreConfig(dict):
     @property
     def buy_order_rate(self) -> float:
         """
-        如果买入价*(1+因子) >= 现价 时，才会触发下单动作
-        过去此参数以1为底，这里有一些兼容代码
+        如果 买入价 * (1 + 此因子) >= 现价 时，才会触发下单动作
         :return:
         """
         v = self.get('buy_order_rate', 0.975)
-        if abs(v) > abs(v - 1):
-            v = abs(v - 1)
         assert 0 <= v <= 1.0
         return v
 
     @property
     def sell_order_rate(self) -> float:
         """
-        如果卖出价*(1-因子) <= 现价 时，才会触发下单动作
-        过去此参数以1为底，这里有一些兼容代码
+        如果 卖出价 * (1 - 此因子) <= 现价 时，才会触发下单动作
         :return:
         """
         v = self.get('sell_order_rate', 1.025)
-        if abs(v) > abs(v - 1):
-            v = abs(v - 1)
         assert 0 <= v <= 1.0
         return v
 
