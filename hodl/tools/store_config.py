@@ -193,7 +193,7 @@ class StoreConfig(dict):
         如果 买入价 * (1 + 此因子) >= 现价 时，才会触发下单动作
         :return:
         """
-        v = self.get('buy_order_rate', 0.975)
+        v = self.get('buy_order_rate', 0.01)
         assert 0 <= v <= 1.0
         return v
 
@@ -203,7 +203,7 @@ class StoreConfig(dict):
         如果 卖出价 * (1 - 此因子) <= 现价 时，才会触发下单动作
         :return:
         """
-        v = self.get('sell_order_rate', 1.025)
+        v = self.get('sell_order_rate', 0.01)
         assert 0 <= v <= 1.0
         return v
 
