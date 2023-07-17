@@ -15,6 +15,7 @@ def default_style(state: State):
 
 class StorePanel(Widget):
     pairs_list: reactive[list[tuple[dict, dict, StoreConfig, State]]] = reactive(list)
+    tui_config = VariableTools().tui_config
 
     def render(self):
         parts = list()
@@ -23,7 +24,10 @@ class StorePanel(Widget):
             thread, store, config, state = item
             default_color = default_style(state)
             text = Text(style=default_color)
-            text.append(f'[{state.trade_broker_display}]{config.symbol} {config.name}\n')
+            if self.tui_config.show_broker_display:
+                text.append(f'[{state.trade_broker_display}]{config.symbol} {config.name}\n')
+            else:
+                text.append(f'[{config.region}]{config.symbol} {config.name}\n')
 
             tags = list()
             prudent = '惜售' if state.plan.prudent else '超卖'
@@ -135,6 +139,8 @@ class PlanPanel(Widget):
                 sell_at = profit_tool.sell_at
                 sell_percent = profit_tool.sell_percent
                 if sell_percent is not None:
+                    if sell_percent < 0.10:
+                        sell_percent_color = 'orange3'
                     if sell_percent < 0.05:
                         sell_percent_color = 'yellow1'
                     if sell_percent < 0.01:
@@ -142,6 +148,8 @@ class PlanPanel(Widget):
                 buy_at = profit_tool.buy_at
                 buy_percent = profit_tool.buy_percent
                 if buy_percent is not None:
+                    if buy_percent < 0.10:
+                        buy_percent_color = 'orange3'
                     if buy_percent < 0.05:
                         buy_percent_color = 'yellow1'
                     if buy_percent < 0.01:

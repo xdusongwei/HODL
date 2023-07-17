@@ -23,5 +23,9 @@ class TuiConfig(dict):
     def period_seconds(self) -> int:
         return self.get('period_seconds', 4)
 
+    @property
+    def show_broker_display(self) -> bool:
+        return self.get('show_broker_display', True)
+
 
 __all__ = ['TuiConfig', ]
