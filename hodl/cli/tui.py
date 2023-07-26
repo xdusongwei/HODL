@@ -307,10 +307,11 @@ class HODL(App):
                 d = response.json()
                 resp_items = d.get('items', list())
                 store_items = [item.get('store') for item in resp_items]
-                thread_list = [StoreConfig(item.get('thread', dict())) for item in resp_items]
+                thread_list = [dict(item.get('thread', dict())) for item in resp_items]
                 config_list = [StoreConfig(item.get('config', dict())) for item in resp_items]
                 status_list = [State(item.get('state', dict())) for item in store_items]
                 pairs_list = list(zip(thread_list, store_items, config_list, status_list))
+                pairs_list.sort(key=lambda i: (i[3].market_status != 'TRADING', i[2].full_name, ))
                 PAIRS_LIST = pairs_list
 
                 self.action_home_page(switch=False)

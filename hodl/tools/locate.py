@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 
@@ -35,6 +36,16 @@ class LocateTools:
             if os.path.isdir(detect_path):
                 return detect_path
         raise FileNotFoundError
+
+    @classmethod
+    def scan_folder(cls, folder_path, re_search: str) -> list[str]:
+        result = list()
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                if re.search(re_search, file.lower()):
+                    path = os.path.join(root, file)
+                    result.append(path)
+        return result
 
     @classmethod
     def read_file(cls, path: str) -> None | str:

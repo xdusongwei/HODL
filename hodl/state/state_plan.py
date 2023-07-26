@@ -113,6 +113,18 @@ class Plan(DictWrapper):
         self.d['buyRate'] = v
 
     @property
+    def factor_type(self) -> str:
+        return self.d.get('factorType', '--')
+
+    @factor_type.setter
+    def factor_type(self, v: str):
+        self.d['factorType'] = v
+
+    @property
+    def has_factors(self) -> bool:
+        return bool(self.weight and self.buy_rate and self.sell_rate)
+
+    @property
     def price_rate(self) -> float:
         return self.d.get('priceRate', 1.0)
 
@@ -367,7 +379,6 @@ class Plan(DictWrapper):
             weight=self.weight,
             sell_rate=self.sell_rate,
             buy_rate=self.buy_rate,
-            prudent=self.prudent,
             price_rate=self.price_rate,
         )
 

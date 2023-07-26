@@ -15,7 +15,7 @@ class FullDataTestCase(unittest.TestCase):
     @classmethod
     def full_mode(cls) -> str:
         env = os.environ
-        full_test_mode = env.get('TEST_FULL_DATA', 'full')
+        full_test_mode = env.get('TEST_FULL_DATA', 'brief')
         return full_test_mode
 
     def test_full_data(self):

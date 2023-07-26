@@ -30,8 +30,18 @@ class StorePanel(Widget):
                 text.append(f'[{config.region}]{config.symbol} {config.name}\n')
 
             tags = list()
-            prudent = '惜售' if state.plan.prudent else '超卖'
-            tags.append(prudent)
+            factor_type = state.plan.factor_type
+            match factor_type:
+                case 'custom':
+                    tags.append('自定义')
+                case 'fear':
+                    tags.append('🙈恐慌')
+                case 'neutral':
+                    tags.append('😐中性')
+                case 'greed':
+                    tags.append('☺️贪婪')
+                case _:
+                    tags.append('未知')
             args = list()
             args.append('昨收')
             args.append('开盘')

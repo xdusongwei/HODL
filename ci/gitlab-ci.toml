@@ -15,6 +15,7 @@ state_archive_folder = ''
 prudent = true
 base_price_last_buy = true
 sleep_mode = false
+factor_fear_and_greed = 'greed'
 
 [store.TEST]
 broker = 'tiger'
@@ -35,6 +36,7 @@ buy_spread = 0.0
 sell_spread = 0.0
 sell_order_rate = 0.01
 buy_order_rate = 0.01
+factor_fear_and_greed = 'greed'
 
 [store.ASHARE]
 broker = 'tiger'
@@ -55,6 +57,7 @@ sell_spread = 0.0
 lock_position = true
 shares_per_unit = 100
 legal_rate_daily = 0.1
+factor_fear_and_greed = 'greed'
 
 [store.BTC]
 broker = 'okx'
@@ -73,6 +76,7 @@ sleep_mode = false
 buy_spread = 0.0
 sell_spread = 0.0
 closing_time = '23:00:00'
+factor_fear_and_greed = 'greed'
 
 [[broker_meta.tiger]]
 trade_type = 'stock'

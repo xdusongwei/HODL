@@ -166,13 +166,31 @@ class StoreConfigScreen(Screen):
                         desc='交易策略',
                     )
                     yield FormItem(
-                        'prudent',
-                        Checkbox('', config.prudent, disabled=True),
-                        desc='是否是惜售策略',
+                        'factor_fear_and_greed',
+                        Input(value=config.factor_fear_and_greed, disabled=True),
+                        desc='指定专门的恐贪因子类型',
+                    )
+                    yield FormItem(
+                        'cost_price',
+                        Input(value=f'{FormatTool.pretty_price(config.cost_price, config=config)}',
+                              disabled=True),
+                        desc='自动选择恐贪因子类型的成本价格',
+                    )
+                    yield FormItem(
+                        'factor_fear_rate_limit',
+                        Input(value=f'{FormatTool.factor_to_percent(config.factor_fear_rate_limit)}',
+                              disabled=True),
+                        desc='自动恐贪因子中恐慌幅度阈值',
+                    )
+                    yield FormItem(
+                        'factor_greed_rate_limit',
+                        Input(value=f'{FormatTool.factor_to_percent(config.factor_greed_rate_limit)}',
+                              disabled=True),
+                        desc='自动恐贪因子中贪婪幅度阈值',
                     )
                     yield FormItem(
                         'price_rate',
-                        Input(value=f'{FormatTool.factor_to_percent(config.price_rate, fmt="{:.2%}")}', disabled=True),
+                        Input(value=f'{FormatTool.factor_to_percent(config.price_rate)}', disabled=True),
                         desc='控制因子表的幅度',
                     )
                     yield FormItem(

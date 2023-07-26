@@ -109,6 +109,7 @@ class StoreConfig(dict):
     @property
     def prudent(self) -> bool:
         """
+        此方法已过时，
         是否使用惜售策略的因子
         :return:
         """
@@ -156,6 +157,7 @@ class StoreConfig(dict):
     @property
     def buy_spread(self) -> float:
         """
+        此方法已过时，
         设置买入价时需要舍去的点差(佣金、成本)
         :return:
         """
@@ -164,6 +166,7 @@ class StoreConfig(dict):
     @property
     def sell_spread(self) -> float:
         """
+        此方法已过时，
         设置卖出价时需要舍去的点差(佣金、成本)
         :return:
         """
@@ -436,6 +439,36 @@ class StoreConfig(dict):
                     case 'CN':
                         return exchange_calendars.get_calendar('XSHG')
         return None
+
+    @property
+    def factor_fear_and_greed(self) -> str:
+        """
+        使用何种因子模板，
+        可以是fear, neutral, greed三项，
+        持仓将使用对应的因子模板进行操作
+        """
+        return self.get('factor_fear_and_greed', 'neutral')
+
+    @property
+    def cost_price(self) -> None | float:
+        """
+        持仓成本，如果设定了此项，因子模板的选择将根据当前股价与 factor_fear_rate_limit 和 factor_greed_rate_limit 的计算来选择。
+        """
+        return self.get('cost_price', None)
+
+    @property
+    def factor_fear_rate_limit(self) -> float:
+        """
+        股价低于这个阈值比例时，将使用恐慌因子模板
+        """
+        return self.get('factor_fear_rate_limit', 0.85)
+
+    @property
+    def factor_greed_rate_limit(self) -> float:
+        """
+        股价高于这个阈值比例时，将使用贪婪因子模板
+        """
+        return self.get('factor_greed_rate_limit', 1.8)
 
     @property
     def full_name(self) -> str:
