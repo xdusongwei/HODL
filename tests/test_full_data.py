@@ -40,9 +40,5 @@ class FullDataTestCase(unittest.TestCase):
             'base_price_last_buy:', store_config.base_price_last_buy,
             sep=' ',
         )
-        plan = Plan.new_plan(store_config)
-        plan.base_price = 10.0
-        table = SimulationStore.build_table(store_config=store_config, plan=plan)
         for lv, times in sorted(self.STORE.times_per_level.items(), key=lambda i: i[0]):
-            level: ProfitRow = table[lv-1]
-            print(lv, times, f'{((level.total_rate - 1) * 100 * times):+.2f}%')
+            print(lv, times)

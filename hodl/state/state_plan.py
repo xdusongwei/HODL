@@ -379,7 +379,6 @@ class Plan(DictWrapper):
             weight=self.weight,
             sell_rate=self.sell_rate,
             buy_rate=self.buy_rate,
-            price_rate=self.price_rate,
         )
 
 

@@ -8,7 +8,6 @@ from hodl.base_price_mixin import *
 from hodl.sleep_mixin import *
 from hodl.storage import *
 from hodl.exception_tools import *
-from hodl.plan_calc import *
 from hodl.tools import FormatTool as FMT
 
 
@@ -108,10 +107,19 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
                 sell_rate = [factor[1] for factor in factors]
                 buy_rate = [factor[2] for factor in factors]
                 plan.factor_type = fear_greed_type
-            sell_rate, buy_rate = PlanCalc.adjust_factor(sell_rate, buy_rate, price_rate=plan.price_rate)
+
+            def _adjust_factor(sr: list[float], br: list[float], price_rate=1.0):
+                sr = [FMT.adjust_precision((r - 1.0) * price_rate + 1.0, 5) for r in sr]
+                br = [FMT.adjust_precision((r - 1.0) * price_rate + 1.0, 5) for r in br]
+                return sr, br
+
+            sell_rate, buy_rate = _adjust_factor(sell_rate, buy_rate, price_rate=plan.price_rate)
             plan.weight = weight
             plan.sell_rate = sell_rate
             plan.buy_rate = buy_rate
+        assert plan.has_factors
+        if plan.table_ready:
+            self.build_table(store_config=sc, plan=plan).check_factors()
 
         current_enable = self.runtime_state.enable
         new_enable = self.store_config.enable

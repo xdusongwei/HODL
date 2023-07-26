@@ -73,60 +73,13 @@ class PlanCalc:
             weight=None,
             sell_rate=None,
             buy_rate=None,
-            price_rate=1.0,
     ):
         if weight is None or sell_rate is None or buy_rate is None:
-            factors = self._build_argument(price_rate=price_rate)
-            weight = factors.weight
-            sell_rate = factors.sell_rate
-            buy_rate = factors.buy_rate
+            raise ValueError(f'没有传入有效因子')
 
         self.weight = weight
         self.sell_rate = sell_rate
         self.buy_rate = buy_rate
-
-    @classmethod
-    def adjust_factor(cls, sell_rate: list[float], buy_rate: list[float], price_rate=1.0):
-        sell_rate = [FMT.adjust_precision((r - 1.0) * price_rate + 1.0, 5) for r in sell_rate]
-        buy_rate = [FMT.adjust_precision((r - 1.0) * price_rate + 1.0, 5) for r in buy_rate]
-        return sell_rate, buy_rate
-
-    @classmethod
-    def _build_argument(cls, price_rate=1.0) -> _Argument:
-        """
-        该方法已过时, 构建因子的逻辑仅通过 prepare_plan 方法来完成。
-
-        构建默认的买卖价位的因子列表。
-        大多数情形下，持仓套利主要集中在3%~10%以内的波动区间。
-        但是考虑到股价存在大幅波动的可能，绝大部分持仓需要分段在更高的价位上卖出。
-        列表项是一个三元组，分别代表了买入价位比例因子，卖出价位比例因子，卖出的仓位权重。
-        """
-
-        # 默认策略，可控最高涨幅100%。合计权重：22；10%以内波动，策略换手率14.5%。
-        factors = [
-            (01.0, 1.030, 1.000,),
-            (01.0, 1.055, 1.015,),
-            (01.2, 1.090, 1.030,),
-            (01.2, 1.150, 1.050,),
-            (01.2, 1.190, 1.070,),
-            (03.4, 1.270, 1.140,),
-            (01.0, 1.360, 1.150,),
-            (02.0, 1.400, 1.160,),
-            (02.0, 1.580, 1.210,),
-            (04.0, 1.850, 1.330,),
-            (04.0, 2.100, 1.450,),
-        ]
-        weight = [factor[0] for factor in factors]
-        sell_rate = [factor[1] for factor in factors]
-        buy_rate = [factor[2] for factor in factors]
-
-        sell_rate, buy_rate = cls.adjust_factor(sell_rate, buy_rate, price_rate=price_rate)
-
-        return _Argument(
-            weight=weight,
-            sell_rate=sell_rate,
-            buy_rate=buy_rate,
-        )
 
     @property
     def table_size(self) -> int:
