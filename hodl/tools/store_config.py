@@ -107,15 +107,6 @@ class StoreConfig(dict):
         return self.get('max_shares')
 
     @property
-    def prudent(self) -> bool:
-        """
-        此方法已过时，
-        是否使用惜售策略的因子
-        :return:
-        """
-        return self.get('prudent', True)
-
-    @property
     def state_file_path(self) -> str:
         """
         指定一个路径，来保存持仓状态文件

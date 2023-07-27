@@ -16,7 +16,6 @@ class Plan(DictWrapper):
     ):
         plan = Plan()
         plan.total_chips = store_config.max_shares
-        plan.prudent = store_config.prudent
         plan.price_rate = store_config.price_rate
         return plan
 
@@ -47,14 +46,6 @@ class Plan(DictWrapper):
     @base_price.setter
     def base_price(self, v: float):
         self.d['basePrice'] = v
-
-    @property
-    def prudent(self):
-        return self.d.get('prudent', True)
-
-    @prudent.setter
-    def prudent(self, v):
-        self.d['prudent'] = v
 
     @property
     def total_chips(self) -> int:

@@ -36,7 +36,6 @@ class FullDataTestCase(unittest.TestCase):
         store_config = var.store_configs['TIGR']
         print(
             'total earning: ', self.STORE.earning,
-            'use prudent:', store_config.prudent,
             'base_price_last_buy:', store_config.base_price_last_buy,
             sep=' ',
         )

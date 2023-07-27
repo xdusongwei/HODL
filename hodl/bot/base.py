@@ -14,7 +14,6 @@ class _Position:
     config: StoreConfig
     enable: str = None
     lock_position: str = None
-    prudent: str = None
     base_price_last_buy: str = None
     base_price_day_low: str = None
     max_shares: str = None
@@ -68,7 +67,6 @@ class TelegramBotBase:
                     config=v,
                     enable='开启' if v.enable else '关闭',
                     lock_position='锁定' if v.lock_position else '解锁',
-                    prudent='开启' if v.prudent else '关闭',
                     base_price_last_buy='开启' if v.base_price_last_buy else '关闭',
                     base_price_day_low='开启' if v.base_price_day_low else '关闭',
                     max_shares=FormatTool.pretty_number(v.max_shares),

@@ -268,12 +268,17 @@ class StoreBase(ThreadMixin):
             lock_position = '🔒'
             bar.append(BarElementDesc(content=lock_position, tooltip='持仓量核对已纳入风控，不可随时加仓'))
 
-        factor_content = '☕'
-        tooltip = '超卖因子表，'
-        if plan.prudent:
-            factor_content = '🚀'
-            tooltip = '惜售因子表，'
-        tooltip += '基准价格参考: 昨收价'
+        factor_content = '🎛️'
+        tooltip = ''
+        if config.factors:
+            tooltip += '自定义因子表.'
+        elif config.cost_price:
+            tooltip += '自动选择恐慌贪婪因子表.'
+        elif factor_type := config.factor_fear_and_greed:
+            tooltip += f'指定{factor_type}因子表.'
+        else:
+            tooltip += '未知的因子表.'
+        tooltip += '基准价格参考: 昨收价, 开盘价, '
         if config.base_price_day_low:
             tooltip += ', 当日最低价格'
         if config.base_price_last_buy:

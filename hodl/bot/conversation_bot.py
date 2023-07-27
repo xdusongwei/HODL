@@ -12,7 +12,6 @@ class ConversationBot(TelegramBotBase):
             from hodl.bot.bot_conversation.settings import Settings
             from hodl.bot.bot_conversation.lock_position import LockPosition
             from hodl.bot.bot_conversation.enable_position import EnablePosition
-            from hodl.bot.bot_conversation.prudent import Prudent
             from hodl.bot.bot_conversation.base_price_last_buy import BasePriceLastBuy
             from hodl.bot.bot_conversation.max_shares import MaxShares
             from hodl.bot.bot_conversation.temp_base_price import TempBasePrice
@@ -28,7 +27,6 @@ class ConversationBot(TelegramBotBase):
             dispatcher.add_handler(Settings.handler())
             dispatcher.add_handler(LockPosition.handler())
             dispatcher.add_handler(EnablePosition.handler())
-            dispatcher.add_handler(Prudent.handler())
             dispatcher.add_handler(BasePriceLastBuy.handler())
             dispatcher.add_handler(MaxShares.handler())
             dispatcher.add_handler(TempBasePrice.handler())

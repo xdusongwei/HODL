@@ -21,7 +21,6 @@ class Settings(TelegramBotBase):
             part = \
                 f'{item.display}:\n' \
                 f'使能: {item.enable}\n' \
-                f'惜售: {item.prudent}\n' \
                 f'锁定持仓: {item.lock_position}\n' \
                 f'基准价格买回: {item.base_price_last_buy}\n' \
                 f'基准价格日低: {item.base_price_day_low}\n' \
