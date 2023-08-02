@@ -492,7 +492,7 @@ class StoreBase(ThreadMixin):
                 rate = abs(self.price - self.rows[idx].buy_at) / self.price
                 self.buy_percent = rate
                 self.buy_at = self.rows[idx].buy_at
-            if self.filled_level < len(self.rows):
+            if self.filled_level < len(self.rows) and self.price:
                 idx = self.filled_level
                 rate = abs(self.price - self.rows[idx].sell_at) / self.price
                 self.sell_percent = rate

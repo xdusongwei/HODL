@@ -24,7 +24,7 @@ RECENT_EARNINGS_LIST: list[dict] = list()
 class HodlHeaderClock(HeaderClock):
     DEFAULT_CSS = """
         HodlHeaderClock {
-            width: 26;
+            width: 38;
             opacity: 90%;
         }
         """
@@ -37,9 +37,10 @@ class HodlHeaderClock(HeaderClock):
         else:
             tz_name = 'EDT'
             time = TimeTools.us_time_now()
+        day_name = time.strftime('%A')
         time = time.isoformat(timespec='milliseconds')
         time = time[:-10]
-        return Text(f'{tz_name}: {time}', style="bright_green")
+        return Text(f'{tz_name}: {time}({day_name})', style="bright_green")
 
 
 class HodlHeaderTitle(HeaderTitle):
