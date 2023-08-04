@@ -20,26 +20,6 @@ class Plan(DictWrapper):
         return plan
 
     @property
-    def master_total_chips(self):
-        return self.d.get('masterTotalChips', 0)
-
-    @master_total_chips.setter
-    def master_total_chips(self, v: int):
-        assert isinstance(v, int)
-        assert v >= 0
-        self.d['masterTotalChips'] = v
-
-    @property
-    def master_sold_chips(self):
-        return self.d.get('masterSoldChips', 0)
-
-    @master_sold_chips.setter
-    def master_sold_chips(self, v: int):
-        assert isinstance(v, int)
-        assert v >= 0
-        self.d['masterSoldChips'] = v
-
-    @property
     def base_price(self):
         return self.d.get('basePrice')
 

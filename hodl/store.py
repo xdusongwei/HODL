@@ -458,6 +458,10 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
         if self.exception:
             self.exception = ''
 
+    def loop_finally(self):
+        self.risk_control = None
+        self.after_loop()
+
     def run(self):
         super(Store, self).run()
         is_checked = False
@@ -585,8 +589,7 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
                     self.exception = e
                     break
                 finally:
-                    self.risk_control = None
-                    self.after_loop()
+                    self.loop_finally()
         self.logger.info('退出处理循环，程序结束')
 
 

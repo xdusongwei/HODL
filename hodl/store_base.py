@@ -272,12 +272,16 @@ class StoreBase(ThreadMixin):
         tooltip = ''
         if config.factors:
             tooltip += '自定义因子表.'
+            factor_content += '自定'
         elif config.cost_price:
             tooltip += '自动选择恐慌贪婪因子表.'
+            factor_content += '自动'
         elif factor_type := config.factor_fear_and_greed:
             tooltip += f'指定{factor_type}因子表.'
+            factor_content += '指定'
         else:
             tooltip += '未知的因子表.'
+            factor_content += '未知'
         tooltip += '基准价格参考: 昨收价, 开盘价, '
         if config.base_price_day_low:
             tooltip += ', 当日最低价格'
@@ -285,6 +289,13 @@ class StoreBase(ThreadMixin):
             tooltip += f', 上次买回价格({config.base_price_last_buy_days}个自然天内). '
         tooltip += f'价格比较函数: {state.bp_function}.'
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
+
+        if stages := config.multistage_rocket:
+            current = stages[-1]
+            target_price = current[1]
+            if price := state.quote_latest_price:
+                if price <= target_price:
+                    bar.append(BarElementDesc(content='🛬', tooltip='当前价格可以还原上一级的状态'))
 
         if price := plan.give_up_price:
             factor_content = '🏳️'

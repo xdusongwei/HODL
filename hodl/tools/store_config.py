@@ -104,7 +104,51 @@ class StoreConfig(dict):
         可操作证券数量
         :return:
         """
-        return self.get('max_shares')
+        rocket = self.multistage_rocket
+        if rocket:
+            shares = rocket[-1][0]
+            assert shares > 0
+            return shares
+        else:
+            return self.get('max_shares')
+
+    @property
+    def multistage_rocket(self) -> list[tuple[int, float, ]]:
+        """
+        多级火箭机制
+        假如已卖出较大比例证券，并且股价维持在高位，我们可以通过按剩余持仓股份重新套利，减少浪费掉可以继续套利的时间和机会。
+        若股价下跌到原先的买入价时，我们在配置中还原回原来的状态。
+        实现原理是我们根据这个配置项的列表项数，来确定使用stage为路径参数的状态文件，保存和隔离不同阶段的状态文件。
+        !   如果此项目有有效设定值，max_shares 配置将从这里获取最新(列表最后一项)的持仓设定股数
+        !   编辑此项目最好是当日无有效订单，或者在盘后时段，以免使用旧有的状态文件触发LSOD警报
+
+        例如，假如原计划持股45000, state_file_path="{broker}-{symbol}-stage{stage}.json"
+        我们在此项配置设定:
+            [
+                [45000, 0, ],
+            ]
+        此时，我们将使用"{broker}-{symbol}-stage1.json"状态文件管理此持仓
+
+        当股价涨至$4.6,剩余股票16000，买回价格是$3.4, 我们打算在这个价位用剩余股票继续套利，
+        我们在此项配置设定:
+            [
+                [45000, 0, ],
+                [16000, 3.4],
+            ]
+        这样就可以让16000股重新套利，并且记录了还原状态需要的价格条件，
+        此时，我们将使用"{broker}-{symbol}-stage2.json"状态文件管理此持仓
+
+        假如股价下跌到$3.4, 我们可以得到给定的价格预警提示，去删去配置中的最后一行来还原回状态文件即可：
+            [
+                [45000, 0, ],
+            ]
+        此时，我们将使用"{broker}-{symbol}-stage1.json"状态文件管理此持仓
+        """
+        return self.get('multistage_rocket', list())
+
+    @property
+    def stage(self) -> int:
+        return len(self.multistage_rocket)
 
     @property
     def state_file_path(self) -> str:
@@ -118,9 +162,11 @@ class StoreConfig(dict):
         path: str = self.get('state_file_path')
         if path:
             path = path.format(
+                group=self.group,
                 broker=self.broker,
                 region=self.region,
                 symbol=self.symbol,
+                stage=self.stage
             )
             path = os.path.expanduser(path)
         return path

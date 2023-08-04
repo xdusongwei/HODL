@@ -214,6 +214,11 @@ class SimulationStore(Store):
         self.secondary_bar()
         self.warning_alert_bar()
 
+    def loop_finally(self):
+        # 这里需要触发一次sleep，否则假如需要进行文件读写相关的测试，当前时间ticket的自动变动并未生效，写入文件的状态内容没有前进
+        self.sleep()
+        super().loop_finally()
+
     def run(self, output_state: bool = True):
         try:
             super().run()
