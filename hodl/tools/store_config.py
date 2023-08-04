@@ -125,26 +125,28 @@ class StoreConfig(dict):
         例如，假如原计划持股45000, state_file_path="{broker}-{symbol}-stage{stage}.json"
         我们在此项配置设定:
             [
-                [45000, 0, ],
+                { max_shares = 45000, recover_price = 0.0 },
             ]
         此时，我们将使用"{broker}-{symbol}-stage1.json"状态文件管理此持仓
 
         当股价涨至$4.6,剩余股票16000，买回价格是$3.4, 我们打算在这个价位用剩余股票继续套利，
         我们在此项配置设定:
             [
-                [45000, 0, ],
-                [16000, 3.4],
+                { max_shares = 45000, recover_price = 0.0 },
+                { max_shares = 16000, recover_price = 3.4 },
             ]
         这样就可以让16000股重新套利，并且记录了还原状态需要的价格条件，
         此时，我们将使用"{broker}-{symbol}-stage2.json"状态文件管理此持仓
 
         假如股价下跌到$3.4, 我们可以得到给定的价格预警提示，去删去配置中的最后一行来还原回状态文件即可：
             [
-                [45000, 0, ],
+                { max_shares = 45000, recover_price = 0.0 },
             ]
         此时，我们将使用"{broker}-{symbol}-stage1.json"状态文件管理此持仓
         """
-        return self.get('multistage_rocket', list())
+        stages: list[dict] = self.get('multistage_rocket', list())
+        result = [(item['max_shares'], item['recover_price'], ) for item in stages]
+        return result
 
     @property
     def stage(self) -> int:

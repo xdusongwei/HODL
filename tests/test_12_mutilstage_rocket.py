@@ -15,7 +15,7 @@ class MultistageRocketTestCase(unittest.TestCase):
         store_config['state_file_path'] = '/path/to/state-{symbol}-stage{stage}.json'
 
         store_config['multistage_rocket'] = [
-            [100_000, 0],
+            {'max_shares': 100_000, 'recover_price': 0.0, },
         ]
         pc = 10.0
         p_sell = pc * 1.27
@@ -39,8 +39,8 @@ class MultistageRocketTestCase(unittest.TestCase):
         assert '/path/to/state-TEST-stage1.json' in store.files
 
         store_config['multistage_rocket'] = [
-            [100_000, 0],
-            [59091, p_buy],
+            {'max_shares': 100_000, 'recover_price': 0.0, },
+            {'max_shares': 59091, 'recover_price': p_buy, },
         ]
         pc_lv2 = p_sell
         p_sell_lv2 = pc_lv2 * 1.09
@@ -65,7 +65,7 @@ class MultistageRocketTestCase(unittest.TestCase):
         assert '/path/to/state-TEST-stage2.json' in store.files
 
         store_config['multistage_rocket'] = [
-            [100_000, 0],
+            {'max_shares': 100_000, 'recover_price': 0.0, },
         ]
         tickets = [
             Ticket(day='23-04-12T09:32:00-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
