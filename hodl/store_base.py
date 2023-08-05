@@ -290,12 +290,17 @@ class StoreBase(ThreadMixin):
         tooltip += f'价格比较函数: {state.bp_function}.'
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
 
-        if stages := config.multistage_rocket:
+        if config.stage > 1:
+            stages = config.multistage_rocket
             current = stages[-1]
             target_price = current[1]
+            factor_content = f'🚀Lv{config.stage}'
+            tooltip = '当前持仓正在多级状态下工作'
             if price := state.quote_latest_price:
-                if price <= target_price:
-                    bar.append(BarElementDesc(content='🛬', tooltip='当前价格可以还原上一级的状态'))
+                if target_price and price <= target_price:
+                    factor_content = '🛬'
+                    tooltip = '当前价格可以还原上一级的状态'
+            bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
 
         if price := plan.give_up_price:
             factor_content = '🏳️'

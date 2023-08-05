@@ -141,7 +141,7 @@ class PlanPanel(Widget):
                         tp_text += '⚠️MA'
                     if state.ta_tumble_protect_rsi:
                         tp_text += '🚫RSI'
-                    text.append(f'{id_title} ⚓️{base_price}{tp_text}\n')
+                    text.append(f' ⚓️{base_price}{tp_text}\n')
 
             sell_at = sell_percent = buy_at = buy_percent = None
             sell_percent_color = buy_percent_color = 'red'
