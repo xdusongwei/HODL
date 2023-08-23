@@ -150,6 +150,7 @@ class HtmlWriterThread(ThreadMixin):
             new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
 
             if self.current_hash != new_hash and self.current_time != new_time:
+                self.current_time = new_time
                 if db:
                     create_time = TimeTools.timedelta(TimeTools.us_time_now(tz='Asia/Shanghai'), days=-365)
                     create_time = int(create_time.timestamp())
@@ -193,7 +194,6 @@ class HtmlWriterThread(ThreadMixin):
             traceback.print_exc()
         finally:
             self.current_hash = new_hash
-            self.current_time = new_time
 
     def run(self):
         super(HtmlWriterThread, self).run()
