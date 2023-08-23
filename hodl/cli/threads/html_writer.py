@@ -18,12 +18,17 @@ class HtmlWriterThread(ThreadMixin):
                 return dataclasses.asdict(o)
             raise TypeError
 
+    @classmethod
+    def _new_time(cls) -> str:
+        return TimeTools.utc_now().strftime('%Y-%m-%dT%H:%M')
+
     def __init__(self, variable: VariableTools, db: LocalDb, template):
         self.variable = variable
         self.db = db
         self.template = template
         self.total_write = 0
         self.current_hash = ''
+        self.current_time = self._new_time()
         self.recent_earnings = list()
         self.earning_list = list()
         self.earning_json = '{}'
@@ -131,6 +136,7 @@ class HtmlWriterThread(ThreadMixin):
         variable = self.variable
         currency_list = ('USD', 'CNY', 'HKD', )
         new_hash = self.current_hash
+        new_time = self._new_time()
         try:
             html_file_path = variable.html_file_path
             html_manifest_path = variable.html_manifest_path
@@ -142,7 +148,8 @@ class HtmlWriterThread(ThreadMixin):
 
             store_list: list[Store] = [store for store in stores if store.store_config.visible]
             new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
-            if self.current_hash != new_hash:
+
+            if self.current_hash != new_hash and self.current_time != new_time:
                 if db:
                     create_time = TimeTools.timedelta(TimeTools.us_time_now(tz='Asia/Shanghai'), days=-365)
                     create_time = int(create_time.timestamp())
@@ -186,6 +193,7 @@ class HtmlWriterThread(ThreadMixin):
             traceback.print_exc()
         finally:
             self.current_hash = new_hash
+            self.current_time = new_time
 
     def run(self):
         super(HtmlWriterThread, self).run()
