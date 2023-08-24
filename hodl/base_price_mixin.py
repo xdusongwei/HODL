@@ -155,7 +155,7 @@ class BasePriceMixin(StoreBase, ABC):
 
         state.ta_vix_high = None
         vix_limit = store_config.vix_tumble_protect
-        if vix_limit is not None:
+        if vix_limit is not None and vix_limit > 0.0:
             vix_quote = self._query_vix()
             if vix_quote:
                 state.ta_vix_high = vix_quote.day_high

@@ -33,6 +33,7 @@ class ProfitRow:
                f'Level{self.level} ' \
                f'sell@{FMT.pretty_usd(self.sell_at, unit="")} ' \
                f'buy@{FMT.pretty_usd(self.buy_at, unit="")} ' \
+               f'total_rate@{FMT.pretty_usd(self.total_rate, unit="")} ' \
                f'shares:{self.shares:,}>'
 
     def __repr__(self):
