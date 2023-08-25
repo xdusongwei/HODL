@@ -122,14 +122,13 @@ class PlanPanel(Widget):
                 earning_text = FormatTool.pretty_price(earning, config=config, only_int=True)
                 level = f'{profit_tool.filled_level}/{len(profit_tool.rows)}'
                 text.append(f'{id_title}#{level} ')
-                icon = self.cash_to_emoji(earning)
-                text.append(f'预计{icon}{earning_text}\n', style='bright_green')
+                text.append(f'⏳{earning_text}\n', style='bright_green')
             else:
                 text.append(id_title)
                 if earning := state.plan.earning:
                     icon = self.cash_to_emoji(earning)
                     earning_text = FormatTool.pretty_price(earning, config=config, only_int=True)
-                    earning_text = f' 套利{icon}{earning_text}'
+                    earning_text = f' {icon}{earning_text}'
                     text.append(f'{earning_text}', style='bright_green')
                     if rework_price := state.plan.rework_price:
                         rework_price = FormatTool.pretty_price(rework_price, config=config)
