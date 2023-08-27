@@ -1,4 +1,5 @@
 import os
+import tomllib
 import tomlkit
 from telegram.ext import Updater
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -27,8 +28,7 @@ class VariableTools:
             config_file = VariableTools._get_config_path()
         with open(config_file, 'r', encoding='utf8') as f:
             s = f.read()
-            loads = tomlkit.loads(s)
-            loads = loads.unwrap()
+            loads = tomllib.loads(s)
             loads.update(VariableTools.DEBUG_CONFIG)
             self._config: dict = loads
 
