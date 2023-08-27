@@ -11,7 +11,6 @@ dependencies = [
     "pytz>=2021.1",
     "concurrent-log-handler>=0.9.20",
     "json-log-formatter==0.5.1",
-    "toml>=0.10.2",
     "httpx>=0.22.0",
     "h2>=4.1.0",
     "requests>=2.27.1",
@@ -28,6 +27,7 @@ dependencies = [
     "exchange-calendars>=4.2.4",
     "futu-api>=7.1.3308",
     "ib-insync>=0.9.85",
+    "tomlkit>=0.12.1",
 ]
 
 requires-python = ">=3.11"

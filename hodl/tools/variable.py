@@ -1,5 +1,5 @@
 import os
-import toml
+import tomlkit
 from telegram.ext import Updater
 from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.locate import LocateTools
@@ -26,11 +26,15 @@ class VariableTools:
         if not config_file:
             config_file = VariableTools._get_config_path()
         with open(config_file, 'r', encoding='utf8') as f:
-            self._config: dict = toml.loads(f.read()) | VariableTools.DEBUG_CONFIG
+            s = f.read()
+            loads = tomlkit.loads(s)
+            loads = loads.unwrap()
+            loads.update(VariableTools.DEBUG_CONFIG)
+            self._config: dict = loads
 
     def save_config(self):
         config_file = VariableTools._get_config_path()
-        text = toml.dumps(self._config)
+        text = tomlkit.dumps(self._config, sort_keys=True)
         with open(config_file, 'w', encoding='utf8') as f:
             f.write(text)
 
