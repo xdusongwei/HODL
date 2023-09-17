@@ -122,7 +122,7 @@ class OrderScreen(Screen):
                     Text(order.order_emoji, style=style),
                     Text(f'{time.strftime("%y-%m-%d")}T{time.strftime("%H:%M:%S")}', style=style),
                     Text(state.trade_broker_display, justify="left", style=style),
-                    Text(state.name, justify="center", style=style),
+                    Text(state.name, justify="left", style=style),
                     Text(f'[{order.region}]{order.symbol}', justify="left", style=style),
                     Text(f'{order.direction}#{order.level}', justify="left", style=style),
                     Text(f'{limit_price}', justify="right", style=style),

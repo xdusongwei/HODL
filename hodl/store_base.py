@@ -1,6 +1,5 @@
 import os
 import threading
-from datetime import datetime
 import requests
 from hodl.risk_control import *
 from hodl.tools import *
@@ -172,13 +171,13 @@ class StoreBase(ThreadMixin):
 
     def before_loop(self):
         self.load_state()
-        setattr(self, '_begin_time', datetime.now())
+        setattr(self, '_begin_time', TimeTools.get_utc())
         return True
 
     def after_loop(self):
         self.save_state()
-        now = datetime.now()
-        begin_time: datetime = getattr(self, '_begin_time', now)
+        now = TimeTools.get_utc()
+        begin_time = getattr(self, '_begin_time', now)
         self.process_time = (now - begin_time).total_seconds()
 
     @classmethod

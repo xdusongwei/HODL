@@ -34,7 +34,7 @@ class VariableTools:
 
     def save_config(self):
         config_file = VariableTools._get_config_path()
-        text = tomlkit.dumps(self._config, sort_keys=True)
+        text = tomlkit.dumps(self._config)
         with open(config_file, 'w', encoding='utf8') as f:
             f.write(text)
 

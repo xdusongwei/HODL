@@ -34,8 +34,19 @@ class TimeTools:
         return TimeTools.THREAD_TZ.get(thread_id, 'US/Eastern')
 
     @classmethod
-    def utc_now(cls):
+    def get_utc(cls):
         return datetime.utcnow()
+
+    @classmethod
+    def utc_now(cls):
+        """
+        获取utc时间对象, 测试时此函数将被mock,
+        如果某些机制, 比如计算处理时间, 不希望因为调用而破坏mock函数, 则应使用get_utc方法
+        Returns
+        -------
+
+        """
+        return cls.get_utc()
 
     @classmethod
     def us_time_now(cls, tz: str = None) -> datetime:
