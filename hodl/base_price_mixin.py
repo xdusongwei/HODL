@@ -137,10 +137,14 @@ class BasePriceMixin(StoreBase, ABC):
 
     def _ma_tp_check(self):
         sc, state, _ = self.args()
+        if not sc.base_price_tumble_protect:
+            state.ta_tumble_protect_flag = None
+            state.ta_tumble_protect_alert_price = None
+            return
         state.ta_tumble_protect_flag = self._detect_lowest_days()
         state.ta_tumble_protect_alert_price = None
         if not sc.base_price_tumble_protect:
-            return 
+            return
         if not state.ta_tumble_protect_flag:
             return
         state.ta_tumble_protect_alert_price = self._tumble_protect_alert_price()
