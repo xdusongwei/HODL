@@ -256,10 +256,12 @@ class BasePriceMixin(StoreBase, ABC):
 
     def _detect_lowest_days(self) -> bool:
         store_config = self.store_config
-        history: list[QuoteLowHistoryRow] = self._query_history(days=store_config.tumble_protect_day_range * 9)
-        if len(history) <= store_config.tumble_protect_day_range:
+        tumble_protect_day_range = store_config.tumble_protect_day_range
+        tumble_protect_sample_range = store_config.tumble_protect_sample_range
+        history: list[QuoteLowHistoryRow] = self._query_history(days=tumble_protect_sample_range)
+        if len(history) <= tumble_protect_day_range:
             return False
-        recent = history[:store_config.tumble_protect_day_range]
+        recent = history[:tumble_protect_day_range]
         return min(day.low_price for day in history) * 1.01 >= min(day.low_price for day in recent)
 
     def _tumble_protect_alert_price(self):

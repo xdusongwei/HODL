@@ -304,6 +304,7 @@ class StoreConfig(dict):
         """
         这是一个控制开关，
         如果此设置打开，当<tumble_protect_day_range>日内最低价格接近历史最低价时，只根据Ma5和Ma10选择较高的价格作为基准价格。
+        这里的历史最低价根据<tumble_protect_sample_range>日内的最低价格而定。
         在证券暴跌时期，若采用到历史低点作为基准价格，很有可能增大执行计划全部卖飞的可能性，并且反弹时浪费了前几档卖出证券的套利价值，
         所以通过此设置项目，避免取到当日或者前日收盘的历史低价作为基准价格。
         """
@@ -312,6 +313,10 @@ class StoreConfig(dict):
     @property
     def tumble_protect_day_range(self) -> int:
         return abs(self.get('tumble_protect_day_range', 10))
+
+    @property
+    def tumble_protect_sample_range(self) -> int:
+        return abs(self.get('tumble_protect_sample_range', 180))
 
     @property
     def vix_tumble_protect(self) -> float:

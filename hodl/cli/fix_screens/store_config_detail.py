@@ -243,6 +243,11 @@ class StoreConfigScreen(Screen):
                         desc='MA暴跌保护监控的近几天历史报价',
                     )
                     yield FormItem(
+                        'tumble_protect_day_range',
+                        Input(value=f'{config.tumble_protect_sample_range}天', disabled=True),
+                        desc='MA暴跌保护历史最低价的样本范围',
+                    )
+                    yield FormItem(
                         'vix_tumble_protect',
                         Input(value=f'{FormatTool.pretty_number(config.vix_tumble_protect)}', disabled=True),
                         desc='VIX暴跌保护触发的上限值',
