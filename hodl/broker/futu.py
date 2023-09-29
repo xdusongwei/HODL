@@ -27,6 +27,7 @@ class FutuApi(BrokerApiBase):
             host = config_dict.get('host', '127.0.0.1')
             port = config_dict.get('port', 11111)
             quote_ctx = OpenQuoteContext(host=host, port=port)
+            quote_ctx.set_sync_query_connect_timeout(6.0)
             FutuApi.QUOTE_CLIENT = quote_ctx
         self.quote_client = FutuApi.QUOTE_CLIENT
 
