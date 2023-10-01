@@ -117,9 +117,11 @@ class Manager(ThreadMixin):
 
         db = None
         if path := var.db_path:
+            print('准备数据库')
             db = LocalDb(db_path=path)
             Manager.DB = db
         try:
+            print('启动持仓线程')
             Manager.CONVERSATION_BOT = ConversationBot(updater=var.telegram_updater(), db=db)
             stores = [Store(store_config=config, db=db) for config in store_configs.values()]
             for store in stores:
@@ -131,6 +133,7 @@ class Manager(ThreadMixin):
                 for store in stores
             ]
         except Exception as e:
+            print(f'初始化持仓线程异常: {e}')
             if db:
                 db.conn.close()
             raise e
@@ -140,6 +143,7 @@ class Manager(ThreadMixin):
             session=Store.SESSION,
         )
         if var.async_market_status:
+            print('启动异步市场状态线程')
             mkt_thread = MarketStatusThread(ms_proxy=ms_proxy, var=var)
             mkt_thread.prepare()
 
@@ -168,6 +172,8 @@ class Manager(ThreadMixin):
         print(f'json刷新线程已启动')
 
         Manager.PSUTIL_THREAD = PsUtilThread().start(name='psutil')
+
+        print('准备工作结束')
 
         while True:
             try:
