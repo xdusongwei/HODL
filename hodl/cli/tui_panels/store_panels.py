@@ -135,12 +135,15 @@ class PlanPanel(Widget):
                         text.append(f' 🔁{rework_price}')
                     text.append(f'\n')
                 else:
+                    text.append(' ')
                     tp_text = ''
                     if state.ta_tumble_protect_flag:
                         tp_text += '⚠️MA'
                     if state.ta_tumble_protect_rsi:
                         tp_text += '🚫RSI'
-                    text.append(f' ⚓️{base_price}{tp_text}\n')
+                    if state.plan.base_price is not None:
+                        text.append(f'⚓️{base_price}')
+                    text.append(f'{tp_text}\n')
 
             sell_at = sell_percent = buy_at = buy_percent = None
             sell_percent_color = buy_percent_color = 'red'
