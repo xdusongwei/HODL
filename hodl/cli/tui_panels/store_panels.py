@@ -140,7 +140,8 @@ class PlanPanel(Widget):
                     if state.ta_tumble_protect_flag:
                         tp_text += '⚠️MA'
                     if state.ta_tumble_protect_rsi:
-                        tp_text += '🚫RSI'
+                        rsi_current = FormatTool.adjust_precision(state.ta_tumble_protect_rsi_current, 1)
+                        tp_text += f'🚫RSI{rsi_current}'
                     if state.plan.base_price is not None:
                         text.append(f'⚓️{base_price}')
                     text.append(f'{tp_text}\n')
