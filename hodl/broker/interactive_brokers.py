@@ -6,6 +6,7 @@ https://ib-insync.readthedocs.io/readme.html
 import threading
 import requests
 import ib_insync
+from ib_insync import Stock
 from urllib.parse import urljoin
 from hodl.broker.base import *
 from hodl.exception_tools import *
@@ -15,7 +16,7 @@ from hodl.tools import *
 from hodl.async_proxy import *
 
 
-class InteractiveBrokers(BrokerApiBase):
+class InteractiveBrokersApi(BrokerApiBase):
     BROKER_NAME = 'interactiveBrokers'
     BROKER_DISPLAY = '盈透证券'
     ENABLE_BOOTING_CHECK = False
@@ -64,7 +65,7 @@ class InteractiveBrokers(BrokerApiBase):
         return self.broker_config.get('account_id')
 
     def ib_socket(self) -> ib_insync.IB:
-        return InteractiveBrokers.GATEWAY_SOCKET
+        return InteractiveBrokersApi.GATEWAY_SOCKET
     
     def __post_init__(self):
         super().__post_init__()
@@ -74,8 +75,8 @@ class InteractiveBrokers(BrokerApiBase):
             pass
 
     def _try_create_tws_client(self):
-        with InteractiveBrokers.LOCK:
-            ib_socket = InteractiveBrokers.GATEWAY_SOCKET
+        with InteractiveBrokersApi.LOCK:
+            ib_socket = InteractiveBrokersApi.GATEWAY_SOCKET
             if ib_socket:
                 try:
                     ib_dt = AsyncProxyThread.call_coro_func(ib_socket.reqCurrentTimeAsync)
@@ -106,7 +107,7 @@ class InteractiveBrokers(BrokerApiBase):
                     account=account_id,
                 )
             )
-            InteractiveBrokers.GATEWAY_SOCKET = ib
+            InteractiveBrokersApi.GATEWAY_SOCKET = ib
 
     @property
     def connection_type(self) -> str:
@@ -161,8 +162,8 @@ class InteractiveBrokers(BrokerApiBase):
             match self.connection_type:
                 case 'ClientPortalAPI':
                     now_ts = int(TimeTools.utc_now().timestamp())
-                    if InteractiveBrokers.LATEST_REAUTH_TIME + 3600 < now_ts:
-                        InteractiveBrokers.LATEST_REAUTH_TIME = now_ts
+                    if InteractiveBrokersApi.LATEST_REAUTH_TIME + 3600 < now_ts:
+                        InteractiveBrokersApi.LATEST_REAUTH_TIME = now_ts
                         self._reauthenticate()
                     return self._tickle()
                 case 'TWS':
@@ -201,7 +202,7 @@ class InteractiveBrokers(BrokerApiBase):
 
     def query_conid(self):
         symbol = self.symbol
-        conid = InteractiveBrokers.CONID_TABLE.get(symbol, None)
+        conid = InteractiveBrokersApi.CONID_TABLE.get(symbol, None)
         if conid is None:
             conid = None
             d = self.http_request(
@@ -224,8 +225,8 @@ class InteractiveBrokers(BrokerApiBase):
                     conid = contract.get('conid')
                     break
             if conid:
-                InteractiveBrokers.CONID_TABLE[symbol] = conid
-                InteractiveBrokers.CONID_MATCH_TABLE[symbol] = match_list
+                InteractiveBrokersApi.CONID_TABLE[symbol] = conid
+                InteractiveBrokersApi.CONID_MATCH_TABLE[symbol] = match_list
             else:
                 raise IbkrConidMissingError(f'{symbol}找不到对应的conid')
         return conid
@@ -408,37 +409,42 @@ class InteractiveBrokers(BrokerApiBase):
 
     @track_api
     def fetch_quote(self) -> Quote:
-        conid = self.query_conid()
-        d = self.http_request(
-            ib_config=self.broker_config,
-            path='/v1/api/md/snapshot',
-            method='GET',
-            params=dict(conids=conid, fields='31,70,71,82,6509,7295,7741,6508,HasDelayed'),
-            session=self.http_session,
-        )
-        if not d:
-            raise PrepareError(f'盈透快照接口调用失败, symbol:{self.symbol}, conid:{conid}')
-        item = d[0]
-        availability: str = item.get('6509', '')
-        if not availability.startswith('R'):
-            raise QuoteFieldError(f'盈透快照接口可用性不匹配:{availability}, symbol:{self.symbol}, conid:{conid}')
-        latest_price = float(item['31'])
-        open_price = float(item['7295'])
-        day_high = float(item['70'])
-        day_low = float(item['71'])
-        pre_close = latest_price - float(item['82'])
-        return Quote(
-            symbol=self.symbol,
-            open=open_price,
-            pre_close=pre_close,
-            latest_price=latest_price,
-            time=TimeTools.utc_now(),
-            status='NORMAL',
-            day_low=day_low,
-            day_high=day_high,
-            broker_name=self.BROKER_NAME,
-            broker_display=self.BROKER_DISPLAY,
-        )
+        socket = self.ib_socket()
+        stock = Stock(self.symbol, 'Nasdaq', 'USD')
+        socket.ticker(stock)
+        ticker = AsyncProxyThread.call_from_sync(lambda : socket.reqMktData(stock, genericTickList ='', snapshot=True))
+        print(ticker)
+        # conid = self.query_conid()
+        # d = self.http_request(
+        #     ib_config=self.broker_config,
+        #     path='/v1/api/md/snapshot',
+        #     method='GET',
+        #     params=dict(conids=conid, fields='31,70,71,82,6509,7295,7741,6508,HasDelayed'),
+        #     session=self.http_session,
+        # )
+        # if not d:
+        #     raise PrepareError(f'盈透快照接口调用失败, symbol:{self.symbol}, conid:{conid}')
+        # item = d[0]
+        # availability: str = item.get('6509', '')
+        # if not availability.startswith('R'):
+        #     raise QuoteFieldError(f'盈透快照接口可用性不匹配:{availability}, symbol:{self.symbol}, conid:{conid}')
+        # latest_price = float(item['31'])
+        # open_price = float(item['7295'])
+        # day_high = float(item['70'])
+        # day_low = float(item['71'])
+        # pre_close = latest_price - float(item['82'])
+        # return Quote(
+        #     symbol=self.symbol,
+        #     open=open_price,
+        #     pre_close=pre_close,
+        #     latest_price=latest_price,
+        #     time=TimeTools.utc_now(),
+        #     status='NORMAL',
+        #     day_low=day_low,
+        #     day_high=day_high,
+        #     broker_name=self.BROKER_NAME,
+        #     broker_display=self.BROKER_DISPLAY,
+        # )
 
 
-__all__ = ['InteractiveBrokers', ]
+__all__ = ['InteractiveBrokersApi', ]

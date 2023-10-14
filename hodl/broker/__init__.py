@@ -14,5 +14,5 @@ BROKERS: list[Type[BrokerApiBase]] = [
     OkxRestApi,
     BinanceApi,
     FutuApi,
-    InteractiveBrokers,
+    InteractiveBrokersApi,
 ]
