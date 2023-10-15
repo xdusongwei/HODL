@@ -43,6 +43,9 @@ class ThreadMixin:
         return list()
 
     def prepare(self):
+        """
+        这个方法不在线程管理的机制中被调用
+        """
         pass
 
     def run(self):

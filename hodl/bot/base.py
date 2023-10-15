@@ -1,7 +1,10 @@
+import abc
 from dataclasses import dataclass
+from typing import Self
 from expiringdict import ExpiringDict
-from telegram import ReplyKeyboardRemove
-from telegram.ext import Updater, ConversationHandler, CommandHandler
+from telegram import ReplyKeyboardRemove, Update, Message
+from telegram.ext import Application, ConversationHandler, CommandHandler
+from hodl.thread_mixin import *
 from hodl.tools import *
 from hodl.storage import *
 
@@ -25,28 +28,29 @@ class _Session:
     value: bool = None
 
 
+class TelegramThreadBase(abc.ABC):
+    INSTANCE: Self = None
+
+    def application(self) -> Application:
+        raise NotImplementedError
+
+    def send_message(self, text: str) -> Message:
+        raise NotImplementedError
+
+
 class TelegramBotBase:
-    UPDATER = None
-    BOT = None
+    APP: Application = None
     DB: LocalDb = None
     SESSION = ExpiringDict(max_len=1024, max_age_seconds=3600)
     STORES = list()
 
-    def __init__(self, updater: Updater = None, db: LocalDb = None):
-        if updater and not TelegramBotBase.BOT:
-            TelegramBotBase.UPDATER = updater
-            updater.start_polling()
-            TelegramBotBase.BOT = updater.bot
+    def __init__(self, db: LocalDb = None):
         if db and not TelegramBotBase.DB:
             TelegramBotBase.DB = db
 
-    @property
-    def updater(self):
-        return TelegramBotBase.UPDATER
-
-    @property
-    def bot(self):
-        return TelegramBotBase.BOT
+    @classmethod
+    def pull_thread(cls) -> TelegramThreadBase:
+        return TelegramThreadBase.INSTANCE
 
     @property
     def db(self):
@@ -98,7 +102,7 @@ class TelegramBotBase:
     def _symbol_choice(cls):
         return [[item.idx for item in cls._symbol_list()]]
 
-    def _cancel_handler(self, update, context) -> int:
+    async def _cancel_handler(self, update, context) -> int:
         """Cancels and ends the conversation."""
         update.message.reply_text(
             '已取消对话', reply_markup=ReplyKeyboardRemove()
@@ -111,4 +115,7 @@ class TelegramBotBase:
         return CommandHandler('cancel', self._cancel_handler)
 
 
-__all__ = ['TelegramBotBase', ]
+__all__ = [
+    'TelegramBotBase',
+    'TelegramThreadBase',
+]

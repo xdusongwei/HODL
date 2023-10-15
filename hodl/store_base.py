@@ -42,7 +42,6 @@ class StoreBase(ThreadMixin):
             broker=store_config.broker,
             symbol=store_config.symbol,
             chat_id=variable.telegram_chat_id,
-            updater=variable.telegram_updater(),
             db=db,
         )
 

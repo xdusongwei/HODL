@@ -15,13 +15,13 @@ class AlertBot(TelegramBotBase):
     K_THREAD_DEAD = AlertKey(key_template='K_THREAD_DEAD.{symbol}', save_db=False)
     K_TRADE_SERVICE = AlertKey(key_template='K_TRADE_SERVICE.{broker}.{symbol}', save_db=True)
 
-    def __init__(self, broker: str, symbol: str, chat_id = None, updater: Updater = None, db: LocalDb = None):
-        super(AlertBot, self).__init__(updater=updater, db=db)
+    def __init__(self, broker: str, symbol: str, chat_id=None, db: LocalDb = None):
+        super(AlertBot, self).__init__(db=db)
         self.broker = broker
         self.symbol = symbol
         self.chat_id = chat_id
         self.d = dict()
-        self.is_alive = bool(self.BOT and chat_id)
+        self.is_alive = bool(self.pull_thread() and chat_id)
 
     def _format_key(self, key_template: str):
         key = key_template.format(
@@ -69,11 +69,8 @@ class AlertBot(TelegramBotBase):
         if not self.is_alive:
             return
         try:
-            self.bot.sendMessage(
-                chat_id=self.chat_id,
-                text=text,
-                reply_to_message_id=None,
-            )
+            interface = self.pull_thread()
+            interface.send_message(text=text)
         except Exception as e:
             return e
 

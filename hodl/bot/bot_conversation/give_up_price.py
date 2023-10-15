@@ -1,5 +1,6 @@
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
-from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, ConversationHandler, MessageHandler
+from telegram.ext.filters import Regex
 from hodl.bot import TelegramBotBase
 from hodl.state import *
 from hodl.tools import *
@@ -11,11 +12,11 @@ class GiveUpPrice(TelegramBotBase):
     K_GUP_INPUT = 1
     K_GUP_CONFIRM = 2
 
-    def give_up_price_start(self, update, context):
+    async def give_up_price_start(self, update, context):
         lines = self._symbol_lines()
         idx_list = self._symbol_choice()
         if self.DB:
-            update.message.reply_text(
+            await update.message.reply_text(
                 f'你正在尝试设置修改[放弃价格]的设定。 '
                 f'选择需要操作的标的序号\n'
                 f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
@@ -25,24 +26,24 @@ class GiveUpPrice(TelegramBotBase):
             )
             return self.K_GUP_SELECT
         else:
-            update.message.reply_text(
+            await update.message.reply_text(
                 '没有设置数据库，不能设置此项。', reply_markup=ReplyKeyboardRemove()
             )
             return ConversationHandler.END
 
-    def give_up_price_select(self, update, context):
+    async def give_up_price_select(self, update, context):
         idx = int(update.message.text) - 1
         position = self._symbol_list()[idx]
         user_id = update.message.from_user.id
         self._create_session(user_id=user_id, position=position)
-        update.message.reply_text(
+        await update.message.reply_text(
             f'选择了 {position.display} 操作[放弃价格]项目的修改。'
             f'请输入价格，格式要求必须带有小数部分，例如: 3.0。输入0.0代表清除该项目设定。',
             reply_markup=ReplyKeyboardRemove(),
         )
         return self.K_GUP_INPUT
 
-    def give_up_price_input(self, update, context):
+    async def give_up_price_input(self, update, context):
         text = update.message.text
         price = float(text)
         if price <= 0:
@@ -51,20 +52,20 @@ class GiveUpPrice(TelegramBotBase):
         session = self._get_session(user_id=user_id)
         session.value = price
         price_text = FormatTool.pretty_price(price, config=session.position.config)
-        update.message.reply_text(
+        await update.message.reply_text(
             f'确认针对{session.position.display}的[放弃价格]改动为{price_text}? 使用命令 /confirm 来确认',
             reply_markup=ReplyKeyboardRemove(),
         )
         return self.K_GUP_CONFIRM
 
     @classmethod
-    def give_up_price_confirm(cls, update, context):
+    async def give_up_price_confirm(cls, update, context):
         text = update.message.text
         user_id = update.message.from_user.id
         session = cls._get_session(user_id=user_id)
         match text:
             case '/confirm':
-                update.message.reply_text(
+                await update.message.reply_text(
                     f'已经确认改动{session.position.display}的[放弃价格]',
                     reply_markup=ReplyKeyboardRemove(),
                 )
@@ -98,12 +99,12 @@ class GiveUpPrice(TelegramBotBase):
                     text = FormatTool.json_dumps(state)
                     with open(state_path, mode='w', encoding='utf8') as f:
                         f.write(text)
-                    update.message.reply_text(
+                    await update.message.reply_text(
                         f'改动完成，[放弃价格]设定为{plan.give_up_price}',
                         reply_markup=ReplyKeyboardRemove(),
                     )
                 except Exception as e:
-                    update.message.reply_text(
+                    await update.message.reply_text(
                         f'改动失败:{e}',
                         reply_markup=ReplyKeyboardRemove(),
                     )
@@ -112,7 +113,7 @@ class GiveUpPrice(TelegramBotBase):
 
                 return ConversationHandler.END
             case _:
-                update.message.reply_text(
+                await update.message.reply_text(
                     f'非法选择，请重新选择命令',
                     reply_markup=ReplyKeyboardRemove(),
                 )
@@ -124,8 +125,8 @@ class GiveUpPrice(TelegramBotBase):
         handler = ConversationHandler(
             entry_points=[CommandHandler('giveUpPrice', o.give_up_price_start)],
             states={
-                o.K_GUP_SELECT: [MessageHandler(Filters.regex(r'^(\d+)$'), o.give_up_price_select)],
-                o.K_GUP_INPUT: [MessageHandler(Filters.regex(r'^(\d+\.\d+)$'), o.give_up_price_input)],
+                o.K_GUP_SELECT: [MessageHandler(Regex(r'^(\d+)$'), o.give_up_price_select)],
+                o.K_GUP_INPUT: [MessageHandler(Regex(r'^(\d+\.\d+)$'), o.give_up_price_input)],
                 o.K_GUP_CONFIRM: [
                     CommandHandler('confirm', o.give_up_price_confirm),
                 ],

@@ -1,7 +1,9 @@
 import os
 import tomllib
 import tomlkit
-from telegram.ext import Updater
+from telegram import Bot
+from telegram.request import HTTPXRequest
+from telegram.ext import Updater, Application
 from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.locate import LocateTools
 from hodl.tools.store_config import StoreConfig
@@ -107,7 +109,7 @@ class VariableTools:
             )
         return result
 
-    def telegram_updater(self) -> None | Updater:
+    def telegram_application(self):
         """
         Telegram机器人连接设置
         """
@@ -118,15 +120,15 @@ class VariableTools:
         base_file_url = telegram.get('base_file_url')
         if not token:
             return None
-        return Updater(
-            base_url=base_url,
-            base_file_url=base_file_url,
-            token=token,
-            use_context=True,
-            request_kwargs={
-                'proxy_url': proxy_url,
-            },
-        )
+        builder = Application.builder().token(token)
+        if proxy_url:
+            builder.proxy_url(proxy_url)
+        if base_url:
+            builder.base_url(base_url)
+        if base_file_url:
+            builder.base_file_url(base_file_url)
+        app = builder.build()
+        return app
 
     @property
     def telegram_chat_id(self) -> int:

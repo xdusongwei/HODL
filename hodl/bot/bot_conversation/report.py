@@ -1,5 +1,6 @@
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
-from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, ConversationHandler, MessageHandler
+from telegram.ext.filters import Regex
 from hodl.plan_calc import ProfitRow
 from hodl.state import *
 from hodl.storage import StateRow
@@ -11,11 +12,11 @@ from hodl.tools import *
 class Report(TelegramBotBase):
     K_RP_SELECT = 0
 
-    def report_start(self, update, context):
+    async def report_start(self, update, context):
         lines = self._symbol_lines()
         idx_list = self._symbol_choice()
         if self.DB:
-            update.message.reply_text(
+            await update.message.reply_text(
                 f'此命令可以查看持仓的买卖计划。 '
                 f'选择需要操作的标的序号\n'
                 f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
@@ -25,12 +26,12 @@ class Report(TelegramBotBase):
             )
             return self.K_RP_SELECT
         else:
-            update.message.reply_text(
+            await update.message.reply_text(
                 '没有设置数据库，不能查看此项。', reply_markup=ReplyKeyboardRemove()
             )
             return ConversationHandler.END
 
-    def report_select(self, update, context):
+    async def report_select(self, update, context):
         idx = int(update.message.text) - 1
         position = self._symbol_list()[idx]
         store_config = position.config
@@ -69,11 +70,11 @@ class Report(TelegramBotBase):
                     rate = -round(table_row.total_rate * 100 - 100, 2)
                     hit = '[当前]' if max_level == level else ''
                     lines.append(f'{hit}{idx + 1} {buy_at}: {rate:+.2f}%(+{earning_forecast})')
-                update.message.reply_text(
+                await update.message.reply_text(
                     '\n'.join(lines), reply_markup=ReplyKeyboardRemove()
                 )
                 return ConversationHandler.END
-        update.message.reply_text(
+        await update.message.reply_text(
             '该持仓目前没有任何执行计划。', reply_markup=ReplyKeyboardRemove()
         )
         return ConversationHandler.END
@@ -84,7 +85,7 @@ class Report(TelegramBotBase):
         handler = ConversationHandler(
             entry_points=[CommandHandler('report', o.report_start)],
             states={
-                o.K_RP_SELECT: [MessageHandler(Filters.regex(r'^(\d+)$'), o.report_select)],
+                o.K_RP_SELECT: [MessageHandler(Regex(r'^(\d+)$'), o.report_select)],
             },
             fallbacks=[o.cancel_handler()],
         )

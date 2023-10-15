@@ -2,7 +2,7 @@ import os
 import time
 import platform
 from threading import Thread
-from hodl.bot import AlertBot, ConversationBot
+from hodl.bot import AlertBot
 from hodl.storage import *
 from hodl.store import Store
 from hodl.quote_mixin import QuoteMixin
@@ -15,11 +15,12 @@ from hodl.cli.threads.market_status import *
 from hodl.cli.threads.ps_util import *
 from hodl.cli.threads.html_writer import *
 from hodl.cli.threads.json_writer import *
+from hodl.cli.threads.telegram import *
 
 
 class Manager(ThreadMixin):
     DB: LocalDb = None
-    CONVERSATION_BOT: ConversationBot = None
+    CONVERSATION_BOT = None
     MARKET_STATUS_THREAD: Thread = None
     HTML_THREAD: Thread = None
     JSON_THREAD: Thread = None
@@ -80,7 +81,7 @@ class Manager(ThreadMixin):
 
     def primary_bar(self) -> list[BarElementDesc]:
         bar = []
-        if Manager.CONVERSATION_BOT.bot:
+        if Manager.CONVERSATION_BOT:
             bar.append(BarElementDesc(content=f'🤖Telegram', tooltip=f'机器人可以对话或者报警'))
         if Manager.DB:
             bar.append(BarElementDesc(content=f'📼sqlite', tooltip=f'已启用数据库'))
@@ -120,9 +121,17 @@ class Manager(ThreadMixin):
             print('准备数据库')
             db = LocalDb(db_path=path)
             Manager.DB = db
+        if app := var.telegram_application():
+            if chat_id := var.telegram_chat_id:
+                print('准备机器人')
+                Manager.CONVERSATION_BOT = TelegramThread(
+                    app=app,
+                    chat_id=chat_id,
+                ).start(
+                    name='telegram',
+                )
         try:
             print('启动持仓线程')
-            Manager.CONVERSATION_BOT = ConversationBot(updater=var.telegram_updater(), db=db)
             stores = [Store(store_config=config, db=db) for config in store_configs.values()]
             for store in stores:
                 store.prepare()

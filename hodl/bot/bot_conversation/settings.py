@@ -5,7 +5,7 @@ from hodl.tools import FormatTool
 
 
 class Settings(TelegramBotBase):
-    def settings(self, update, context):
+    async def settings(self, update, context):
         text = ''
         for item in self._symbol_list():
             last_buyback_price = ''
@@ -28,7 +28,7 @@ class Settings(TelegramBotBase):
                 f'上次买回价格: {last_buyback_price if last_buyback_price else "无"}\n' \
                 f'临时基准价格: {temp_base_price if temp_base_price else "无"}\n'
             text += part
-        update.message.reply_text(text)
+        await update.message.reply_text(text)
 
     @classmethod
     def handler(cls):

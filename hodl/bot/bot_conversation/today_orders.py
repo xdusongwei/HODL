@@ -5,7 +5,7 @@ from hodl.tools import *
 
 
 class TodayOrders(TelegramBotBase):
-    def today_orders(self, update, context):
+    async def today_orders(self, update, context):
         timestamp = int(TimeTools.us_time_now().timestamp()) - 24 * 60 * 60
         result = '没有数据库用于查询'
         if db := self.db:
@@ -16,7 +16,7 @@ class TodayOrders(TelegramBotBase):
                     result += f'{order_row.summary()}\n'
             else:
                 result = '近24小时没有订单'
-        update.message.reply_text(result)
+        await update.message.reply_text(result)
 
     @classmethod
     def handler(cls):
