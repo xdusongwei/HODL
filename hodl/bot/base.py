@@ -104,7 +104,7 @@ class TelegramBotBase:
 
     async def _cancel_handler(self, update, context) -> int:
         """Cancels and ends the conversation."""
-        update.message.reply_text(
+        await update.message.reply_text(
             '已取消对话', reply_markup=ReplyKeyboardRemove()
         )
         user_id = update.message.from_user.id

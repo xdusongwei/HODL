@@ -1,4 +1,4 @@
-from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
+from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup, Update
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler
 from telegram.ext.filters import Regex
 from hodl.plan_calc import ProfitRow
@@ -12,7 +12,7 @@ from hodl.tools import *
 class Report(TelegramBotBase):
     K_RP_SELECT = 0
 
-    async def report_start(self, update, context):
+    async def report_start(self, update: Update, context):
         lines = self._symbol_lines()
         idx_list = self._symbol_choice()
         if self.DB:
@@ -31,7 +31,7 @@ class Report(TelegramBotBase):
             )
             return ConversationHandler.END
 
-    async def report_select(self, update, context):
+    async def report_select(self, update: Update, context):
         idx = int(update.message.text) - 1
         position = self._symbol_list()[idx]
         store_config = position.config

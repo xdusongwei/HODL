@@ -13,6 +13,11 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         self.chat_id = chat_id
         self.loop = asyncio.new_event_loop()
 
+    def run(self):
+        super().run()
+        TelegramThreadBase.INSTANCE = self
+        asyncio.set_event_loop(self.loop)
+
         from hodl.bot.bot_conversation.monthly_earning import MonthlyEarning
         from hodl.bot.bot_conversation.today_orders import TodayOrders
         from hodl.bot.bot_conversation.settings import Settings
@@ -27,7 +32,7 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         from hodl.bot.bot_conversation.revive_store import ReviveStore
         from hodl.bot.bot_conversation.give_up_price import GiveUpPrice
 
-        dispatcher = app
+        dispatcher = self.app
         dispatcher.add_handler(MonthlyEarning.handler())
         dispatcher.add_handler(TodayOrders.handler())
         dispatcher.add_handler(Settings.handler())
@@ -42,11 +47,15 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         dispatcher.add_handler(ReviveStore.handler())
         dispatcher.add_handler(GiveUpPrice.handler())
 
-    def run(self):
-        super().run()
-        TelegramThreadBase.INSTANCE = self
-        asyncio.set_event_loop(self.loop)
-        self.app.run_polling(allowed_updates=Update.ALL_TYPES, stop_signals=list(), close_loop=False)
+        self.app.run_polling(
+            timeout=20,
+            read_timeout=20.0,
+            write_timeout=20.0,
+            allowed_updates=Update.ALL_TYPES,
+            stop_signals=list(),
+            close_loop=False,
+            drop_pending_updates=False,
+        )
 
     def application(self) -> Application:
         return self.app

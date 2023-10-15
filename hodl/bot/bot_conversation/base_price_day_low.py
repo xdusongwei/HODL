@@ -46,7 +46,7 @@ class BasePriceDayLow(TelegramBotBase):
             case '/off':
                 value = False
             case _:
-                update.message.reply_text(
+                await update.message.reply_text(
                     f'非法选择，请重新选择命令',
                     reply_markup=ReplyKeyboardRemove(),
                 )

@@ -121,6 +121,9 @@ class VariableTools:
         if not token:
             return None
         builder = Application.builder().token(token)
+        builder.connect_timeout(20)
+        builder.read_timeout(20)
+        builder.write_timeout(20)
         if proxy_url:
             builder.proxy_url(proxy_url)
         if base_url:
