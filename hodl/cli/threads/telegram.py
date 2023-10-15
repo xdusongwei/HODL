@@ -1,6 +1,6 @@
 import asyncio
 import threading
-from telegram import Message
+from telegram import Message, Update
 from telegram.ext import Application
 from hodl.bot.base import TelegramThreadBase
 from hodl.thread_mixin import ThreadMixin
@@ -46,7 +46,7 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         super().run()
         TelegramThreadBase.INSTANCE = self
         asyncio.set_event_loop(self.loop)
-        self.app.run_polling(stop_signals=list(), close_loop=False)
+        self.app.run_polling(allowed_updates=Update.ALL_TYPES, stop_signals=list(), close_loop=False)
 
     def application(self) -> Application:
         return self.app
