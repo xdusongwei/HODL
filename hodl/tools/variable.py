@@ -126,6 +126,7 @@ class VariableTools:
         builder.write_timeout(20)
         if proxy_url:
             builder.proxy_url(proxy_url)
+            builder.get_updates_proxy_url(proxy_url)
         if base_url:
             builder.base_url(base_url)
         if base_file_url:
