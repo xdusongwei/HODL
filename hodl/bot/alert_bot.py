@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from telegram.ext import Updater
 from hodl.storage import *
 from hodl.tools import *
 from hodl.bot.base import TelegramBotBase

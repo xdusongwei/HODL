@@ -1,6 +1,7 @@
+import sqlite3
+import threading
 from datetime import timedelta
 from dataclasses import dataclass, field
-import sqlite3
 from hodl.state import *
 from hodl.tools import FormatTool, TimeTools
 
@@ -44,26 +45,33 @@ class EarningRow:
 
     @classmethod
     def items_after_time(cls, con: sqlite3.Connection, create_time: int):
-        cur = con.cursor()
-        cur.execute("SELECT * FROM `earning` WHERE create_time >= ? ORDER BY `create_time` DESC;", (create_time,))
-        items = cur.fetchall()
+        sql = "SELECT * FROM `earning` WHERE create_time >= ? ORDER BY `create_time` DESC;"
+        with con:
+            cur = con.cursor()
+            cur.execute(sql, (create_time,))
+            items = cur.fetchall()
         items = map(lambda item: EarningRow(**item), items)
         return items
 
     @classmethod
     def total_amount_before_time(cls, con: sqlite3.Connection, create_time: int, currency: str) -> int:
-        cur = con.cursor()
-        cur.execute("SELECT SUM(`amount`) FROM `earning` WHERE create_time < ? AND `currency` = ?;", (create_time, currency, ))
-        item = cur.fetchone()[0]
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT SUM(`amount`) FROM `earning` WHERE create_time < ? AND `currency` = ?;",
+                        (create_time, currency,))
+            item = cur.fetchone()[0]
         return item or 0
 
     @classmethod
     def latest_earning_by_symbol(cls, con: sqlite3.Connection, symbol: str, days: int = 14):
+        sql = "SELECT * FROM `earning` WHERE `symbol` = ? AND `buyback_price` IS NOT NULL AND `day` >= ? " \
+              "ORDER BY `day` DESC LIMIT 1;"
         begin_date = TimeTools.timedelta(TimeTools.utc_now(), days=-days)
         begin_day = int(begin_date.strftime('%Y%m%d'))
-        cur = con.cursor()
-        cur.execute("SELECT * FROM `earning` WHERE `symbol` = ? AND `buyback_price` IS NOT NULL AND `day` >= ? ORDER BY `day` DESC LIMIT 1;", (symbol, begin_day, ))
-        row = cur.fetchone()
+        with con:
+            cur = con.cursor()
+            cur.execute(sql, (symbol, begin_day,))
+            row = cur.fetchone()
         if row:
             item = EarningRow(**row)
             return item
@@ -79,14 +87,15 @@ class EarningRow:
 
         begin_date = TimeTools.utc_now() + timedelta(days=-30 * month)
         begin_month = int(begin_date.strftime('%Y%m'))
-        cur = con.cursor()
-        cur.execute(
-            "SELECT substr( `day`, 1, 6) AS `month`, `currency`, sum(`amount`) AS `total` "
-            "FROM `earning` "
-            "WHERE `day` >= ? "
-            "GROUP BY substr( `day`, 1, 6), `currency` "
-            "ORDER BY substr( `day`, 1, 6) DESC, `currency`;", (begin_month,))
-        items = cur.fetchall()
+        with con:
+            cur = con.cursor()
+            cur.execute(
+                "SELECT substr( `day`, 1, 6) AS `month`, `currency`, sum(`amount`) AS `total` "
+                "FROM `earning` "
+                "WHERE `day` >= ? "
+                "GROUP BY substr( `day`, 1, 6), `currency` "
+                "ORDER BY substr( `day`, 1, 6) DESC, `currency`;", (begin_month,))
+            items = cur.fetchall()
         items = list(map(lambda item: _MonthlyEarning(**item), items))
         return items
 
@@ -122,17 +131,22 @@ class OrderRow:
 
     @classmethod
     def items_after_create_time(cls, con: sqlite3.Connection, create_time: int):
-        cur = con.cursor()
-        cur.execute("SELECT * FROM `orders` WHERE `create_time` >= ? ORDER BY `create_time` DESC;", (create_time,))
-        items = cur.fetchall()
+        sql = "SELECT * FROM `orders` WHERE `create_time` >= ? ORDER BY `create_time` DESC;"
+        with con:
+            cur = con.cursor()
+            cur.execute(sql, (create_time,))
+            items = cur.fetchall()
         items = map(lambda item: OrderRow(**item), items)
         return items
 
     @classmethod
     def simple_items_after_create_time(cls, con: sqlite3.Connection, create_time: int):
-        cur = con.cursor()
-        cur.execute("SELECT `unique_id`, `symbol`, `order_id`, `region`, `broker`, `create_time`, `update_time` FROM `orders` WHERE `create_time` >= ? ORDER BY `create_time` DESC;", (create_time,))
-        items = cur.fetchall()
+        sql = "SELECT `unique_id`, `symbol`, `order_id`, `region`, `broker`, `create_time`, `update_time` " \
+              "FROM `orders` WHERE `create_time` >= ? ORDER BY `create_time` DESC;"
+        with con:
+            cur = con.cursor()
+            cur.execute(sql, (create_time,))
+            items = cur.fetchall()
         items = map(lambda item: OrderRow(**item), items)
         return items
 
@@ -187,12 +201,13 @@ class StateRow:
 
     @classmethod
     def query_by_symbol_latest(cls, con: sqlite3.Connection, symbol: str):
-        cur = con.cursor()
-        cur.execute(
-            "SELECT * FROM `state_archive` WHERE `symbol` = ? ORDER BY `version` DESC LIMIT 1;",
-            (symbol, )
-        )
-        row = cur.fetchone()
+        with con:
+            cur = con.cursor()
+            cur.execute(
+                "SELECT * FROM `state_archive` WHERE `symbol` = ? ORDER BY `version` DESC LIMIT 1;",
+                (symbol,)
+            )
+            row = cur.fetchone()
         if row:
             item = StateRow(**row)
             return item
@@ -210,12 +225,13 @@ class TempBasePriceRow:
     @classmethod
     def query_by_symbol(cls, con: sqlite3.Connection, symbol: str):
         ts = int(TimeTools.us_time_now().timestamp())
-        cur = con.cursor()
-        cur.execute(
-            "SELECT * FROM `temp_base_price` WHERE symbol = ? AND expiry_time > ? LIMIT 1;",
-            (symbol, ts, )
-        )
-        row = cur.fetchone()
+        with con:
+            cur = con.cursor()
+            cur.execute(
+                "SELECT * FROM `temp_base_price` WHERE symbol = ? AND expiry_time > ? LIMIT 1;",
+                (symbol, ts,)
+            )
+            row = cur.fetchone()
         if row:
             item = TempBasePriceRow(**row)
             return item
@@ -258,9 +274,10 @@ class AlarmRow:
 
     @classmethod
     def query_by_key(cls, con: sqlite3.Connection, key: str):
-        cur = con.cursor()
-        cur.execute("SELECT * FROM `alarm` WHERE `key` = ?;", (key,))
-        item = cur.fetchone()
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * FROM `alarm` WHERE `key` = ?;", (key,))
+            item = cur.fetchone()
         if item:
             return AlarmRow(**item)
         return AlarmRow(
@@ -280,18 +297,18 @@ class QuoteLowHistoryRow:
     id: int = None
 
     def save(self, con: sqlite3.Connection):
+        sql = "REPLACE INTO `quote_low_history`(`broker`, `region`, `symbol`, `day`, `low_price`, `update_time`) " \
+              "VALUES (?, ?, ?, ?, ?, ?);"
+        params = (
+            self.broker,
+            self.region,
+            self.symbol,
+            self.day,
+            self.low_price,
+            self.update_time,
+        )
         with con:
-            con.execute(
-                "REPLACE INTO `quote_low_history`(`broker`, `region`, `symbol`, `day`, `low_price`, `update_time`) "
-                "VALUES (?, ?, ?, ?, ?, ?);",
-                (
-                    self.broker,
-                    self.region,
-                    self.symbol,
-                    self.day,
-                    self.low_price,
-                    self.update_time,
-                ))
+            con.execute(sql, params)
 
     @classmethod
     def query_by_symbol(
@@ -303,11 +320,13 @@ class QuoteLowHistoryRow:
             begin_day: int,
             end_day: int,
     ) -> list['QuoteLowHistoryRow']:
-        cur = con.cursor()
-        cur.execute(
-            "SELECT `broker`, `region`, `symbol`, `day`, `low_price`, `update_time` FROM `quote_low_history` WHERE `broker` = ? AND `region` = ? AND `symbol` = ? AND `day` >= ? AND `day` <= ? ORDER BY `day` DESC;",
-            (broker, region, symbol, begin_day, end_day, ))
-        items = cur.fetchall()
+        sql = "SELECT `broker`, `region`, `symbol`, `day`, `low_price`, `update_time` FROM `quote_low_history` " \
+              "WHERE `broker` = ? AND `region` = ? AND `symbol` = ? AND `day` >= ? AND `day` <= ? ORDER BY `day` DESC;"
+        params = (broker, region, symbol, begin_day, end_day,)
+        with con:
+            cur = con.cursor()
+            cur.execute(sql, params)
+            items = cur.fetchall()
         items = list(map(lambda item: QuoteLowHistoryRow(**item), items))
         return items
 
@@ -323,18 +342,18 @@ class QuoteHighHistoryRow:
     id: int = None
 
     def save(self, con: sqlite3.Connection):
+        sql = "REPLACE INTO `quote_high_history`(`broker`, `region`, `symbol`, `day`, `high_price`, `update_time`) " \
+              "VALUES (?, ?, ?, ?, ?, ?);"
+        params = (
+            self.broker,
+            self.region,
+            self.symbol,
+            self.day,
+            self.high_price,
+            self.update_time,
+        )
         with con:
-            con.execute(
-                "REPLACE INTO `quote_high_history`(`broker`, `region`, `symbol`, `day`, `high_price`, `update_time`) "
-                "VALUES (?, ?, ?, ?, ?, ?);",
-                (
-                    self.broker,
-                    self.region,
-                    self.symbol,
-                    self.day,
-                    self.high_price,
-                    self.update_time,
-                ))
+            con.execute(sql, params)
 
     @classmethod
     def query_by_symbol(
@@ -346,18 +365,32 @@ class QuoteHighHistoryRow:
             begin_day: int,
             end_day: int,
     ) -> list['QuoteHighHistoryRow']:
-        cur = con.cursor()
-        cur.execute(
-            "SELECT `broker`, `region`, `symbol`, `day`, `high_price`, `update_time` FROM `quote_high_history` WHERE `broker` = ? AND `region` = ? AND `symbol` = ? AND `day` >= ? AND `day` <= ? ORDER BY `day` DESC;",
-            (broker, region, symbol, begin_day, end_day, ))
-        items = cur.fetchall()
+        sql = "SELECT `broker`, `region`, `symbol`, `day`, `high_price`, `update_time` FROM `quote_high_history` " \
+              "WHERE `broker` = ? AND `region` = ? AND `symbol` = ? AND `day` >= ? AND `day` <= ? ORDER BY `day` DESC;"
+        params = (broker, region, symbol, begin_day, end_day,)
+        with con:
+            cur = con.cursor()
+            cur.execute(sql, params)
+            items = cur.fetchall()
         items = list(map(lambda item: QuoteHighHistoryRow(**item), items))
         return items
 
 
+class SqliteConnWithLock(sqlite3.Connection):
+    DB_LOCK = threading.RLock()
+
+    def __enter__(self):
+        super().__enter__()
+        SqliteConnWithLock.DB_LOCK.acquire(blocking=True)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        SqliteConnWithLock.DB_LOCK.release()
+        super().__exit__(exc_type, exc_val, exc_tb)
+
+
 class LocalDb:
     def __init__(self, db_path):
-        con = sqlite3.connect(db_path, check_same_thread=False, isolation_level=None)
+        con = sqlite3.connect(db_path, factory=SqliteConnWithLock, check_same_thread=False, isolation_level=None)
         con.row_factory = sqlite3.Row
         cur = con.cursor()
         cur.execute('''CREATE TABLE IF NOT EXISTS earning (
@@ -387,7 +420,8 @@ class LocalDb:
                 `update_time` INTEGER NOT NULL
                 );''')
         cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_state_archive_main ON `state_archive` (`version`);')
-        cur.execute('CREATE INDEX IF NOT EXISTS idx_state_archive_symbol_version ON `state_archive` (`symbol`, `version`);')
+        cur.execute(
+            'CREATE INDEX IF NOT EXISTS idx_state_archive_symbol_version ON `state_archive` (`symbol`, `version`);')
 
         cur.execute('''CREATE TABLE IF NOT EXISTS `orders` (
                         id INTEGER PRIMARY KEY, 
@@ -431,7 +465,8 @@ class LocalDb:
                                                 `low_price` REAL NOT NULL,
                                                 `update_time` INTEGER NOT NULL
                                                 );''')
-        cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_quote_low_history_search ON `quote_low_history` (`broker`, `region`, `symbol`, `day`);')
+        cur.execute(
+            'CREATE UNIQUE INDEX IF NOT EXISTS idx_quote_low_history_search ON `quote_low_history` (`broker`, `region`, `symbol`, `day`);')
 
         cur.execute('''CREATE TABLE IF NOT EXISTS `quote_high_history` (
                                                         id INTEGER PRIMARY KEY,

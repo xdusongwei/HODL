@@ -54,14 +54,5 @@ $ pdm install
 
 启动服务:
 ```bash
-$ pdm run bot
+$ pdm bot
 ```
-
-
-编写新broker
-------------
-
-*   继承`BrokerApiBase`
-*   如果需要初始化客户端，覆盖`__post_init__`方法
-*   根据需要完成`BrokerApiMixin`的部分接口
-*   设定broker的种类名称`BROKER_NAME`和broker的工作描述定义`META`数组
