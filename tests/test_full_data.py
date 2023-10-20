@@ -25,7 +25,7 @@ class FullDataTestCase(unittest.TestCase):
             quote_length = 30
         elif full_test_mode == 'skip':
             return
-        quote_csv = LocateTools.locate_file('data/tigr.csv')
+        quote_csv = LocateTools.locate_file('tests/data/tigr.csv')
         self.STORE = start_simulation(symbol='TIGR', quote_csv=quote_csv, quote_length=quote_length)
 
     def tearDown(self):
