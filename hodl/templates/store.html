@@ -11,8 +11,8 @@
         </span>
         {% endif %}
     </p>
-    <p class="mb-0">[{{ store_config.region }}]{{ store_config.symbol }}<span class="text-muted ms-2">{{ FMT.pretty_dt(state.quote_time, region=store_config.region, with_year=True, with_tz=True)[:24] }}</span></p>
-    <p class="text-muted fs-6">
+    <p class="mb-0">[{{ store_config.region }}]{{ store_config.symbol }}<span class="text-secondary ms-2">{{ FMT.pretty_dt(state.quote_time, region=store_config.region, with_year=True, with_tz=True)[:24] }}</span></p>
+    <p class="text-secondary fs-6">
         {% if broker_icon_path %}
             <span class="badge bg-secondary">市场:{{ FMT.html_broker_name(broker_icon_path, state.market_status_name, state.market_status_display)|safe }}</span>
             <span class="badge bg-secondary">行情:{{ FMT.html_broker_name(broker_icon_path, state.quote_broker, state.quote_broker_display)|safe }}</span>
@@ -74,25 +74,30 @@
                       {% for row in row_tool.rows %}
                         {% set earning_forecast = row_tool.earning_forecast(row.total_rate) %}
                         <tr>
-                            <th scope="row" class="text-end">{{ loop.index }}</th>
+                            {% if row_tool.filled_level >= loop.index %}
+                                {% set text_color = "text-end" %}
+                            {% else %}
+                                {% set text_color = "text-end text-secondary" %}
+                            {% endif %}
+                            <th scope="row" class="{{ text_color }}">{{ loop.index }}</th>
                             {% if row_tool.filled_level >= loop.index %}
                                 <td>✅</td>
                             {% else %}
                                 <td>⏳</td>
                             {% endif %}
-                            <td class="text-end">
+                            <td class="{{ text_color }}">
                                 {{ FMT.pretty_price(row.sell_at, config=store_config) }}
                             </td>
-                            <td class="text-end">
+                            <td class="{{ text_color }}">
                                 {{ FMT.factor_to_percent(row.shares / total_chips, fmt="{:.1%}") }}
                             </td>
-                            <td class="text-end">
+                            <td class="{{ text_color }}">
                                 {{ FMT.pretty_price(row.buy_at, config=store_config) }}
                             </td>
-                            <td class="text-end">
+                            <td class="{{ text_color }}">
                                 {{ FMT.pretty_price(earning_forecast, config=store_config, only_int=True) }}
                             </td>
-                            <td class="text-end d-none d-sm-table-cell">
+                            <td class="{{ text_color }} d-none d-sm-table-cell">
                                 {{ '%.2f%%'|format(row.total_rate * 100 - 100) }}
                             </td>
                         </tr>

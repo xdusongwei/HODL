@@ -3,7 +3,6 @@ import datetime
 import dataclasses
 import traceback
 import pytz
-from hodl.exception_tools import *
 from hodl.storage import *
 from hodl.store import Store
 from hodl.thread_mixin import *
