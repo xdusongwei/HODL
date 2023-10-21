@@ -7,10 +7,12 @@ from hodl.tools import *
 
 
 class PsUtilThread(ThreadMixin):
-    BUFF_BAR = list()
+    def __init__(self):
+        super().__init__()
+        self.bar_items = list()
 
     def secondary_bar(self) -> list[BarElementDesc]:
-        return PsUtilThread.BUFF_BAR
+        return self.bar_items
 
     @classmethod
     def collect(cls):
@@ -39,7 +41,7 @@ class PsUtilThread(ThreadMixin):
         super(PsUtilThread, self).run()
         while True:
             try:
-                PsUtilThread.BUFF_BAR = self.collect()
+                self.bar_items = self.collect()
             except Exception as e:
                 traceback.print_exc()
                 time.sleep(10)

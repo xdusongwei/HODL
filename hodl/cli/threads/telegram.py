@@ -3,7 +3,7 @@ import threading
 from telegram import Message, Update
 from telegram.ext import Application
 from hodl.bot.base import TelegramThreadBase
-from hodl.thread_mixin import ThreadMixin
+from hodl.thread_mixin import *
 
 
 class TelegramThread(ThreadMixin, TelegramThreadBase):
@@ -12,6 +12,8 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         self.app = app
         self.chat_id = chat_id
         self.loop = asyncio.new_event_loop()
+        self.ok_counter = 0
+        self.error_counter = 0
 
     def run(self):
         super().run()
@@ -48,9 +50,9 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         dispatcher.add_handler(GiveUpPrice.handler())
 
         self.app.run_polling(
-            timeout=20,
-            read_timeout=20.0,
-            write_timeout=20.0,
+            timeout=15,
+            read_timeout=15.0,
+            write_timeout=15.0,
             allowed_updates=Update.ALL_TYPES,
             stop_signals=list(),
             close_loop=False,
@@ -77,8 +79,18 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         task.add_done_callback(lambda s: evt.set())
         evt.wait()
         if e := task.exception():
+            self.error_counter += 1
             raise e
+        self.ok_counter += 1
         return task.result()
+
+    def primary_bar(self) -> list[BarElementDesc]:
+        bar = list()
+        elem = BarElementDesc(
+            content=f'✅{self.ok_counter}❌{self.error_counter}',
+        )
+        bar.append(elem)
+        return bar
 
 
 __all__ = ['TelegramThread', ]
