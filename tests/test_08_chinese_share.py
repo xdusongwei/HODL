@@ -8,9 +8,6 @@ class ChineseShareTestCase(unittest.TestCase):
         测试当日卖出价格限制在昨收价的110%,
         并且执行计划中的卖出股数以100为倍数,
         核算全部卖出量等于总持仓量.
-        Returns
-        -------
-
         """
         pc = 10.0
         p0 = pc

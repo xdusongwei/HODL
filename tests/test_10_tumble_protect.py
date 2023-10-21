@@ -6,6 +6,10 @@ from hodl.tools import *
 
 
 class TumbleProtectTestCase(unittest.TestCase):
+    """
+    验证各种暴跌保护机制可以按照预期设定抑制交易行为。
+    """
+
     def test_tp_ma(self):
         config = VariableTools().store_configs['TEST']
         config['base_price_tumble_protect'] = True

@@ -5,6 +5,7 @@ from hodl.tools import *
 
 class OrderTestCase(unittest.TestCase):
     def test_market_price_order(self):
+        # 验证股价已按照设定，大幅偏离执行计划的价格，买卖订单应使用市价单。
         config = VariableTools().store_configs['TEST']
         config['market_price_rate'] = 0.02
         pc = 10.0
@@ -26,6 +27,8 @@ class OrderTestCase(unittest.TestCase):
         assert buy_order.is_filled
 
     def test_price_rate(self):
+        # 验证 price_rate 设定对执行计划的幅度进行缩放，
+        # 默认涨3%开始卖出，由于缩放系数是 0.5，那么应涨1.5%时应卖出，保持涨0%(0% * 0.5 = 0%)时买入。
         config = VariableTools().store_configs['TEST']
         config['price_rate'] = 0.5
         pc = 10.0
@@ -46,6 +49,7 @@ class OrderTestCase(unittest.TestCase):
         assert buy_order.is_filled
 
     def test_spread_by_points(self):
+        # 验证点差(交易所成本，固定费用)被计算在执行计划的价格中。
         config = VariableTools().store_configs['TEST']
         config['sell_spread'] = 0.03
         config['buy_spread'] = 0.04
@@ -66,6 +70,7 @@ class OrderTestCase(unittest.TestCase):
         assert buy_order.spread == 0.04
 
     def test_spread_by_rate(self):
+        # 验证点差(交易所成本，按预期价格乘以设定的费用比例)被计算在执行计划的价格中。
         config = VariableTools().store_configs['TEST']
         config['sell_spread_rate'] = None
         config['buy_spread_rate'] = None
@@ -88,6 +93,7 @@ class OrderTestCase(unittest.TestCase):
         assert buy_order.spread == 0.04
 
     def test_custom_factors(self):
+        # 验证自定义因子表可以计算出自定义的执行计划，并且可以正常下单使用。
         config = VariableTools().store_configs['TEST']
         config['factors'] = [
             [1.1, 1.0, 1.0, ],

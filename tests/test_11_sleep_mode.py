@@ -6,6 +6,9 @@ from hodl.sleep_mixin import *
 
 class SleepModeTestCase(unittest.TestCase):
     def test_calendar(self):
+        # 验证第三方交易日历模块可以正确判断各个市场的节假日，
+        # 第三方交易日历模块从不用于决定开盘时段，市场开盘时段完全由券商提供的市场状态接口来判断。
+        # 第三方交易日历模块仅用于当市场状态为非交易时段时，控制持仓线程的刷新时间间隔来节省线程计算量。
         var = VariableTools()
         us_store_config = var.store_configs['TEST']
         cn_store_config = var.store_configs['000001']

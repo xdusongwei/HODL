@@ -5,6 +5,8 @@ from hodl.tools import *
 
 class SubmitOrderTestCase(unittest.TestCase):
     def test_submit_order(self):
+        # 根据持仓状态的执行计划，计算得出的价格，验证边界价格不会触发下单。
+        # 差一个变动单位的价差(该测试持仓的价格精度是两位小数，那么这里即0.01)都不应下达买卖订单
         config = VariableTools().store_configs['TEST']
         pc = 10.0
         p0 = pc
