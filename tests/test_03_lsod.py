@@ -6,7 +6,7 @@ from hodl.unit_test import *
 
 class LsodTestCase(unittest.TestCase):
     def test_lsod(self):
-        # 第一天触发卖出, 并且走完收盘时段, 第二天再触发买入, 整个过程lsod检测应通过
+        # 第一天触发卖出, 并且运行到收盘时段, 第二天盘中再触发买入, 整个过程lsod检测符合正常预期，应通过。
         seal = 'ClosingChecked'
         pc = 10.0
         p0 = pc
@@ -56,7 +56,7 @@ class LsodTestCase(unittest.TestCase):
             assert not state.has_lsod_seal(seal)
 
     def test_lsod_empty_orders(self):
-        # 下面的例子中, 盘中没有任何下单, 所以, lsod字段应为空, 即不需要记录当天需要待检查订单
+        # 下面的例子中, 盘中没有任何下单, 所以, lsod字段应为空, 即不需要设定收盘时需要检查活动订单的状态。
         pc = 10.0
         p = pc
         tickets = [
@@ -83,6 +83,7 @@ class LsodTestCase(unittest.TestCase):
             assert not state.is_lsod_today
 
     def test_lsod_except_at_trading(self):
+        # 验证第一天下单，但是未运行到收盘时段，没有检查活动订单的状态，第二天开盘，lsod检查应触发风控异常。
         seal = 'ClosingChecked'
         pc = 10.0
         p = pc * 1.03
@@ -108,6 +109,8 @@ class LsodTestCase(unittest.TestCase):
                 store.run(output_state=False)
 
     def test_lsod_except_at_closing(self):
+        # 验证第一天下单，但是未运行到收盘时段，没有检查活动订单的状态，第二天收盘恢复系统运行，lsod检查应触发风控异常，
+        # 即验证当日的订单检查必须是当天的收盘时段。
         seal = 'ClosingChecked'
         pc = 10.0
         p = pc * 1.03
@@ -133,6 +136,7 @@ class LsodTestCase(unittest.TestCase):
                 store.run(output_state=False)
 
     def test_lsod_crypto(self):
+        # 加密货币的持仓中人工设定的一天收盘时间段配置，应可以正确处理订单状态检查。
         seal = 'ClosingChecked'
         pc = 30000.0
         p = pc * 1.03

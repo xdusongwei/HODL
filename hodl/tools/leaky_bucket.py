@@ -1,16 +1,26 @@
 import math
-from hodl.tools.time import TimeTools
 from threading import Lock
+from hodl.tools.time import TimeTools
 
 
 class LeakyBucket:
-    def __init__(self, leak_rate: float = 10, capacity: int = None):
+    def __init__(self, leak_rate: float = 10, capacity: int = None, used_tokens: int = None):
         assert isinstance(leak_rate, (int, float, ))
         assert leak_rate > 0
+
         if capacity is None:
             capacity = 1
+        assert isinstance(capacity, int)
+        assert capacity > 0
+
+        if used_tokens is None:
+            used_tokens = 0
+        assert isinstance(used_tokens, int)
+        assert used_tokens >= 0
+
+        assert capacity >= used_tokens
         self._capacity = capacity
-        self._used_tokens = 0
+        self._used_tokens = used_tokens
         self._leak_rate = float(leak_rate)
         self._last_time = TimeTools.utc_now().timestamp()
         self._lock = Lock()

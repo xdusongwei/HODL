@@ -7,6 +7,7 @@ from hodl.tools.store_state_base import StoreStateBase
 
 
 class TimeTools:
+    # 一个由线程id为键用于存储线程应使用的默认时区信息
     THREAD_TZ: dict[int, str] = dict()
 
     @classmethod
@@ -50,6 +51,10 @@ class TimeTools:
 
     @classmethod
     def us_time_now(cls, tz: str = None) -> datetime:
+        """
+        通常用于获取当前线程的时间日期对象，会附上线程设置的时区信息。
+        函数名中的us是开发历史问题，并非指美国地区当前时间。
+        """
         tz = tz if tz else cls.current_tz()
         return pytz.utc.localize(cls.utc_now()).astimezone(pytz.timezone(tz))
 

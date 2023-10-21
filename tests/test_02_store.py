@@ -5,7 +5,16 @@ from hodl.tools import *
 
 
 class StoreTestCase(unittest.TestCase):
+    """
+    持仓测试验证持仓处理可以正确处理市场信号，计算正确的状态数据，
+    下达预期的买卖指令等。
+    """
+
     def test_market_not_ready(self):
+        """
+        验证即便时间进入新的一天，但没有正确的开盘信号前，不应将当日持仓数量(chip_count)写入状态中，
+        chip_count 是一个每日盘中初始时去更新的数据之一，盘前任何时段，系统都不应进行改动这些数据项。
+        """
         tickets = [
             Ticket(day='23-04-10T09:29:00-04:00:00', ms='-', qs='NORMAL', pre_close=1.0, open=10.0, latest=10.0, ),
             Ticket(day='23-04-10T09:29:10-04:00:00', ms='-', qs='NORMAL', pre_close=1.0, open=10.0, latest=20.0, ),
@@ -18,6 +27,9 @@ class StoreTestCase(unittest.TestCase):
         assert state.chip_count is None
 
     def test_stock_not_ready(self):
+        """
+        验证即便市场信号已经是盘中交易时段(TRADING)，但是行情状态并非正常(NORMAL)，即使股价非常高，系统不应下达卖出指令。
+        """
         tickets = [
             Ticket(day='23-04-10T09:30:00-04:00:00', ms='TRADING', qs='', pre_close=10.0, open=10.0, latest=10.0, ),
             Ticket(day='23-04-10T09:30:10-04:00:00', ms='TRADING', qs='', pre_close=10.0, open=10.0, latest=20.0, ),
@@ -31,6 +43,9 @@ class StoreTestCase(unittest.TestCase):
         assert plan.sell_volume == 0
 
     def test_price_not_change(self):
+        """
+        验证平盘开盘时，系统的一些关键持仓状态属性被正确更新，而且因为平盘，不应下达过任何买卖指令。
+        """
         p = 10.0
         tickets = [
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=p, open=p, latest=p, ),
@@ -52,6 +67,9 @@ class StoreTestCase(unittest.TestCase):
         assert plan.cleanable
 
     def test_price_drop(self):
+        """
+        验证暴跌开盘，系统的一些关键持仓状态属性被正确更新，而且因为股价未上涨，不应下达卖出指令。
+        """
         pc = 20.0
         p = 10.0
         tickets = [
@@ -72,6 +90,9 @@ class StoreTestCase(unittest.TestCase):
         assert plan.cleanable
 
     def test_price_raise_3p(self):
+        """
+        验证涨3%开盘，系统的一些关键持仓状态属性被正确更新，而且因为股价上涨符合预期，应下达卖出指令，产生卖出交易量。
+        """
         pc = 10.0
         p = pc * 1.03
         tickets = [
@@ -95,10 +116,7 @@ class StoreTestCase(unittest.TestCase):
 
     def test_quote_error(self):
         """
-        模拟行情数据时间错乱, 推送了超过3%的旧数据, 结果应为不卖出股票
-        Returns
-        -------
-
+        模拟行情数据时间错乱, 推送了超过3%的旧数据, 结果应为不卖出股票。
         """
         pc = 10.0
         p0 = pc
@@ -124,10 +142,8 @@ class StoreTestCase(unittest.TestCase):
 
     def test_sell_and_buy(self):
         """
-        完成买卖完整一档, 并得到收益
-        Returns
-        -------
-
+        完成买卖完整一档, 即涨3%卖出一部分, 跌回0%买回卖出的部分，并得到收益，
+        同时验证模拟状态文件被成功触发写盘。
         """
         VariableTools.DEBUG_CONFIG = {
             'earning_json_path': '/a/b/c/earning.json'
@@ -174,6 +190,7 @@ class StoreTestCase(unittest.TestCase):
         store.call_bars()
 
     def test_state_file(self):
+        # 验证开盘后，模拟状态文件写盘动作被触发。
         store_config = VariableTools().store_configs['TEST']
         store_config['state_file_path'] = '/a/b/c.json'
         pc = 10.0
@@ -189,6 +206,7 @@ class StoreTestCase(unittest.TestCase):
         assert files['/a/b/c.json']
 
     def test_bars(self):
+        # 触发持仓线程的监控可视化状态更新动作，覆盖测试相关代码。
         pc = 10.0
         p0 = pc
         tickets = [
