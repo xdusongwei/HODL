@@ -34,7 +34,7 @@ class TelegramThreadBase(abc.ABC):
     def application(self) -> Application:
         raise NotImplementedError
 
-    def send_message(self, text: str) -> Message:
+    def send_message(self, text: str, block=True, disable_notification=None) -> Message:
         raise NotImplementedError
 
 

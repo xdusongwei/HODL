@@ -64,12 +64,12 @@ class AlertBot(TelegramBotBase):
             self._save_value(key=key, value=True, save_db=alert_key.save_db)
             self.send_text(text=text)
 
-    def send_text(self, text: str):
+    def send_text(self, text: str, block=True, disable_notification=None):
         if not self.is_alive:
             return
         try:
             interface = self.pull_thread()
-            interface.send_message(text=text)
+            interface.send_message(text=text, block=block, disable_notification=disable_notification)
         except Exception as e:
             return e
 

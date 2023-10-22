@@ -31,6 +31,7 @@ class FormatTool:
             region=None,
             with_year=True,
             with_tz=False,
+            with_ms=True,
     ) -> str:
         if v is None:
             return '--'
@@ -49,6 +50,8 @@ class FormatTool:
         iso_format = dt.isoformat(timespec='milliseconds')
         if not with_year:
             iso_format = iso_format[5:]
+        if not with_ms:
+            iso_format = iso_format[:-10]
         if with_tz:
             return f'{tz_name}: {iso_format}'
         return iso_format

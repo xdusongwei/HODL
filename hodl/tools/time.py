@@ -1,5 +1,6 @@
-import threading
+import re
 import time
+import threading
 from datetime import datetime, timedelta
 import pytz
 import humanize
@@ -64,6 +65,20 @@ class TimeTools:
             return date.strftime('%Y-%m-%d')
         else:
             return date.strftime('%Y%m%d')
+
+    @classmethod
+    def format_ymd(cls, s: str | int) -> str:
+        if s is None:
+            return '--'
+        elif isinstance(s, int):
+            s = str(s)
+        if m := re.match(r'^(\d{4})(\d{2})(\d{2})$', s):
+            yyyy, mm, dd = m.groups()
+            return f'{yyyy}-{mm}-{dd}'
+        elif re.match(r'^(\d{4})-(\d{2})-(\d{2})$', s):
+            return s
+        else:
+            return s
 
     @classmethod
     def us_day_now(cls, tz=None) -> str:

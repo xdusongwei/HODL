@@ -51,6 +51,12 @@ class BasicTestCase(unittest.TestCase):
         assert re.match(r'\d{4}-\d{2}-\d{2}', TimeTools.us_day_now())
         # 验证产生的日期对象的时间戳，可以被用来还原回值比较相同的日期对象
         assert TimeTools.from_timestamp(date.timestamp()) == date
+        # 处理格式化日期字符串
+        assert TimeTools.format_ymd(20200101) == '2020-01-01'
+        assert TimeTools.format_ymd('20200101') == '2020-01-01'
+        assert TimeTools.format_ymd('2020-01-01') == '2020-01-01'
+        right = date.strftime('%m-%dT%H:%M:%S')
+        assert FormatTool.pretty_dt(date, with_year=False, with_tz=False, with_ms=False) == right
 
     def test_date_timezone_context(self):
         """

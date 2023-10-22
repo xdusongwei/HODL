@@ -4,16 +4,18 @@ from telegram import Message, Update
 from telegram.ext import Application
 from hodl.bot.base import TelegramThreadBase
 from hodl.thread_mixin import *
+from hodl.tools import *
 
 
 class TelegramThread(ThreadMixin, TelegramThreadBase):
     def __init__(self, app: Application, chat_id: int = None):
         super().__init__()
-        self.app = app
+        self.app: Application = app
         self.chat_id = chat_id
         self.loop = asyncio.new_event_loop()
         self.ok_counter = 0
         self.error_counter = 0
+        self.latest_msgs: list[tuple[str, str]] = list()
 
     def run(self):
         super().run()
@@ -62,11 +64,19 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
     def application(self) -> Application:
         return self.app
 
-    def send_message(self, text: str) -> Message:
+    def send_message(self, text: str, block=True, disable_notification=None) -> Message | None:
         chat_id = self.chat_id
         bot = self.app.bot
         loop = self.loop
+        msgs = self.latest_msgs.copy()
+        now = TimeTools.us_time_now(tz='Asia/Shanghai')
+        time = FormatTool.pretty_dt(now, region='CN', with_year=False, with_tz=False, with_ms=False)
+        msgs.insert(0, (time, text, ))
+        msgs = msgs[:3]
+        self.latest_msgs = msgs
+
         if not chat_id:
+            self.error_counter += 1
             raise ValueError
         evt = threading.Event()
 
@@ -74,15 +84,25 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
             chat_id=chat_id,
             text=text,
             reply_to_message_id=None,
+            disable_notification=disable_notification,
         )
         task = loop.create_task(coro)
-        task.add_done_callback(lambda s: evt.set())
-        evt.wait()
-        if e := task.exception():
-            self.error_counter += 1
-            raise e
-        self.ok_counter += 1
-        return task.result()
+
+        def _done(_s):
+            evt.set()
+            if task.exception():
+                self.error_counter += 1
+            else:
+                self.ok_counter += 1
+
+        task.add_done_callback(_done)
+
+        if block:
+            evt.wait()
+            if e := task.exception():
+                raise e
+            return task.result()
+        return None
 
     def primary_bar(self) -> list[BarElementDesc]:
         bar = list()
@@ -91,6 +111,10 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         )
         bar.append(elem)
         return bar
+
+    def warning_alert_bar(self) -> list[str]:
+        result = [f'{t}: {s}' for t, s in self.latest_msgs]
+        return result
 
 
 __all__ = ['TelegramThread', ]
