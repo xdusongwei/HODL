@@ -1,9 +1,7 @@
 import os
 import tomllib
 import tomlkit
-from telegram import Bot
-from telegram.request import HTTPXRequest
-from telegram.ext import Updater, Application
+from telegram.ext import Application
 from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.locate import LocateTools
 from hodl.tools.store_config import StoreConfig

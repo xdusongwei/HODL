@@ -62,8 +62,8 @@ class CiticsRestApi(BrokerApiBase):
                 raise_for_status=True,
             )
             citics_state = d.get('state', dict())
-            citics_current = citics_state.get('current')
-            assert citics_current == '就绪'
+            citics_current = citics_state.get('isReady')
+            assert citics_current
             return citics_state
         except Exception as e:
             raise e
@@ -94,33 +94,10 @@ class CiticsRestApi(BrokerApiBase):
             return False
 
     @track_api
-    def fetch_quote(self) -> Quote:
-        symbol = self.symbol
-        citics_state = self._citics_fetch(f'/api/citics/state')
-        quote_list = citics_state['quoteList']
-        for quote in quote_list:
-            qd: dict = quote
-            if qd.get('symbol') != symbol:
-                continue
-            return Quote(
-                symbol=qd['symbol'],
-                open=FormatTool.adjust_precision(qd['open_price'], 3),
-                pre_close=FormatTool.adjust_precision(qd['pre_close'], 3),
-                latest_price=FormatTool.adjust_precision(qd['latest_price'], 3),
-                time=TimeTools.from_timestamp(qd['time']),
-                status='NORMAL' if qd['status'] else '--',
-                day_low=FormatTool.adjust_precision(qd['low_price'], 3),
-                day_high=FormatTool.adjust_precision(qd['high_price'], 3),
-                broker_name=self.BROKER_NAME,
-                broker_display=self.BROKER_DISPLAY,
-            )
-        raise PrepareError(f'中信证券找不到指定的行情:{symbol}')
-
-    @track_api
     def query_cash(self):
         symbol = self.symbol
         citics_state = self._citics_fetch(f'/api/citics/state?symbol={symbol}')
-        return citics_state['cashAvailable']
+        return citics_state['cash']
 
     @track_api
     def query_chips(self):
@@ -129,7 +106,7 @@ class CiticsRestApi(BrokerApiBase):
         positions = citics_state.get('positions', list())
         if positions:
             for p in positions:
-                return p['持仓']
+                return p['参考持股']
         return 0
 
     @track_api
@@ -171,7 +148,7 @@ class CiticsRestApi(BrokerApiBase):
         citics_state = self._citics_fetch(f'/api/citics/state?symbol={symbol}')
         orders: list[dict] = citics_state.get('orders', list())
         for o in orders:
-            if o['合同编号'] != order.order_id:
+            if o['委托编号'] != order.order_id:
                 continue
             self.modify_order_fields(
                 order=order,
@@ -179,7 +156,7 @@ class CiticsRestApi(BrokerApiBase):
                 filled_qty=o['成交数量'],
                 avg_fill_price=o['成交价格'],
                 trade_timestamp=None,
-                reason=o['废单原因'],
+                reason=o['返回信息'],
                 is_cancelled=o['委托状态'] == '已撤',
             )
             break
