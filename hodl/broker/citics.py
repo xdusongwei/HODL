@@ -97,7 +97,7 @@ class CiticsRestApi(BrokerApiBase):
     def query_cash(self):
         symbol = self.symbol
         citics_state = self._citics_fetch(f'/api/citics/state?symbol={symbol}')
-        return citics_state['cash']
+        return citics_state['cashAvailable']
 
     @track_api
     def query_chips(self):
