@@ -19,6 +19,7 @@ class Order(DictWrapper):
             limit_price: float | None,
             create_timestamp: float = None,
             order_day: str = None,
+            protect_price: float = None,
     ):
         if direction == 'BUY':
             config_spread = store_config.buy_spread
@@ -40,6 +41,7 @@ class Order(DictWrapper):
             config_spread_rate=config_spread_rate,
             create_timestamp=create_timestamp,
             order_day=order_day,
+            protect_price=protect_price,
         )
 
     @classmethod
@@ -58,6 +60,7 @@ class Order(DictWrapper):
             config_spread_rate: float = None,
             create_timestamp: float = None,
             order_day: str = None,
+            protect_price: float = None,
     ) -> 'Order':
         o = Order()
         now = TimeTools.us_time_now()
@@ -82,6 +85,7 @@ class Order(DictWrapper):
         o.config_spread_rate = config_spread_rate
         o.create_timestamp = create_timestamp
         o.order_day = order_day
+        o.protect_price = protect_price
         return o
 
     # 创建对象时必填的字段
@@ -329,6 +333,14 @@ class Order(DictWrapper):
     @property
     def is_sell(self) -> bool:
         return self.direction == 'SELL'
+
+    @property
+    def protect_price(self) -> float:
+        return self.d['protectPrice']
+
+    @protect_price.setter
+    def protect_price(self, v: float):
+        self.d['protectPrice'] = v
 
     @property
     def refreshable(self) -> bool:

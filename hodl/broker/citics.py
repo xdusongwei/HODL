@@ -117,6 +117,7 @@ class CiticsRestApi(BrokerApiBase):
             'qty': order.qty,
             'limitPrice': order.limit_price,
             'name': self.name,
+            'protectPrice': order.protect_price,
         }
         d = self._citics_action(f'/api/citics/order/place', args)
         contract_id = d.get('contractId')

@@ -264,7 +264,7 @@ class TradeMixin(StoreBase, ABC):
     def _submit_sell_order(self, fire_state: StateFire):
         if not fire_state.enable_sell:
             return
-
+        state = self.state
         profit_table = fire_state.profit_table
         self.logger.info(f'根据level{fire_state.new_sell_level}设置新卖单')
         row = profit_table.row_by_level(level=fire_state.new_sell_level)
@@ -289,12 +289,24 @@ class TradeMixin(StoreBase, ABC):
                 f'参考当前等级规则设定设定卖出价:{FMT.pretty_price(row.sell_at, config=self.store_config)}, '
                 f'实际下单价格:{FMT.pretty_price(limit_price, config=self.store_config)}'
             )
+        legal_rate_daily = self.store_config.legal_rate_daily
+        pre_close_price = state.quote_pre_close
+        precision = self.store_config.precision
+        protect_price = self._calc_protect_price(
+            legal_rate=legal_rate_daily,
+            base_price=pre_close_price,
+            precision=precision,
+            should_round=True,
+            is_buy=False,
+        )
+        self.logger.info(f'保护限价{protect_price}')
         order = Order.new_config_order(
             store_config=self.store_config,
             level=fire_state.new_sell_level,
             direction='SELL',
             qty=qty,
             limit_price=limit_price,
+            protect_price=protect_price
         )
         self.submit_order(
             order=order,
@@ -329,6 +341,30 @@ class TradeMixin(StoreBase, ABC):
         assert plan.buy_order_active_count() <= 1
 
     @classmethod
+    def _calc_protect_price(
+            cls,
+            legal_rate,
+            base_price,
+            precision,
+            should_round=True,
+            is_buy=True,
+    ) -> float | None:
+        """
+        中信证券需要填写保护限价
+        """
+        if not legal_rate:
+            return None
+        lower = (1.0 - legal_rate) * base_price
+        higher = (1.0 + legal_rate) * base_price
+        if should_round:
+            lower = FMT.adjust_precision(lower, precision)
+            higher = FMT.adjust_precision(higher, precision)
+        if is_buy:
+            return higher
+        else:
+            return lower
+
+    @classmethod
     def _legal_price_limit(
             cls,
             target_price,
@@ -344,9 +380,6 @@ class TradeMixin(StoreBase, ABC):
         if should_round:
             lower = FMT.adjust_precision(lower, precision)
             higher = FMT.adjust_precision(higher, precision)
-        else:
-            lower = (1.0 - legal_rate) * base_price
-            higher = (1.0 + legal_rate) * base_price
         return lower <= target_price <= higher
 
     @classmethod
@@ -421,12 +454,24 @@ class TradeMixin(StoreBase, ABC):
         else:
             self.logger.info(f'买单实际下单价格{FMT.pretty_price(limit_price, config=self.store_config)}')
         self.logger.info(f'买单下单数量{volume}')
+        legal_rate_daily = self.store_config.legal_rate_daily
+        pre_close_price = state.quote_pre_close
+        precision = self.store_config.precision
+        protect_price = self._calc_protect_price(
+            legal_rate=legal_rate_daily,
+            base_price=pre_close_price,
+            precision=precision,
+            should_round=True,
+            is_buy=True,
+        )
+        self.logger.info(f'保护限价{protect_price}')
         order = Order.new_config_order(
             store_config=self.store_config,
             level=fire_state.new_buy_level,
             direction='BUY',
             qty=volume,
             limit_price=limit_price,
+            protect_price=protect_price
         )
         self.submit_order(
             order=order,
