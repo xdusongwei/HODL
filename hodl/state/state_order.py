@@ -29,9 +29,9 @@ class Order(DictWrapper):
             lower = FMT.adjust_precision(lower, precision)
             higher = FMT.adjust_precision(higher, precision)
         if direction == 'BUY':
-            return lower
-        else:
             return higher
+        else:
+            return lower
 
     @classmethod
     def new_config_order(
