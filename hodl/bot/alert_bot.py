@@ -49,20 +49,20 @@ class AlertBot(TelegramBotBase):
         else:
             self.d[key] = value
 
-    def unset_alarm(self, alert_key: AlertKey, text: str = None):
+    def unset_alarm(self, alert_key: AlertKey, text: str = None, disable_notification=None):
         key = self._format_key(key_template=alert_key.key_template)
         latest = self._latest_value(key=key, save_db=alert_key.save_db)
         if latest:
             self._save_value(key=key, value=False, save_db=alert_key.save_db)
             if text:
-                self.send_text(text=text)
+                self.send_text(text=text, disable_notification=disable_notification)
 
-    def set_alarm(self, alert_key: AlertKey, text: str):
+    def set_alarm(self, alert_key: AlertKey, text: str, disable_notification=None):
         key = self._format_key(key_template=alert_key.key_template)
         latest = self._latest_value(key=key, save_db=alert_key.save_db)
         if not latest:
             self._save_value(key=key, value=True, save_db=alert_key.save_db)
-            self.send_text(text=text)
+            self.send_text(text=text, disable_notification=disable_notification)
 
     def send_text(self, text: str, block=True, disable_notification=None):
         if not self.is_alive:
