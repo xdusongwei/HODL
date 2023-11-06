@@ -63,6 +63,7 @@ class GiveUpPrice(TelegramBotBase):
         text = update.message.text
         user_id = update.message.from_user.id
         session = cls._get_session(user_id=user_id)
+        cfg = session.position.config
         match text:
             case '/confirm':
                 await update.message.reply_text(
@@ -70,12 +71,12 @@ class GiveUpPrice(TelegramBotBase):
                     reply_markup=ReplyKeyboardRemove(),
                 )
                 try:
-                    state_path = session.position.config.state_file_path
+                    state_path = cfg.state_file_path
                     if not state_path:
                         raise ValueError(f'不存在持仓状态文件位置')
 
-                    broker = session.position.config.broker
-                    region = session.position.config.region
+                    broker = cfg.broker
+                    region = cfg.region
                     symbol = session.position.symbol
                     store = ThreadMixin.find_by_tags(tags=('Store', broker, region, symbol,))
                     thread = store.current_thread
@@ -88,11 +89,16 @@ class GiveUpPrice(TelegramBotBase):
                     state = State(state)
                     plan = state.plan
                     if v := session.value:
-                        cog = plan.cog(precision=session.position.config.precision)
+                        cog = plan.cog(precision=cfg.precision)
                         if cog is None:
                             raise ValueError(f'没有持仓卖出质点价格')
-                        if v >= cog - session.position.config.buy_spread:
-                            raise ValueError(f'设定价格{v}高于质点价格{cog}')
+                        if cfg.buy_spread is not None:
+                            if v >= cog - cfg.buy_spread:
+                                raise ValueError(f'设定价格{v}高于质点价格{cog}')
+                        if cfg.buy_spread_rate is not None:
+                            if v >= cog * (1.0 - cfg.buy_spread_rate):
+                                raise ValueError(f'设定价格{v}高于质点价格{cog}')
+
                         plan.give_up_price = v
                     else:
                         plan.give_up_price = None

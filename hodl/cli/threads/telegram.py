@@ -22,19 +22,19 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         TelegramThreadBase.INSTANCE = self
         asyncio.set_event_loop(self.loop)
 
-        from hodl.bot.bot_conversation.monthly_earning import MonthlyEarning
-        from hodl.bot.bot_conversation.today_orders import TodayOrders
-        from hodl.bot.bot_conversation.settings import Settings
-        from hodl.bot.bot_conversation.lock_position import LockPosition
-        from hodl.bot.bot_conversation.enable_position import EnablePosition
-        from hodl.bot.bot_conversation.base_price_last_buy import BasePriceLastBuy
-        from hodl.bot.bot_conversation.max_shares import MaxShares
-        from hodl.bot.bot_conversation.temp_base_price import TempBasePrice
-        from hodl.bot.bot_conversation.report import Report
-        from hodl.bot.bot_conversation.delete_state import DeleteState
-        from hodl.bot.bot_conversation.base_price_day_low import BasePriceDayLow
-        from hodl.bot.bot_conversation.revive_store import ReviveStore
-        from hodl.bot.bot_conversation.give_up_price import GiveUpPrice
+        from hodl.cli.threads.bot_conversation.monthly_earning import MonthlyEarning
+        from hodl.cli.threads.bot_conversation.today_orders import TodayOrders
+        from hodl.cli.threads.bot_conversation.settings import Settings
+        from hodl.cli.threads.bot_conversation.lock_position import LockPosition
+        from hodl.cli.threads.bot_conversation.enable_position import EnablePosition
+        from hodl.cli.threads.bot_conversation.base_price_last_buy import BasePriceLastBuy
+        from hodl.cli.threads.bot_conversation.max_shares import MaxShares
+        from hodl.cli.threads.bot_conversation.temp_base_price import TempBasePrice
+        from hodl.cli.threads.bot_conversation.report import Report
+        from hodl.cli.threads.bot_conversation.delete_state import DeleteState
+        from hodl.cli.threads.bot_conversation.base_price_day_low import BasePriceDayLow
+        from hodl.cli.threads.bot_conversation.revive_store import ReviveStore
+        from hodl.cli.threads.bot_conversation.give_up_price import GiveUpPrice
 
         dispatcher = self.app
         dispatcher.add_handler(MonthlyEarning.handler())
