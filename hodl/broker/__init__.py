@@ -6,6 +6,7 @@ from hodl.broker.okx import *
 from hodl.broker.binance import *
 from hodl.broker.futu import *
 from hodl.broker.interactive_brokers import *
+from hodl.broker.myquant import *
 
 
 BROKERS: list[Type[BrokerApiBase]] = [
@@ -15,4 +16,5 @@ BROKERS: list[Type[BrokerApiBase]] = [
     BinanceApi,
     FutuApi,
     InteractiveBrokersApi,
+    MyQuantApi,
 ]

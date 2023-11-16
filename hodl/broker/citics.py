@@ -2,7 +2,6 @@ from urllib.parse import urljoin
 import requests
 from hodl.broker.base import *
 from hodl.exception_tools import *
-from hodl.quote import *
 from hodl.state import *
 from hodl.tools import *
 
