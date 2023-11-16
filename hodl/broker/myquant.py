@@ -71,13 +71,14 @@ class MyQuantApi(BrokerApiBase):
             d = self._gm_action(f'/api/myquant/quote', args)
         info_d: dict = d['info']
         quote_d: dict = d['quote']
-        time = TimeTools.from_timestamp(quote_d['createdAt'], tz='Asia/Shanghai')
+        info_time = TimeTools.from_timestamp(info_d['tradeTimestamp'], tz='Asia/Shanghai')
+        quote_time = TimeTools.from_timestamp(quote_d['createdAt'], tz='Asia/Shanghai')
         return Quote(
             symbol=self.symbol,
             open=quote_d['openPrice'],
             pre_close=info_d['preClose'],
             latest_price=quote_d['latestPrice'],
-            time=time,
+            time=max(info_time, quote_time),
             status='HALT' if info_d['isSuspended'] else 'NORMAL',
             day_low=quote_d['lowPrice'],
             day_high=quote_d['highPrice'],
