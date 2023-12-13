@@ -122,6 +122,7 @@ class VariableTools:
         builder.connect_timeout(20)
         builder.read_timeout(20)
         builder.write_timeout(20)
+        builder.get_updates_pool_timeout(6.0)
         if proxy_url:
             builder.proxy_url(proxy_url)
             builder.get_updates_proxy_url(proxy_url)

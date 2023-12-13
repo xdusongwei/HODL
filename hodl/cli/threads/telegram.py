@@ -52,9 +52,8 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         dispatcher.add_handler(GiveUpPrice.handler())
 
         self.app.run_polling(
+            poll_interval=30.0,
             timeout=15,
-            read_timeout=15.0,
-            write_timeout=15.0,
             allowed_updates=Update.ALL_TYPES,
             stop_signals=list(),
             close_loop=False,
