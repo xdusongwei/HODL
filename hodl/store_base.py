@@ -280,12 +280,12 @@ class StoreBase(ThreadMixin):
         else:
             tooltip += '未知的因子表.'
             factor_content += '未知'
-        tooltip += '基准价格参考: 昨收价, 开盘价, '
+        tooltip += '基准价格参考: 昨收价, 开盘价 '
         if config.base_price_day_low:
             tooltip += ', 当日最低价格'
         if config.base_price_last_buy:
-            tooltip += f', 上次买回价格({config.base_price_last_buy_days}个自然天内). '
-        tooltip += f'价格比较函数: {state.bp_function}.'
+            tooltip += f', 上次买回价格({config.base_price_last_buy_days}个自然天内) '
+        tooltip += f'. 价格比较函数: {state.bp_function}.'
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
 
         if config.stage > 1:

@@ -23,7 +23,7 @@ class BrokerMarketStatusResult(dict):
         self[trade_type.value] = rl
 
     def trade_type_items(self) -> list[tuple[str, list[MarketStatusResult]]]:
-        return [(key, self[key], ) for key in sorted(self.keys()) if key != 'vix']
+        return [(key, self[key], ) for key in sorted(self.keys()) if key != 'vix' and not key.startswith('_')]
 
     def append_vix(self, quote: Quote):
         self['vix'] = {
