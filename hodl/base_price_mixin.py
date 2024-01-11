@@ -193,8 +193,9 @@ class BasePriceMixin(StoreBase, ABC):
                 state.ta_tumble_protect_rsi_period = None
             if rsi_points:
                 state.ta_tumble_protect_rsi_current = rsi_points[-1][1]
-        elif store_config.tumble_protect_rsi:
+        elif store_config.tumble_protect_rsi and state.plan.cleanable:
             # RSI TP unlocked
+            # 没有有效计划时, 再判断触发RSI的逻辑, 防止计划执行中触发RSI保护
             rsi_period = store_config.tumble_protect_rsi_period
             points = self._query_day_avg(days=rsi_period * 20, asc=True)
             rsi_points = self._rsi(points, period=store_config.tumble_protect_rsi_period)
