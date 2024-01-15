@@ -61,8 +61,14 @@ class CiticsRestApi(BrokerApiBase):
                 raise_for_status=True,
             )
             citics_state = d.get('state', dict())
-            citics_current = citics_state.get('isReady')
-            assert citics_current
+            if 'current' in citics_state:
+                citics_current = citics_state.get('current')
+                assert citics_current == '就绪'
+            elif 'isReady' in citics_state:
+                citics_current = citics_state.get('isReady')
+                assert citics_current
+            else:
+                raise ValueError(f'中信证券接口响应中不存在任何指示系统状态的字段')
             return citics_state
         except Exception as e:
             raise e
@@ -105,7 +111,10 @@ class CiticsRestApi(BrokerApiBase):
         positions = citics_state.get('positions', list())
         if positions:
             for p in positions:
-                return p['参考持股']
+                if '持仓' in p:
+                    return p['持仓']
+                if '参考持股' in p:
+                    return p['参考持股']
         return 0
 
     @track_api
@@ -148,15 +157,26 @@ class CiticsRestApi(BrokerApiBase):
         citics_state = self._citics_fetch(f'/api/citics/state?symbol={symbol}')
         orders: list[dict] = citics_state.get('orders', list())
         for o in orders:
-            if o['委托编号'] != order.order_id:
+            if '合同编号' in o:
+                oid = o['合同编号']
+            elif '委托编号' in o:
+                oid = o['委托编号']
+            else:
                 continue
+            if oid != order.order_id:
+                continue
+            reason = ''
+            if '废单原因' in o:
+                reason = o['废单原因']
+            if '返回信息' in o:
+                reason = o['返回信息']
             self.modify_order_fields(
                 order=order,
                 qty=o['委托数量'],
                 filled_qty=o['成交数量'],
                 avg_fill_price=o['成交价格'],
                 trade_timestamp=None,
-                reason=o['返回信息'],
+                reason=reason,
                 is_cancelled=o['委托状态'] == '已撤',
             )
             break
