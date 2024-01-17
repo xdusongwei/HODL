@@ -1,4 +1,6 @@
 import unittest
+import pytest
+from hodl.exception_tools import *
 from hodl.unit_test import *
 from hodl.tools import *
 
@@ -25,6 +27,38 @@ class OrderTestCase(unittest.TestCase):
         assert sell_order.is_filled
         assert buy_order.limit_price is None
         assert buy_order.is_filled
+
+    def test_market_price_order_risk_control(self):
+        # 验证股价已按照设定，大幅偏离执行计划的价格，买卖订单应使用市价单, 但成交价格异常导致触发了风控错误。
+        config = VariableTools().store_configs['TEST']
+        config['market_price_rate'] = 0.02
+        pc = 10.0
+        p_sell = pc * 1.03 * (1 + config.market_price_rate) + 0.01
+        tickets = [
+            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
+            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+        ]
+        store = start_simulation(store_config=config, tickets=tickets)
+        state = store.state
+        plan = state.plan
+        assert len(plan.orders) == 1
+        sell_order = plan.orders[0]
+        assert sell_order.limit_price is None
+        assert sell_order.is_filled
+        assert sell_order.protect_price == pc * 1.03
+        # 修改订单的成交价格为等于保护限价, 继续运行不会有异常
+        sell_order.avg_price = sell_order.protect_price
+        tickets = [
+            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+        ]
+        store = start_simulation(store=store, tickets=tickets)
+        # 修改订单的成交价格为低于保护限价, 继续运行触发风控异常
+        sell_order.avg_price = sell_order.protect_price - 0.01
+        tickets = [
+            Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+        ]
+        with pytest.raises(RiskControlError):
+            start_simulation(store=store, tickets=tickets)
 
     def test_price_rate(self):
         # 验证 price_rate 设定对执行计划的幅度进行缩放，

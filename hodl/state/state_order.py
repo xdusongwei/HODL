@@ -10,30 +10,6 @@ class Order(DictWrapper):
     }
 
     @classmethod
-    def _calc_protect_price(
-            cls,
-            direction: str,
-            legal_rate,
-            base_price,
-            precision,
-            should_round=True,
-    ) -> float | None:
-        """
-        中信证券需要填写保护限价
-        """
-        if not legal_rate or not base_price:
-            return None
-        lower = (1.0 - legal_rate) * base_price
-        higher = (1.0 + legal_rate) * base_price
-        if should_round:
-            lower = FMT.adjust_precision(lower, precision)
-            higher = FMT.adjust_precision(higher, precision)
-        if direction == 'BUY':
-            return higher
-        else:
-            return lower
-
-    @classmethod
     def new_config_order(
             cls,
             store_config: StoreConfig,
@@ -44,6 +20,7 @@ class Order(DictWrapper):
             create_timestamp: float = None,
             order_day: str = None,
             pre_close: float = None,
+            protect_price: float = None,
     ):
         if direction == 'BUY':
             config_spread = store_config.buy_spread
@@ -52,14 +29,6 @@ class Order(DictWrapper):
             config_spread = store_config.sell_spread
             config_spread_rate = store_config.sell_spread_rate
 
-        protect_price = None
-        if not limit_price and pre_close:
-            protect_price = cls._calc_protect_price(
-                direction=direction,
-                legal_rate=store_config.legal_rate_daily,
-                base_price=pre_close,
-                precision=store_config.precision,
-            )
         return cls.new_order(
             symbol=store_config.symbol,
             region=store_config.region,
@@ -370,7 +339,9 @@ class Order(DictWrapper):
     @property
     def protect_price(self) -> float:
         """
-        中信证券需要在市价单中填写保护限价
+        原中信证券需要在市价单中填写保护限价,
+        为了防止行情源错误数据触发了市价, 市价成交之后会确认成交价是否在 protect_price 合理价格内,
+        如果检查失败, 则触发风控错误.
         """
         return self.d['protectPrice']
 

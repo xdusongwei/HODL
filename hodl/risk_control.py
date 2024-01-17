@@ -32,6 +32,9 @@ class RiskControl:
 
     当日首单检查-现金足够买回剩余股票
     检查当日待买标的的数量和价格，当日剩余金额能否支持全部买回
+
+    市价单成交价格检查
+    成交的市价单根据其保护鲜价(protect_price)比对, 判断是否按照错误价格进行了成交
     """
     ORDER_DICT = dict()
 
@@ -56,6 +59,7 @@ class RiskControl:
             self.when_closing(order_checked=order_checked)
         for order in state.plan.orders:
             RiskControl.ORDER_DICT[order.unique_id] = order
+        self.market_order_check()
 
     @classmethod
     def _increase_times(cls, order: Order):
@@ -205,6 +209,24 @@ class RiskControl:
             raise RiskControlError(
                 f'收盘时发现上次订单日期({state.lsod_day()})不是今天，即之前有下单的那天没有在收盘阶段更新过订单，'
                 f'继续运行可能导致历史订单数据过时')
+
+    def market_order_check(self):
+        orders = self.state.plan.orders
+        for order in orders:
+            if order.limit_price:
+                continue
+            if not order.protect_price:
+                continue
+            if not order.avg_price:
+                continue
+            avg_price = order.avg_price
+            protect_price = order.protect_price
+            assert 0 < avg_price
+            assert 0 < protect_price
+            if order.is_buy and avg_price > protect_price:
+                raise RiskControlError(f'风控检查到市价单买入成交价格{avg_price}于预期{protect_price}出现严重偏差')
+            if order.is_sell and avg_price < protect_price:
+                raise RiskControlError(f'风控检查到市价单卖出成交价格{avg_price}于预期{protect_price}出现严重偏差')
 
 
 __all__ = ['RiskControl', ]

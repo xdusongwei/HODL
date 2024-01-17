@@ -231,6 +231,7 @@ class TradeMixin(StoreBase, ABC):
         precision = self.store_config.precision
         row = profit_table.row_by_level(level=fire_state.new_sell_level)
         assert row.sell_at
+        fire_state.want_price = row.sell_at
         limit_price = self._best_sell_price(
             want=row.sell_at,
             open_price=state.quote_open,
@@ -276,6 +277,7 @@ class TradeMixin(StoreBase, ABC):
         assert qty
         assert row.sell_at
         limit_price = fire_state.sell_limit_price
+        protect_price = fire_state.want_price
         assert limit_price
 
         if fire_state.sell_market_price:
@@ -295,6 +297,7 @@ class TradeMixin(StoreBase, ABC):
             qty=qty,
             limit_price=limit_price,
             pre_close=self.state.quote_pre_close,
+            protect_price=protect_price,
         )
         self.submit_order(
             order=order,
@@ -366,6 +369,7 @@ class TradeMixin(StoreBase, ABC):
         profit_table = fire_state.profit_table
         row = profit_table.row_by_level(level=fire_state.new_buy_level)
         want = self._buy_want(buy_at=row.buy_at, give_up_price=plan.give_up_price)
+        fire_state.want_price = want
         limit_price = self._best_buy_price(
             want=want,
             open_price=state.quote_open,
@@ -411,6 +415,7 @@ class TradeMixin(StoreBase, ABC):
         volume = plan.total_volume_not_active()
         row = profit_table.row_by_level(level=fire_state.new_buy_level)
         limit_price = fire_state.buy_limit_price
+        protect_price = fire_state.want_price
         self.logger.info(f'买单计划下单价格{FMT.pretty_price(row.buy_at, config=self.store_config)}')
         if fire_state.buy_market_price:
             self.logger.info(f'市场价格偏离市价单系数，采用市价单下买单')
@@ -425,6 +430,7 @@ class TradeMixin(StoreBase, ABC):
             qty=volume,
             limit_price=limit_price,
             pre_close=state.quote_pre_close,
+            protect_price=protect_price,
         )
         self.submit_order(
             order=order,

@@ -18,6 +18,8 @@ class StateFire:
     sell_market_price: bool = False
     buy_limit_price: float = None
     buy_market_price: bool = False
+    # 该字段记录下单期望价格的原始数值, 用于传入到市价订单的保护限价字段中, 做风控检查使用
+    want_price: float = None
 
 
 __all__ = ['StateFire', ]
