@@ -2,7 +2,6 @@ import time
 import datetime
 import dataclasses
 import traceback
-import pytz
 from hodl.storage import *
 from hodl.store import Store
 from hodl.thread_mixin import *
@@ -62,7 +61,7 @@ class HtmlWriterThread(ThreadMixin):
         db = self.db
         world_latest = TimeTools.us_time_now(tz='Pacific/Auckland')
         this_year = world_latest.year
-        utc_year = int(datetime.datetime(year=this_year, month=1, day=1, tzinfo=pytz.timezone('UTC')).timestamp())
+        utc_year = int(datetime.datetime(year=this_year, month=1, day=1, tzinfo=datetime.UTC).timestamp())
         orders = OrderRow.simple_items_after_create_time(db.conn, create_time=utc_year)
         d = dict()
         for order in orders:
@@ -72,7 +71,7 @@ class HtmlWriterThread(ThreadMixin):
                 d[day] += 1
             else:
                 d[day] = 1
-        dt_count = datetime.datetime(year=this_year, month=1, day=1, tzinfo=pytz.timezone('UTC'))
+        dt_count = datetime.datetime(year=this_year, month=1, day=1, tzinfo=datetime.UTC)
         while dt_count.year == this_year:
             day = TimeTools.date_to_ymd(dt_count)
             if day not in d:

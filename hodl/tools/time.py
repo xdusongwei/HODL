@@ -1,8 +1,8 @@
 import re
 import time
 import threading
-from datetime import datetime, timedelta
-import pytz
+from zoneinfo import ZoneInfo
+from datetime import datetime, timedelta, UTC, timezone
 import humanize
 from hodl.tools.store_state_base import StoreStateBase
 
@@ -21,7 +21,7 @@ class TimeTools:
         match region:
             case 'US':
                 return 'US/Eastern'
-            case 'CN' | 'HK':
+            case 'CN' | 'HK' | 'SG':
                 return 'Asia/Shanghai'
             case _:
                 raise ValueError(f'无法将Region:{region}转为特定时区')
@@ -37,13 +37,13 @@ class TimeTools:
 
     @classmethod
     def get_utc(cls):
-        return datetime.utcnow()
+        return datetime.now(timezone.utc)
 
     @classmethod
     def utc_now(cls):
         """
         获取utc时间对象, 测试时此函数将被mock,
-        如果某些机制, 比如计算处理时间, 不希望因为调用而破坏mock函数, 则应使用get_utc方法
+        如果某些机制, 比如计算处理耗时, 不希望使用被mock破坏的时间函数, 则应使用get_utc方法
         Returns
         -------
 
@@ -57,7 +57,7 @@ class TimeTools:
         函数名中的us是开发历史问题，并非指美国地区当前时间。
         """
         tz = tz if tz else cls.current_tz()
-        return pytz.utc.localize(cls.utc_now()).astimezone(pytz.timezone(tz))
+        return cls.utc_now().astimezone(ZoneInfo(tz))
 
     @classmethod
     def date_to_ymd(cls, date: datetime, join=True) -> str:
@@ -97,8 +97,20 @@ class TimeTools:
         :return:
         """
         tz = tz if tz else cls.current_tz()
-        date = datetime.utcfromtimestamp(timestamp)
-        return pytz.utc.localize(date).astimezone(pytz.timezone(tz))
+        date = datetime.fromtimestamp(timestamp, UTC)
+        return date.astimezone(ZoneInfo(tz))
+
+    @classmethod
+    def from_params(cls, year: int, month: int, day: int, hour: int, minute: int, second: int, tz: str):
+        return datetime(
+            year=year,
+            month=month,
+            day=day,
+            hour=hour,
+            minute=minute,
+            second=second,
+            tzinfo=ZoneInfo(tz),
+        )
 
     @classmethod
     def sleep(cls, secs: float):
@@ -109,7 +121,7 @@ class TimeTools:
     @classmethod
     def last_sunday_utc(cls, date: datetime, weeks=-1) -> datetime:
         sunday = date - timedelta(days=date.weekday()) + timedelta(days=6, weeks=weeks)
-        sunday = datetime(year=sunday.year, month=sunday.month, day=sunday.day, tzinfo=pytz.timezone('UTC'))
+        sunday = datetime(year=sunday.year, month=sunday.month, day=sunday.day, tzinfo=UTC)
         return sunday
 
     @classmethod

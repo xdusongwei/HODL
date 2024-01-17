@@ -1,5 +1,5 @@
 from typing import Generator, Any, Type, Self
-from datetime import datetime
+from datetime import datetime, UTC
 from collections import defaultdict
 from pprint import pprint
 from unittest.mock import patch, MagicMock, Mock
@@ -138,7 +138,7 @@ class SimulationStore(Store):
             return True
 
     def now_mock(self):
-        return datetime.utcfromtimestamp(self.current_fake_quote.time.timestamp())
+        return datetime.fromtimestamp(self.current_fake_quote.time.timestamp(), UTC)
 
     def quote_mock(self):
         fake_quote = self.current_fake_quote

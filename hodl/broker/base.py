@@ -139,6 +139,9 @@ class BrokerApiBase(BrokerApiMixin):
         # tiger status
         'EARLY_CLOSED': 'CLOSING',
         'MARKET_CLOSED': 'CLOSING',
+        # longport status
+        'Normal': 'TRADING',
+        'Post': 'POST_HOUR_TRADING',
     }
 
     @classmethod
