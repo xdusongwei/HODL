@@ -17,7 +17,7 @@ variables:
 before_script:
   - mkdir -p ~/logs/hodl && mkdir -p ~/data/hodl && cp tests/ci/gitlab-ci.toml config.toml
   - pip install -U pdm
-  - pdm config python.use_venv false && pdm install --prod -G test --no-lock --no-editable && pdm sync
+  - pdm config python.use_venv false && pdm install --prod -G test --no-lock --no-editable && pdm sync -G test
 
 test:
   stage: test
