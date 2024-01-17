@@ -19,7 +19,6 @@ class Order(DictWrapper):
             limit_price: float | None,
             create_timestamp: float = None,
             order_day: str = None,
-            pre_close: float = None,
             protect_price: float = None,
     ):
         if direction == 'BUY':

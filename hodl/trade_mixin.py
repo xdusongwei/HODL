@@ -296,7 +296,6 @@ class TradeMixin(StoreBase, ABC):
             direction='SELL',
             qty=qty,
             limit_price=limit_price,
-            pre_close=self.state.quote_pre_close,
             protect_price=protect_price,
         )
         self.submit_order(
@@ -429,7 +428,6 @@ class TradeMixin(StoreBase, ABC):
             direction='BUY',
             qty=volume,
             limit_price=limit_price,
-            pre_close=state.quote_pre_close,
             protect_price=protect_price,
         )
         self.submit_order(

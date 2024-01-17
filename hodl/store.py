@@ -295,7 +295,6 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
                 direction='BUY',
                 qty=volume,
                 limit_price=None,
-                pre_close=self.state.quote_pre_close,
             )
             self.submit_order(
                 order=order,
