@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "test", "tui"]
+groups = ["default", "test", "tui", "longport"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
 content_hash = "sha256:ed9fe70fce36c8c27699dff7821a5cb3030459c9b05b746be73b931d5ff32338"
@@ -486,6 +486,21 @@ dependencies = [
 files = [
     {file = "linkify-it-py-2.0.2.tar.gz", hash = "sha256:19f3060727842c254c808e99d465c80c49d2c7306788140987a1a7a29b0d6ad2"},
     {file = "linkify_it_py-2.0.2-py3-none-any.whl", hash = "sha256:a3a24428f6c96f27370d7fe61d2ac0be09017be5190d68d8658233171f1b6541"},
+]
+
+[[package]]
+name = "longport"
+version = "1.0.5"
+summary = "A Python library for LongPort Open API"
+files = [
+    {file = "longport-1.0.5-cp311-cp311-macosx_10_7_x86_64.whl", hash = "sha256:0cb43c78427c0aa9826a25e9257b5fd61825b973c4e4b33084412263374c3d72"},
+    {file = "longport-1.0.5-cp311-cp311-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:7fa08d79d63f8c116aec4365b5a9cb439fd5904d7d3cbf26e39f72ad2e590331"},
+    {file = "longport-1.0.5-cp311-cp311-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:1bc036af23819da7188e3dd6ad5e600890634388034df2d1188e6c5bd6d789ce"},
+    {file = "longport-1.0.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e650eb3424de580372a17352c0bd204e36e69f9a820bf9b05cea608815ff6451"},
+    {file = "longport-1.0.5-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:014d7d209c0d4b59f59170169ac094afa8aace3eb5e1b04031f78077fd4fb401"},
+    {file = "longport-1.0.5-cp311-none-win32.whl", hash = "sha256:45c2e83e0ef3796f716e7594d6e5d3d6c8200dfd39e19a3ee4a4fa8325ff8dba"},
+    {file = "longport-1.0.5-cp311-none-win_amd64.whl", hash = "sha256:6b327f7a64700a80703b7b7dd702306d14ecd0f2e7b389520d3426ad60d0bc72"},
+    {file = "longport-1.0.5.tar.gz", hash = "sha256:6531a19c31844adaadc51d5e403a2dc18a746c2ca93a7f8b3ef51005e0ddb41d"},
 ]
 
 [[package]]
