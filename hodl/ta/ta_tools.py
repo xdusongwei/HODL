@@ -20,6 +20,13 @@ class Candle:
 
 
 @dataclass
+class MA:
+    time: int
+    period: int
+    price: float
+
+
+@dataclass
 class RSI:
     time: int
     period: int
@@ -68,6 +75,22 @@ class TaTools:
         ]
         result = sorted(result, key=lambda i: i.time, reverse=not asc)
         return result
+
+    @classmethod
+    def ma(cls, candles: list[Candle], period: int = 5, precision: int = 3) -> MA | None:
+        if not candles or not period:
+            return None
+        period = abs(period)
+        candles = candles.copy()
+        candles.sort(key=lambda i: i.time, reverse=False)
+        candles = candles[-period:]
+        price = sum(i.avg_price for i in candles) / len(candles)
+        price = FormatTool.adjust_precision(price, precision=precision)
+        return MA(
+            time=candles[-1].time,
+            period=period,
+            price=price,
+        )
 
     @classmethod
     def rsi(cls, candles: list[Candle], period: int = 6) -> list[RSI]:
@@ -135,6 +158,7 @@ class TaTools:
 
 __all__ = [
     'Candle',
+    'MA',
     'RSI',
     'TaTools',
 ]

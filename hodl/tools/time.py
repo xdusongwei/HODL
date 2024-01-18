@@ -90,10 +90,11 @@ class TimeTools:
         return date + timedelta(days=days, minutes=minutes, seconds=seconds)
 
     @classmethod
-    def from_timestamp(cls, timestamp, tz=None) -> datetime:
+    def from_timestamp(cls, timestamp, tz: str = None) -> datetime:
         """
         秒单位时间戳
         :param timestamp:
+        :param tz:
         :return:
         """
         tz = tz if tz else cls.current_tz()

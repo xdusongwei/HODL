@@ -236,22 +236,18 @@ class BasePriceMixin(StoreBase, ABC):
 
     def _tumble_protect_alert_price(self):
         ta = TaTools(cfg=self.store_config, db=self.db)
-        ta.query_days(days=5)
-        ma5_days = ta.query_days(days=5)
-        ma5_price_list = [day.high_price for day in ma5_days]
-        ma10_days = ta.query_days(days=10)
-        ma10_price_list = [day.high_price for day in ma10_days]
-        if not ma5_price_list or not ma10_price_list:
+        candles = ta.query_days(days=10)
+        if not candles:
+            self.state.ta_tumble_protect_ma5 = None
+            self.state.ta_tumble_protect_ma10 = None
             return None
-        ma5 = sum(ma5_price_list) / len(ma5_price_list)
-        ma5 = FormatTool.adjust_precision(ma5, precision=self.store_config.precision)
+        ma5 = ta.ma(candles, period=5, precision=self.store_config.precision)
+        ma10 = ta.ma(candles, period=10, precision=self.store_config.precision)
+        assert ma5.price > 0
+        assert ma10.price > 0
         self.state.ta_tumble_protect_ma5 = ma5
-        ma10 = sum(ma10_price_list) / len(ma10_price_list)
-        ma10 = FormatTool.adjust_precision(ma10, precision=self.store_config.precision)
         self.state.ta_tumble_protect_ma10 = ma10
-        assert ma5 > 0
-        assert ma10 > 0
-        return max(ma5, ma10)
+        return max(ma5.price, ma10.price)
 
 
 __all__ = ['BasePriceMixin', ]
