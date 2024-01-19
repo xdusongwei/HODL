@@ -212,8 +212,6 @@ TigerQuoteClient = QuoteClient
 
 
 __all__ = [
-    'SpeedupQuoteClient',
-    'SpeedupTradeClient',
     'TigerApi',
     'TigerQuoteClient',
 ]
