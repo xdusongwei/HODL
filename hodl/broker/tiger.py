@@ -2,11 +2,8 @@
 接入老虎证券的API文档
 https://quant.itigerup.com/openapi/zh/python/overview/introduction.html
 """
-import uuid
 import threading
 import pandas
-import requests
-from tigeropen.common.util import web_utils
 from tigeropen.common.util.contract_utils import stock_contract
 from tigeropen.common.util.order_utils import market_order, limit_order
 from tigeropen.quote.quote_client import QuoteClient
@@ -28,65 +25,6 @@ from hodl.tools import *
 THREAD_LOCAL = threading.local()
 
 
-class _SpeedupMixin:
-    SESSION = None
-
-    @classmethod
-    def _do_post_session(
-            cls,
-            url,
-            query_string=None,
-            headers=None,
-            params=None,
-            timeout=15,
-            charset=None,
-    ) -> str:
-        url, _ = web_utils.get_http_connection(url, query_string, timeout)
-        args = dict(
-            url=url,
-            json=params or dict(),
-            header=headers,
-            timeout=timeout,
-        )
-        if session := cls.SESSION:
-            resp = session.post(**args)
-        else:
-            resp = requests.post(**args)
-        resp.raise_for_status()
-        return resp.text
-
-    def _execute(self, request):
-        THREAD_LOCAL.uuid = str(uuid.uuid1())
-        query_string = None
-        params = self.__prepare_request(request)
-
-        response = self._do_post_session(
-            self.__config.server_url, query_string, self.__headers, params, self.__config.timeout,
-            self.__config.charset,
-        )
-
-        return self.__parse_response(response, params.get('timestamp'))
-
-    def __fetch_data__(self, request):
-        try:
-            response = self._execute(request=request)
-            return response
-        except Exception as e:
-            if hasattr(THREAD_LOCAL, 'logger') and THREAD_LOCAL.logger:
-                THREAD_LOCAL.logger.error(e, exc_info=True)
-            raise e
-
-
-class SpeedupQuoteClient(QuoteClient, _SpeedupMixin):
-    def __fetch_data(self, request):
-        return self.__fetch_data__(request=request)
-
-
-class SpeedupTradeClient(TradeClient, _SpeedupMixin):
-    def __fetch_data(self, request):
-        return self.__fetch_data__(request=request)
-
-
 class TigerApi(BrokerApiBase):
     BROKER_NAME = 'tiger'
     BROKER_DISPLAY = '老虎国际'
@@ -101,8 +39,8 @@ class TigerApi(BrokerApiBase):
     ORDER_BUCKET = LeakyBucket(119)
     ASSET_BUCKET = LeakyBucket(59)
 
-    QUOTE_CLIENT: SpeedupQuoteClient = None
-    TRADE_CLIENT: SpeedupTradeClient = None
+    QUOTE_CLIENT: QuoteClient = None
+    TRADE_CLIENT: TradeClient = None
     PUSH_CLIENT: PushClient = None
 
     def __str__(self):
@@ -132,14 +70,13 @@ class TigerApi(BrokerApiBase):
             timeout=timeout,
         )
         self.custom_client = client_config
-        _SpeedupMixin.SESSION = self.http_session
 
         if TigerApi.QUOTE_CLIENT is None:
-            TigerApi.QUOTE_CLIENT = SpeedupTradeClient(client_config)
-        self.trade_client = TigerApi.QUOTE_CLIENT
+            TigerApi.QUOTE_CLIENT = QuoteClient(client_config, is_grab_permission=False)
+        self.quote_client = TigerApi.QUOTE_CLIENT
         if TigerApi.TRADE_CLIENT is None:
-            TigerApi.TRADE_CLIENT = SpeedupQuoteClient(client_config, is_grab_permission=False)
-        self.quote_client = TigerApi.TRADE_CLIENT
+            TigerApi.TRADE_CLIENT = TradeClient(client_config)
+        self.trade_client = TigerApi.TRADE_CLIENT
         if TigerApi.PUSH_CLIENT is None:
             protocol, host, port = client_config.socket_host_port
             TigerApi.PUSH_CLIENT = PushClient(host, port, use_ssl=(protocol == 'ssl'))
