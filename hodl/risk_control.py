@@ -192,8 +192,15 @@ class RiskControl:
         if not state.lsod:
             return
         if state.is_lsod_today:
+            if state.has_lsod_seal():
+                # 系统默认会将一些交易通道接口市场中未表达的时段设置为闭市,
+                # 对于类似长桥证券的A股市场状态数据: 中午休市时段会标记为闭市, 因为其系统市场状态枚举中没有休市这钟非闭市非开市的字段
+                # 这会导致一天闭市两次, 意味着中午时段会对今天上午的订单执行了今天LSOD完整周期, 而下午产生的新订单LSOD检查将被跳过
+                # 所以, 这里有一些方案, 如果系统被指示为开市, 那么今天的订单检查的图章需要被去除.
+                # 如此, 一天内多次发生闭市, 不会让任何今天的订单跳过检查.
+                state.pop_seal()
             return
-        if not state.has_lsod_seal('ClosingChecked'):
+        if not state.has_lsod_seal():
             raise RiskControlError(
                 f'交易时段发现上次订单日期({state.lsod_day()})没有在收盘时更新过订单，'
                 f'继续运行可能导致历史订单数据过时')
@@ -204,8 +211,8 @@ class RiskControl:
             return
         if state.is_lsod_today:
             if order_checked:
-                state.seal_lsod('ClosingChecked')
-        elif not state.has_lsod_seal('ClosingChecked'):
+                state.seal_lsod()
+        elif not state.has_lsod_seal():
             raise RiskControlError(
                 f'收盘时发现上次订单日期({state.lsod_day()})不是今天，即之前有下单的那天没有在收盘阶段更新过订单，'
                 f'继续运行可能导致历史订单数据过时')

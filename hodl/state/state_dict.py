@@ -281,7 +281,7 @@ class State(dict):
         lsod = self.lsod
         return f'[D{TimeTools.us_day_now()}]' in lsod
 
-    def seal_lsod(self, seal):
+    def seal_lsod(self, seal='ClosingChecked'):
         assert seal
         seal = f'[{seal}]'
         lsod = self.lsod
@@ -291,13 +291,21 @@ class State(dict):
             lsod += seal
         self.lsod = lsod
 
-    def has_lsod_seal(self, seal) -> bool:
+    def has_lsod_seal(self, seal='ClosingChecked') -> bool:
         assert seal
         seal = f'[{seal}]'
         lsod = self.lsod
         if not lsod:
             raise ValueError(f'未重置过的LSOD不能检查图章')
         return seal in lsod
+
+    def pop_seal(self, seal='ClosingChecked'):
+        assert seal
+        seal = f'[{seal}]'
+        lsod = self.lsod
+        if not lsod:
+            return
+        self.lsod = lsod.replace(seal, '')
 
     @property
     def is_plug_in(self):
