@@ -7,7 +7,7 @@ import pandas
 from tigeropen.common.util.contract_utils import stock_contract
 from tigeropen.common.util.order_utils import market_order, limit_order
 from tigeropen.quote.quote_client import QuoteClient
-from tigeropen.tiger_open_config import get_client_config
+from tigeropen.tiger_open_config import get_client_config, TigerOpenClientConfig
 from tigeropen.trade.domain.position import Position
 from tigeropen.trade.trade_client import TradeClient
 from tigeropen.push.push_client import PushClient
@@ -54,6 +54,12 @@ class TigerApi(BrokerApiBase):
         with TigerApi.GRAB_LOCK:
             if TigerApi.HAS_GRAB:
                 return
+            try:
+                config_dict = self.broker_config
+                if mac_address := config_dict.get('mac_address', None):
+                    TigerOpenClientConfig.__get_device_id = lambda: mac_address
+            except Exception as e:
+                pass
             self.quote_client.grab_quote_permission()
             TigerApi.HAS_GRAB = True
 
