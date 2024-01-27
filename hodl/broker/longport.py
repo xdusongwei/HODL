@@ -74,28 +74,40 @@ class LongPortApi(BrokerApiBase):
     KEEPER = None
 
     def __post_init__(self):
-        from longport.openapi import Config, QuoteContext
+        config_dict = self.broker_config
+        auto_refresh_token = config_dict.get('auto_refresh_token', False)
         if LongPortApi.QUOTE_CLIENT is None:
-            config_dict = self.broker_config
-            app_key = config_dict.get('app_key')
-            app_secret = config_dict.get('app_secret')
-            token_path = config_dict.get('token_path')
-            assert app_key
-            assert app_secret
-            LongPortApi.KEEPER = TokenKeeper(token_path)
-            config = Config(
-                app_key=app_key,
-                app_secret=app_secret,
-                access_token=LongPortApi.KEEPER.token,
-            )
-            ctx = QuoteContext(config)
-            LongPortApi.CONFIG = config
-            LongPortApi.QUOTE_CLIENT = ctx
+            self._reset_client(config_dict)
         self.token_keeper = LongPortApi.KEEPER
+        self.auto_refresh_token = auto_refresh_token
+        self._update_client()
+
+    def _update_client(self):
         self.longport_config = LongPortApi.CONFIG
         self.quote_client = LongPortApi.QUOTE_CLIENT
 
+    @classmethod
+    def _reset_client(cls, cfg: dict):
+        from longport.openapi import Config, QuoteContext
+        app_key = cfg.get('app_key')
+        app_secret = cfg.get('app_secret')
+        token_path = cfg.get('token_path')
+        assert app_key
+        assert app_secret
+        LongPortApi.KEEPER = TokenKeeper(token_path)
+        config = Config(
+            app_key=app_key,
+            app_secret=app_secret,
+            access_token=LongPortApi.KEEPER.token,
+        )
+        ctx = QuoteContext(config)
+        LongPortApi.CONFIG = config
+        LongPortApi.QUOTE_CLIENT = ctx
+
     def try_refresh(self):
+        self._update_client()
+        if not self.auto_refresh_token:
+            return
         cfg = self.longport_config
         keeper = self.token_keeper
         with keeper.LOCK:
@@ -107,6 +119,8 @@ class LongPortApi(BrokerApiBase):
                 token = cfg.refresh_access_token()
                 assert token
             keeper.update_token(token, expiry)
+            self._reset_client(self.broker_config)
+            self._update_client()
 
     def broker_symbol(self):
         symbol = self.symbol
