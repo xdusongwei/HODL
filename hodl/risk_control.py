@@ -37,6 +37,8 @@ class RiskControl:
     成交的市价单根据其保护限价(protect_price)比对, 判断是否按照错误价格进行了成交
     """
     ORDER_DICT = dict()
+    # 记录运行时产生的订单, 作为检查来源, 防止在重复的状态版本下重复的订单level和重复的订单方向
+    ORDER_LEVEL_DICT: dict[tuple[str, str, int], Order] = dict()
 
     def __init__(
             self,
@@ -62,10 +64,16 @@ class RiskControl:
         self.market_order_check()
 
     @classmethod
-    def _increase_times(cls, order: Order):
+    def _increase_times(cls, order: Order, state: State):
         if order.unique_id in RiskControl.ORDER_DICT:
             raise RiskControlError(f'订单uniqueId:{order.unique_id}重复出现')
         RiskControl.ORDER_DICT[order.unique_id] = order
+        level_key = state.version, order.direction, order.level
+        if duplicate_order := RiskControl.ORDER_LEVEL_DICT.get(level_key):
+            if duplicate_order.has_error or duplicate_order.is_canceled:
+                RiskControl.ORDER_LEVEL_DICT[level_key] = order
+            else:
+                raise RiskControlError(f'状态版本{state.version} 订单{order}重复出现')
 
     @classmethod
     def today_order_times_by_symbol(cls, symbol: str) -> int:
@@ -183,7 +191,7 @@ class RiskControl:
             raise RiskControlError(f'检查总买卖量出现了做空情形: {diff}')
         self._cash_balance_check(order=order)
         result = function()
-        self._increase_times(order=order)
+        self._increase_times(order=order, state=self.state)
         self.state.reset_lsod()
         return result
 
