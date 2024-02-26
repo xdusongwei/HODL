@@ -245,8 +245,8 @@ class BasePriceMixin(StoreBase, ABC):
         ma10 = ta.ma(candles, period=10, precision=self.store_config.precision)
         assert ma5.price > 0
         assert ma10.price > 0
-        self.state.ta_tumble_protect_ma5 = ma5
-        self.state.ta_tumble_protect_ma10 = ma10
+        self.state.ta_tumble_protect_ma5 = ma5.price
+        self.state.ta_tumble_protect_ma10 = ma10.price
         return max(ma5.price, ma10.price)
 
 
