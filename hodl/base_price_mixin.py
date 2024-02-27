@@ -230,7 +230,7 @@ class BasePriceMixin(StoreBase, ABC):
         if len(history) <= tumble_protect_day_range:
             return False
         history_low = min(day.low_price for day in history) * 1.01
-        recent = history[:tumble_protect_day_range]
+        recent = history[-tumble_protect_day_range:]
         recent_low = min(day.low_price for day in recent)
         return history_low >= recent_low
 
