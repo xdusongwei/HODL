@@ -108,6 +108,10 @@ class TradeMixin(StoreBase, ABC):
             limit_price = open_price
         if latest_price and latest_price < limit_price:
             limit_price = latest_price
+        if precision > 0:
+            unit = float(f"0.{'0' * (precision - 1)}1")
+            if limit_price + unit < want:
+                limit_price += unit
         limit_price = FMT.adjust_precision(limit_price, precision)
         return limit_price
 
@@ -139,6 +143,10 @@ class TradeMixin(StoreBase, ABC):
             limit_price = open_price
         if latest_price and latest_price > limit_price:
             limit_price = latest_price
+        if precision > 0:
+            unit = float(f"0.{'0' * (precision - 1)}1")
+            if limit_price - unit > want:
+                limit_price -= unit
         limit_price = FMT.adjust_precision(limit_price, precision)
         return limit_price
 

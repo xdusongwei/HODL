@@ -11,8 +11,8 @@ class OrderTestCase(unittest.TestCase):
         config = VariableTools().store_configs['TEST']
         config['market_price_rate'] = 0.02
         pc = 10.0
-        p_sell = pc * 1.03 * (1 + config.market_price_rate) + 0.01
-        p_buy = pc * 1.00 * (1 - config.market_price_rate) - 0.01
+        p_sell = pc * 1.03 * (1 + config.market_price_rate) + 0.02
+        p_buy = pc * 1.00 * (1 - config.market_price_rate) - 0.02
         tickets = [
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
@@ -33,7 +33,7 @@ class OrderTestCase(unittest.TestCase):
         config = VariableTools().store_configs['TEST']
         config['market_price_rate'] = 0.02
         pc = 10.0
-        p_sell = pc * 1.03 * (1 + config.market_price_rate) + 0.01
+        p_sell = pc * 1.03 * (1 + config.market_price_rate) + 0.02
         tickets = [
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),

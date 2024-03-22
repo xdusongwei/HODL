@@ -83,6 +83,8 @@ class RiskControl:
     def _cash_balance_check(self, order: Order):
         if not order.is_buy:
             return
+        if not self.store_config.risk_control_cash:
+            return
         cash_balance = self.cash_balance_func()
         if order.limit_price:
             value = order.limit_price * order.qty

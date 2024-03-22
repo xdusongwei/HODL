@@ -77,7 +77,7 @@ class BasicTestCase(unittest.TestCase):
 
         TimeTools.thread_register('US')
         date = TimeTools.us_time_now()
-        assert date.tzname() == 'EST'
+        assert date.tzname() == 'EDT'
         assert TimeTools.current_tz() == 'US/Eastern'
 
         TimeTools.THREAD_TZ.clear()
