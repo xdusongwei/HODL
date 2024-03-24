@@ -30,7 +30,7 @@ dependencies = [
     "python-telegram-bot>=20.6",
 ]
 
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.12,<3.13"
 license = {text = "MIT"}
 
 [project.urls]
