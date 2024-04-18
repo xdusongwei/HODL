@@ -43,6 +43,7 @@ class RiskControl:
     def __init__(
             self,
             store_config: StoreConfig,
+            margin_amount: float,
             state: State,
             cash_balance_func,
             latest_price: float,
@@ -50,11 +51,14 @@ class RiskControl:
             order_checked: bool,
     ):
         assert max_shares > 0
+        assert margin_amount >= 0.0
         self.state = state
         self.max_shares = max_shares
         self.cash_balance_func = cash_balance_func
         self.latest_price = latest_price
         self.store_config = store_config
+        self.margin_amount = margin_amount
+
         if self.state.market_status == 'TRADING':
             self.when_trading()
         if self.state.market_status == 'CLOSING':
@@ -83,9 +87,7 @@ class RiskControl:
     def _cash_balance_check(self, order: Order):
         if not order.is_buy:
             return
-        if not self.store_config.risk_control_cash:
-            return
-        cash_balance = self.cash_balance_func()
+        cash_balance = self.cash_balance_func() + self.margin_amount
         if order.limit_price:
             value = order.limit_price * order.qty
         else:

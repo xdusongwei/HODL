@@ -1,6 +1,7 @@
 import os
 import threading
 import requests
+from hodl.exception_tools import *
 from hodl.risk_control import *
 from hodl.tools import *
 from hodl.storage import *
@@ -209,6 +210,18 @@ class StoreBase(ThreadMixin):
         )
         self.broker_proxy.on_init()
 
+    @property
+    def margin_amount(self) -> float:
+        try:
+            if self.broker_proxy:
+                trade_broker = self.broker_proxy.trade_broker
+                broker_config = trade_broker.config
+            else:
+                broker_config = dict()
+        except BrokerMismatchError:
+            broker_config = dict()
+        return abs(broker_config.get('margin_amount', 0.0))
+
     @classmethod
     def state_bar(cls, thread_alive: bool, config: StoreConfig, state: State) -> list[BarElementDesc]:
         cross_mark = '❌'
@@ -258,7 +271,13 @@ class StoreBase(ThreadMixin):
         ]
 
     @classmethod
-    def buff_bar(cls, config: StoreConfig, state: State, process_time: float = None) -> list[BarElementDesc]:
+    def buff_bar(
+            cls,
+            config: StoreConfig,
+            state: State,
+            process_time: float = None,
+            margin_amount: float = None,
+    ) -> list[BarElementDesc]:
         bar = list()
         plan = state.plan
 
@@ -286,6 +305,8 @@ class StoreBase(ThreadMixin):
         if config.base_price_last_buy:
             tooltip += f', 上次买回价格({config.base_price_last_buy_days}个自然天内) '
         tooltip += f'. 价格比较函数: {state.bp_function}.'
+        if margin_amount:
+            tooltip += f'交易账户使用保证金融资.'
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
 
         if config.stage > 1:
@@ -406,6 +427,7 @@ class StoreBase(ThreadMixin):
             config=self.store_config,
             state=self.state,
             process_time=self.process_time,
+            margin_amount=self.margin_amount,
         )
 
     def warning_alert_bar(self) -> list[str]:

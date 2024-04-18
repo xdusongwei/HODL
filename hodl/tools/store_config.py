@@ -525,15 +525,5 @@ class StoreConfig(dict):
         """
         return self.get('visible', True)
 
-    @property
-    def risk_control_cash(self) -> bool:
-        """
-        允许风控检查现金是否足够下单买入
-        Returns
-        -------
-
-        """
-        return self.get('risk_control_cash', True)
-
 
 __all__ = ['TradeStrategyEnum', 'StoreConfig', ]
