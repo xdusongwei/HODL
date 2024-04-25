@@ -52,12 +52,11 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         dispatcher.add_handler(GiveUpPrice.handler())
 
         self.app.run_polling(
-            poll_interval=30.0,
             timeout=15,
             allowed_updates=Update.ALL_TYPES,
             stop_signals=list(),
             close_loop=False,
-            drop_pending_updates=False,
+            drop_pending_updates=True,
         )
 
     def application(self) -> Application:

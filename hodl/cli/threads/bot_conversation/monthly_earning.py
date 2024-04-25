@@ -28,7 +28,7 @@ class MonthlyEarning(TelegramBotBase):
     @classmethod
     def handler(cls):
         o = cls()
-        handler = CommandHandler("monthlyEarning", o.monthly_earning)
+        handler = CommandHandler("monthlyEarning", o.monthly_earning, block=False)
         return handler
 
 

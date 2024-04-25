@@ -2,9 +2,8 @@ import abc
 from dataclasses import dataclass
 from typing import Self
 from expiringdict import ExpiringDict
-from telegram import ReplyKeyboardRemove, Update, Message
+from telegram import ReplyKeyboardRemove, Message
 from telegram.ext import Application, ConversationHandler, CommandHandler
-from hodl.thread_mixin import *
 from hodl.tools import *
 from hodl.storage import *
 

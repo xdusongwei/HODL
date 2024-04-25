@@ -21,7 +21,7 @@ class TodayOrders(TelegramBotBase):
     @classmethod
     def handler(cls):
         o = cls()
-        handler = CommandHandler("todayOrders", o.today_orders)
+        handler = CommandHandler("todayOrders", o.today_orders, block=False)
         return handler
 
 

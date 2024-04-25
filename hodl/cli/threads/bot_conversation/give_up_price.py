@@ -138,6 +138,8 @@ class GiveUpPrice(TelegramBotBase):
                 ],
             },
             fallbacks=[o.cancel_handler()],
+            conversation_timeout=60.0,
+            block=False,
         )
         return handler
 

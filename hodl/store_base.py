@@ -215,7 +215,7 @@ class StoreBase(ThreadMixin):
         try:
             if self.broker_proxy:
                 trade_broker = self.broker_proxy.trade_broker
-                broker_config = trade_broker.config
+                broker_config = trade_broker.broker_config
             else:
                 broker_config = dict()
         except BrokerMismatchError:

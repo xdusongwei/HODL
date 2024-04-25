@@ -88,6 +88,8 @@ class Report(TelegramBotBase):
                 o.K_RP_SELECT: [MessageHandler(Regex(r'^(\d+)$'), o.report_select)],
             },
             fallbacks=[o.cancel_handler()],
+            conversation_timeout=60.0,
+            block=False,
         )
         return handler
 

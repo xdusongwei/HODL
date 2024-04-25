@@ -135,22 +135,22 @@ files = [
 
 [[package]]
 name = "coverage"
-version = "7.4.4"
+version = "7.5.0"
 requires_python = ">=3.8"
 summary = "Code coverage measurement for Python"
 files = [
-    {file = "coverage-7.4.4-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:201bef2eea65e0e9c56343115ba3814e896afe6d36ffd37bab783261db430f76"},
-    {file = "coverage-7.4.4-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:41c9c5f3de16b903b610d09650e5e27adbfa7f500302718c9ffd1c12cf9d6818"},
-    {file = "coverage-7.4.4-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d898fe162d26929b5960e4e138651f7427048e72c853607f2b200909794ed978"},
-    {file = "coverage-7.4.4-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3ea79bb50e805cd6ac058dfa3b5c8f6c040cb87fe83de10845857f5535d1db70"},
-    {file = "coverage-7.4.4-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ce4b94265ca988c3f8e479e741693d143026632672e3ff924f25fab50518dd51"},
-    {file = "coverage-7.4.4-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:00838a35b882694afda09f85e469c96367daa3f3f2b097d846a7216993d37f4c"},
-    {file = "coverage-7.4.4-cp312-cp312-musllinux_1_1_i686.whl", hash = "sha256:fdfafb32984684eb03c2d83e1e51f64f0906b11e64482df3c5db936ce3839d48"},
-    {file = "coverage-7.4.4-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:69eb372f7e2ece89f14751fbcbe470295d73ed41ecd37ca36ed2eb47512a6ab9"},
-    {file = "coverage-7.4.4-cp312-cp312-win32.whl", hash = "sha256:137eb07173141545e07403cca94ab625cc1cc6bc4c1e97b6e3846270e7e1fea0"},
-    {file = "coverage-7.4.4-cp312-cp312-win_amd64.whl", hash = "sha256:d71eec7d83298f1af3326ce0ff1d0ea83c7cb98f72b577097f9083b20bdaf05e"},
-    {file = "coverage-7.4.4-pp38.pp39.pp310-none-any.whl", hash = "sha256:b2c5edc4ac10a7ef6605a966c58929ec6c1bd0917fb8c15cb3363f65aa40e677"},
-    {file = "coverage-7.4.4.tar.gz", hash = "sha256:c901df83d097649e257e803be22592aedfd5182f07b3cc87d640bbb9afd50f49"},
+    {file = "coverage-7.5.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:fed7a72d54bd52f4aeb6c6e951f363903bd7d70bc1cad64dd1f087980d309ab9"},
+    {file = "coverage-7.5.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:cbe6581fcff7c8e262eb574244f81f5faaea539e712a058e6707a9d272fe5b64"},
+    {file = "coverage-7.5.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ad97ec0da94b378e593ef532b980c15e377df9b9608c7c6da3506953182398af"},
+    {file = "coverage-7.5.0-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:bd4bacd62aa2f1a1627352fe68885d6ee694bdaebb16038b6e680f2924a9b2cc"},
+    {file = "coverage-7.5.0-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:adf032b6c105881f9d77fa17d9eebe0ad1f9bfb2ad25777811f97c5362aa07f2"},
+    {file = "coverage-7.5.0-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:4ba01d9ba112b55bfa4b24808ec431197bb34f09f66f7cb4fd0258ff9d3711b1"},
+    {file = "coverage-7.5.0-cp312-cp312-musllinux_1_1_i686.whl", hash = "sha256:f0bfe42523893c188e9616d853c47685e1c575fe25f737adf473d0405dcfa7eb"},
+    {file = "coverage-7.5.0-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:a9a7ef30a1b02547c1b23fa9a5564f03c9982fc71eb2ecb7f98c96d7a0db5cf2"},
+    {file = "coverage-7.5.0-cp312-cp312-win32.whl", hash = "sha256:3c2b77f295edb9fcdb6a250f83e6481c679335ca7e6e4a955e4290350f2d22a4"},
+    {file = "coverage-7.5.0-cp312-cp312-win_amd64.whl", hash = "sha256:427e1e627b0963ac02d7c8730ca6d935df10280d230508c0ba059505e9233475"},
+    {file = "coverage-7.5.0-pp38.pp39.pp310-none-any.whl", hash = "sha256:2b57780b51084d5223eee7b59f0d4911c31c16ee5aa12737c7a02455829ff067"},
+    {file = "coverage-7.5.0.tar.gz", hash = "sha256:cf62d17310f34084c59c01e027259076479128d11e4661bb6c9acb38c5e19bb8"},
 ]
 
 [[package]]
@@ -259,7 +259,7 @@ files = [
 
 [[package]]
 name = "futu-api"
-version = "8.1.4108"
+version = "8.2.4208"
 summary = "Futu Quantitative Trading API"
 dependencies = [
     "PyCryptodome",
@@ -268,7 +268,7 @@ dependencies = [
     "simplejson",
 ]
 files = [
-    {file = "futu-api-8.1.4108.tar.gz", hash = "sha256:ab50b14c0c933dc61e5ab725e1b1408363eb46e256219bd90c2bf6c7151747f0"},
+    {file = "futu-api-8.2.4208.tar.gz", hash = "sha256:94cae404b4ec87b8980a2aee79be3fa054d48e56f259c6ba9d01704ed8cb525e"},
 ]
 
 [[package]]
@@ -479,16 +479,16 @@ files = [
 
 [[package]]
 name = "longport"
-version = "1.0.19"
+version = "1.0.23"
 summary = "A Python library for LongPort Open API"
 files = [
-    {file = "longport-1.0.19-cp312-cp312-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:73b646822db2838a870d0a254d754633a768bccebdcc6d9ef61eca44f9dd36c9"},
-    {file = "longport-1.0.19-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:35eba028b9620162c695039173629a7776ba14d16fb255f48527cdbb0be273a3"},
-    {file = "longport-1.0.19-cp312-cp312-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:451e951f153237b827760215ca4bb852c5e1c8ca4b6257a6a88cd7a3aa19b02e"},
-    {file = "longport-1.0.19-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5b15de96547716a08ab0cda36b26258a65b6b679101487faaa045ceecb14169d"},
-    {file = "longport-1.0.19-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:821b4247186c09659279a571d6b55d7da00a048bbe6c2285e4772c85588d41a7"},
-    {file = "longport-1.0.19-cp312-none-win32.whl", hash = "sha256:a0bfbf49250e17ad503d24daae884ec8c34177071feb56674de7858c7a89cd82"},
-    {file = "longport-1.0.19-cp312-none-win_amd64.whl", hash = "sha256:f10ed05daf5acb58c1c19f6fbd548d0c2e3ee913a79a806aedd984737993a0f9"},
+    {file = "longport-1.0.23-cp312-cp312-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:0a5d8a616493e033562127e02d570d47c80e07b0453a54653d303c7798453933"},
+    {file = "longport-1.0.23-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:ab5f3ae25e7ffdb4647a47a5111272595ae744e68f56d0435e9d3196510cdae3"},
+    {file = "longport-1.0.23-cp312-cp312-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:5e82eaf4286ed526d0e3af819fa37da7a73064457c371901848e4b42cbbb6c4c"},
+    {file = "longport-1.0.23-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:91bf5815cd7d315ea12c7a3b0a7fdedf4dab2fd7f0613503e4a269349d339727"},
+    {file = "longport-1.0.23-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:3766fb73169d786d323fceba0b4b337de82030233bf3fd869f45658047d71215"},
+    {file = "longport-1.0.23-cp312-none-win32.whl", hash = "sha256:1239b7cc887c8cee94bf72bac59422ba560c4735d6481432dd6e1e031d20bd84"},
+    {file = "longport-1.0.23-cp312-none-win_amd64.whl", hash = "sha256:f77a26e5053d26dd38c8cd2c978046d4109ca54517a2d688850354d1e209e054"},
 ]
 
 [[package]]
@@ -590,20 +590,21 @@ files = [
 
 [[package]]
 name = "orjson"
-version = "3.9.15"
+version = "3.10.1"
 requires_python = ">=3.8"
 summary = "Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy"
 files = [
-    {file = "orjson-3.9.15-cp312-cp312-macosx_10_15_x86_64.macosx_11_0_arm64.macosx_10_15_universal2.whl", hash = "sha256:82425dd5c7bd3adfe4e94c78e27e2fa02971750c2b7ffba648b0f5d5cc016a73"},
-    {file = "orjson-3.9.15-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2c51378d4a8255b2e7c1e5cc430644f0939539deddfa77f6fac7b56a9784160a"},
-    {file = "orjson-3.9.15-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:6ae4e06be04dc00618247c4ae3f7c3e561d5bc19ab6941427f6d3722a0875ef7"},
-    {file = "orjson-3.9.15-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:bcef128f970bb63ecf9a65f7beafd9b55e3aaf0efc271a4154050fc15cdb386e"},
-    {file = "orjson-3.9.15-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b72758f3ffc36ca566ba98a8e7f4f373b6c17c646ff8ad9b21ad10c29186f00d"},
-    {file = "orjson-3.9.15-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:10c57bc7b946cf2efa67ac55766e41764b66d40cbd9489041e637c1304400494"},
-    {file = "orjson-3.9.15-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:946c3a1ef25338e78107fba746f299f926db408d34553b4754e90a7de1d44068"},
-    {file = "orjson-3.9.15-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:2f256d03957075fcb5923410058982aea85455d035607486ccb847f095442bda"},
-    {file = "orjson-3.9.15-cp312-none-win_amd64.whl", hash = "sha256:5bb399e1b49db120653a31463b4a7b27cf2fbfe60469546baf681d1b39f4edf2"},
-    {file = "orjson-3.9.15.tar.gz", hash = "sha256:95cae920959d772f30ab36d3b25f83bb0f3be671e986c72ce22f8fa700dae061"},
+    {file = "orjson-3.10.1-cp312-cp312-macosx_10_15_x86_64.macosx_11_0_arm64.macosx_10_15_universal2.whl", hash = "sha256:f02c06cee680b1b3a8727ec26c36f4b3c0c9e2b26339d64471034d16f74f4ef5"},
+    {file = "orjson-3.10.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b1aa2f127ac546e123283e437cc90b5ecce754a22306c7700b11035dad4ccf85"},
+    {file = "orjson-3.10.1-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:2cf29b4b74f585225196944dffdebd549ad2af6da9e80db7115984103fb18a96"},
+    {file = "orjson-3.10.1-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:a1b130c20b116f413caf6059c651ad32215c28500dce9cd029a334a2d84aa66f"},
+    {file = "orjson-3.10.1-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:d31f9a709e6114492136e87c7c6da5e21dfedebefa03af85f3ad72656c493ae9"},
+    {file = "orjson-3.10.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5d1d169461726f271ab31633cf0e7e7353417e16fb69256a4f8ecb3246a78d6e"},
+    {file = "orjson-3.10.1-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:57c294d73825c6b7f30d11c9e5900cfec9a814893af7f14efbe06b8d0f25fba9"},
+    {file = "orjson-3.10.1-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:d7f11dbacfa9265ec76b4019efffabaabba7a7ebf14078f6b4df9b51c3c9a8ea"},
+    {file = "orjson-3.10.1-cp312-none-win32.whl", hash = "sha256:d89e5ed68593226c31c76ab4de3e0d35c760bfd3fbf0a74c4b2be1383a1bf123"},
+    {file = "orjson-3.10.1-cp312-none-win_amd64.whl", hash = "sha256:aa76c4fe147fd162107ce1692c39f7189180cfd3a27cfbc2ab5643422812da8e"},
+    {file = "orjson-3.10.1.tar.gz", hash = "sha256:a883b28d73370df23ed995c466b4f6c708c1f7a9bdc400fe89165c96c7603204"},
 ]
 
 [[package]]
@@ -812,15 +813,15 @@ files = [
 
 [[package]]
 name = "python-telegram-bot"
-version = "21.0.1"
+version = "21.1.1"
 requires_python = ">=3.8"
 summary = "We have made you a wrapper you can't refuse"
 dependencies = [
     "httpx~=0.27",
 ]
 files = [
-    {file = "python-telegram-bot-21.0.1.tar.gz", hash = "sha256:3e005962c9fda01b09480044c49b3dd70870ee0c63340374bf3d5191e3910be9"},
-    {file = "python_telegram_bot-21.0.1-py3-none-any.whl", hash = "sha256:b282544d1a51bf228b868e2ce0285b8448982878e2362175836429722d6f8795"},
+    {file = "python-telegram-bot-21.1.1.tar.gz", hash = "sha256:5fd21710902270f5946c6a484918227b361b8119e1dadae6b3dd7fcee3b1a74e"},
+    {file = "python_telegram_bot-21.1.1-py3-none-any.whl", hash = "sha256:dded93d733585a37b382fd5e088faffc37c3ae6d2bd4052d105d9a40f8a0152a"},
 ]
 
 [[package]]
@@ -968,7 +969,7 @@ files = [
 
 [[package]]
 name = "tigeropen"
-version = "3.1.9"
+version = "3.2.3"
 summary = "TigerBrokers Open API"
 dependencies = [
     "backoff",
@@ -988,7 +989,7 @@ dependencies = [
     "urllib3",
 ]
 files = [
-    {file = "tigeropen-3.1.9.tar.gz", hash = "sha256:3e019e20ba4e695a961fed0223881179581b42bf27b9627b194b0aab43e7de0f"},
+    {file = "tigeropen-3.2.3.tar.gz", hash = "sha256:25b7f527b57fe1fb56a7b29b3632ad380c1045184c214011ba26c2e6ae19c1e1"},
 ]
 
 [[package]]

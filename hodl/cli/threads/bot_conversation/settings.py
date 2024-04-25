@@ -33,7 +33,7 @@ class Settings(TelegramBotBase):
     @classmethod
     def handler(cls):
         o = cls()
-        handler = CommandHandler("settings", o.settings)
+        handler = CommandHandler("settings", o.settings, block=False)
         return handler
 
 
