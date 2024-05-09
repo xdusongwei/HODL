@@ -304,7 +304,6 @@ class StoreBase(ThreadMixin):
             tooltip += ', 当日最低价格'
         if config.base_price_last_buy:
             tooltip += f', 上次买回价格({config.base_price_last_buy_days}个自然天内) '
-        tooltip += f'. 价格比较函数: {state.bp_function}.'
         if margin_amount:
             tooltip += f'交易账户使用保证金融资.'
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))

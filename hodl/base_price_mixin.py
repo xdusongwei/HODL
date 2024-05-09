@@ -12,6 +12,7 @@ from hodl.ta import *
 class BasePriceItem:
     v: float = field()
     desc: str = field()
+    name: str = field()
 
 
 class BasePriceMixin(StoreBase, ABC):
@@ -69,23 +70,23 @@ class BasePriceMixin(StoreBase, ABC):
             con = db.conn
             base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
             if base_price_row and base_price_row.price > 0:
-                items.append(BasePriceItem(v=base_price_row.price, desc='TempPrice'))
+                items.append(BasePriceItem(v=base_price_row.price, desc='TempPrice', name='临时基准价'))
                 return items
 
-        items.append(BasePriceItem(v=quote_pre_close, desc='PreClosePrice'))
+        items.append(BasePriceItem(v=quote_pre_close, desc='PreClosePrice', name='昨收价'))
         if quote_open:
-            items.append(BasePriceItem(v=quote_open, desc='OpenPrice'))
+            items.append(BasePriceItem(v=quote_open, desc='OpenPrice', name='开盘价'))
         if db and store_config.base_price_last_buy:
             con = db.conn
             days = store_config.base_price_last_buy_days
             earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol, days=days)
             if earning_row and earning_row.buyback_price and earning_row.buyback_price > 0:
-                items.append(BasePriceItem(v=earning_row.buyback_price, desc='BuybackPrice'))
+                items.append(BasePriceItem(v=earning_row.buyback_price, desc='BuybackPrice', name='买回价'))
         if store_config.base_price_day_low:
             if low_price is not None:
-                items.append(BasePriceItem(v=low_price, desc='LowPrice'))
+                items.append(BasePriceItem(v=low_price, desc='LowPrice', name='日最低价'))
         if state.ta_tumble_protect_alert_price is not None:
-            items.append(BasePriceItem(v=state.ta_tumble_protect_alert_price, desc='TpMaPrice'))
+            items.append(BasePriceItem(v=state.ta_tumble_protect_alert_price, desc='TpMaPrice', name='多日均价'))
 
         return items
 
