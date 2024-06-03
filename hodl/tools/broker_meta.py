@@ -20,7 +20,6 @@ class BrokerMeta:
     允许的行情信息国家代码集合；
     允许的交易品种国家代码集合；
     broker支持获取vix波动率的代码；
-    需要提供conid(盈透证券的标的代码)；
     """
     trade_type: BrokerTradeType = field(default=BrokerTradeType.STOCK)
     share_market_state: bool = field(default=False)

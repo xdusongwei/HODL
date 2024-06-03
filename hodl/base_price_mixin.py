@@ -88,6 +88,7 @@ class BasePriceMixin(StoreBase, ABC):
         if state.ta_tumble_protect_alert_price is not None:
             items.append(BasePriceItem(v=state.ta_tumble_protect_alert_price, desc='TpMaPrice', name='多日均价'))
 
+        items.sort(key=lambda i: i.v)
         return items
 
     def calc_base_price(self) -> float:

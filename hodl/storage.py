@@ -137,7 +137,7 @@ class OrderRow:
             cur.execute(sql, (create_time,))
             items = cur.fetchall()
         items = map(lambda item: OrderRow(**item), items)
-        return items
+        return list(items)
 
     @classmethod
     def simple_items_after_create_time(cls, con: sqlite3.Connection, create_time: int):

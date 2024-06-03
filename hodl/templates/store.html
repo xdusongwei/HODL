@@ -34,6 +34,12 @@
     <p>
         {% if row_tool.has_table %}
             {% set bp_items = state.bp_items %}
+            <a class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse"
+                   role="button" aria-expanded="false"
+                   href="#report-{{ store_config.broker }}-{{ store_config.symbol }}"
+                   aria-controls="report-{{ store_config.broker }}-{{ store_config.symbol }}">
+                更多({{ row_tool.filled_level }}/{{ row_tool.rows|length }})
+            </a>
             {% if state.plan.cleanable %}
                 <a class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse"
                    role="button" aria-expanded="false"
@@ -41,12 +47,6 @@
                    aria-controls="baseprice-{{ store_config.broker }}-{{ store_config.symbol }}"
                 >基准价格({{ bp_items|length }})</a>
             {% endif %}
-            <a class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse"
-                   role="button" aria-expanded="false"
-                   href="#report-{{ store_config.broker }}-{{ store_config.symbol }}"
-                   aria-controls="report-{{ store_config.broker }}-{{ store_config.symbol }}">
-                更多({{ row_tool.filled_level }}/{{ row_tool.rows|length }})
-            </a>
             {% if state.plan.cleanable %}
             <div class="collapse" id="baseprice-{{ store_config.broker }}-{{ store_config.symbol }}">
                 <div class="table-responsive-md">
