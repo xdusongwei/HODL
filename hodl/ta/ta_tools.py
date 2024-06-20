@@ -97,8 +97,8 @@ class TaTools:
         init_value = 0.5
         rsi_points: list[RSI] = list()
         if len(candles) < period:
-            for day, _ in candles:
-                rsi_points.append(RSI(time=day, period=period, v=init_value, ))
+            for candle in candles:
+                rsi_points.append(RSI(time=candle.time, period=period, v=init_value, ))
             return cls._transform_rsi_rate(rsi_points)
         t_max = cls._rsi_t(candles, period=period, t_max=True)
         t_abs = cls._rsi_t(candles, period=period, t_max=False)

@@ -17,7 +17,7 @@ from hodl.tools.format import FormatTool as FMT
 
 class BrokerApiMixin(abc.ABC):
     """
-    券商通道包含8个重要的操作方法, 和on_init, 用于交易持仓相关的初始化函数
+    券商通道包含8个重要的操作方法, 和 on_init, 用于交易持仓相关的初始化函数
     8个方法,可根据对券商的实际需要进行部分开发, 比如这个券商只提供行情数据, 不提供交易, 那么仅实现行情获取功能即可.
     关于市场状态: fetch_market_status;
     关于行情: fetch_quote;

@@ -10,6 +10,12 @@ class CiticsRestApi(BrokerApiBase):
     BROKER_NAME = 'citics'
     BROKER_DISPLAY = '中信证券'
     ENABLE_BOOTING_CHECK = False
+    FILE_LOCK = None
+
+    def on_init(self):
+        if CiticsRestApi.FILE_LOCK is None:
+            order_lock_file = self.broker_config.get('order_lock_file', None)
+            CiticsRestApi.FILE_LOCK = Filelock(order_lock_file)
 
     @classmethod
     def http_request(
@@ -79,15 +85,16 @@ class CiticsRestApi(BrokerApiBase):
         token = self.broker_config.get('token', '')
         url = urljoin(base_site, uri)
         session = self.http_session
-        d = CiticsRestApi.http_request(
-            method='POST',
-            url=url,
-            json=d,
-            timeout=timeout,
-            session=session,
-            token=token,
-            raise_for_status=False,
-        )
+        with CiticsRestApi.FILE_LOCK:
+            d = CiticsRestApi.http_request(
+                method='POST',
+                url=url,
+                json=d,
+                timeout=timeout,
+                session=session,
+                token=token,
+                raise_for_status=False,
+            )
         return d
 
     @track_api

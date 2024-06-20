@@ -5,7 +5,7 @@
 groups = ["default", "test", "tui", "longport"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:34848ab2ad4c2e4df36b38c5e2e27f4d2d0cf1c0ac64b5ee80ccc9fae416f978"
+content_hash = "sha256:4c3c29b92d44d9ab428434efd1a1d759db74ae739001d2354cb749a718a38518"
 
 [[package]]
 name = "anyio"
@@ -255,6 +255,16 @@ summary = "Dictionary with auto-expiring values for caching purposes"
 files = [
     {file = "expiringdict-1.2.2-py3-none-any.whl", hash = "sha256:09a5d20bc361163e6432a874edd3179676e935eb81b925eccef48d409a8a45e8"},
     {file = "expiringdict-1.2.2.tar.gz", hash = "sha256:300fb92a7e98f15b05cf9a856c1415b3bc4f2e132be07daa326da6414c23ee09"},
+]
+
+[[package]]
+name = "filelock"
+version = "3.15.3"
+requires_python = ">=3.8"
+summary = "A platform independent file lock."
+files = [
+    {file = "filelock-3.15.3-py3-none-any.whl", hash = "sha256:0151273e5b5d6cf753a61ec83b3a9b7d8821c39ae9af9d7ecf2f9e2f17404103"},
+    {file = "filelock-3.15.3.tar.gz", hash = "sha256:e1199bf5194a2277273dacd50269f0d87d0682088a3c561c15674ea9005d8635"},
 ]
 
 [[package]]
