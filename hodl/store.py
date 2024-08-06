@@ -32,6 +32,9 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin):
 
     def prepare_plan(self):
         sc, state, _ = self.args()
+        # 新状态初次创建时, 因为不会更新symbol导致一些文案上的错误
+        if state.quote_symbol is None:
+            state.quote_symbol = sc.symbol
         if state.plan.cleanable:
             state.plan = Plan.new_plan(
                 store_config=self.store_config,
