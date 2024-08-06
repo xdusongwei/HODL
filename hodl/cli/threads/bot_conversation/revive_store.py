@@ -80,7 +80,7 @@ class ReviveStore(TelegramBotBase):
                     state.chip_day = None
                     text = FormatTool.json_dumps(state)
                     LocateTools.write_file(state_path, text)
-                    store.start(name=f'Store([{region}]{symbol})')
+                    store.start(name=session.position.config.thread_name)
                     await update.message.reply_text(
                         f'已创建新线程',
                         reply_markup=ReplyKeyboardRemove(),

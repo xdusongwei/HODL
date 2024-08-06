@@ -519,6 +519,10 @@ class StoreConfig(dict):
         return f'[{self.broker}][{self.region}]{self.symbol}({self.name})'
 
     @property
+    def thread_name(self) -> str:
+        return f'Store([{self.broker}]{self.symbol})'
+
+    @property
     def visible(self) -> bool:
         """
         是否展示在html或者tui中

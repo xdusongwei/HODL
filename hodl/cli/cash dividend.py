@@ -6,17 +6,16 @@ from hodl.state import *
 from hodl.tools import *
 
 
+broker = input('broker:\n')
 symbol = input('symbol:\n')
 var = VariableTools()
-config = var.store_configs[symbol]
+config = var.store_configs_by_group()[(broker, symbol, )]
 assert config
 
 
 cash = float(input('cash dividend per share:'))
 assert cash > 0
 
-var = VariableTools()
-config = var.store_configs[symbol]
 state_file = config.state_file_path
 assert state_file
 print('state file:', state_file)

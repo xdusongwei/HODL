@@ -61,7 +61,7 @@ class VariableTools:
     @property
     def store_configs(self) -> dict[str, StoreConfig]:
         """
-        所有持仓配置的字典结构
+        所有持仓配置的字典结构, 此方法是给测试使用的, 因为字典的键是symbol, 多个交易通道的持仓配置因此会冲突
         """
         store_config_list = self.store_config_list()
         return {store_config.symbol: store_config for store_config in store_config_list}
@@ -122,7 +122,12 @@ class VariableTools:
         builder.connect_timeout(20)
         builder.read_timeout(20)
         builder.write_timeout(20)
+        builder.pool_timeout(6.0)
+        builder.get_updates_connect_timeout(20)
+        builder.get_updates_read_timeout(20)
+        builder.get_updates_write_timeout(20)
         builder.get_updates_pool_timeout(6.0)
+
         if proxy_url:
             builder.proxy(proxy_url)
             builder.get_updates_proxy(proxy_url)

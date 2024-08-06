@@ -9,6 +9,7 @@ from hodl.store_base import StoreBase
 from hodl.tools import *
 
 
+broker = input('输入broker:\n')
 symbol = input('输入symbol:\n')
 print('输入相对于当前卖档基准价格比例的比例, 需要小于1, 假设当前最高执行过的卖出档位高于基准价格40%, 此处输入比例0.8。')
 print('则修改其他后续档位的买入比例为, 140% * 0.8 = 112%, 后续流程会根据期望的112%比例和已卖出部分的加权买入因子，得出最高档的买入因子')
@@ -17,7 +18,7 @@ assert 1 > rate > 0
 
 
 var = VariableTools()
-config = var.store_configs[symbol]
+config = var.store_configs_by_group()[(broker, symbol, )]
 assert config
 state_file = config.state_file_path
 assert state_file

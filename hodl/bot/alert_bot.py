@@ -11,7 +11,7 @@ class AlertKey:
 
 
 class AlertBot(TelegramBotBase):
-    K_THREAD_DEAD = AlertKey(key_template='K_THREAD_DEAD.{symbol}', save_db=False)
+    K_THREAD_DEAD = AlertKey(key_template='K_THREAD_DEAD.{broker}.{symbol}', save_db=False)
     K_TRADE_SERVICE = AlertKey(key_template='K_TRADE_SERVICE.{broker}.{symbol}', save_db=True)
 
     def __init__(self, broker: str, symbol: str, chat_id=None, db: LocalDb = None):

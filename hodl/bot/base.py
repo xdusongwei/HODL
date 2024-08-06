@@ -58,15 +58,15 @@ class TelegramBotBase:
     @classmethod
     def _symbol_list(cls):
         var = VariableTools()
-        values = var.store_configs.values()
-        values = sorted(values, key=lambda i: i.symbol)
+        values = var.store_configs_by_group().values()
+        values = sorted(values, key=lambda i: i.full_name)
         result = list()
         for idx, v in enumerate(values):
             result.append(
                 _Position(
                     idx=str(idx + 1),
                     symbol=v.symbol,
-                    display=f'{idx + 1}: [{v.region}]{v.symbol} {v.name or ""}',
+                    display=f'{idx + 1}: {v.full_name}',
                     config=v,
                     enable='开启' if v.enable else '关闭',
                     lock_position='锁定' if v.lock_position else '解锁',

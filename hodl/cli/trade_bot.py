@@ -111,7 +111,7 @@ class Manager(ThreadMixin):
     def run(self):
         super(Manager, self).run()
         var = self.var
-        store_configs = var.store_configs
+        store_configs = var.store_configs_by_group()
         if not store_configs:
             print('没有任何持仓配置')
             return
@@ -137,7 +137,7 @@ class Manager(ThreadMixin):
                 store.prepare()
             threads = [
                 store.start(
-                    name=f'Store([{store.store_config.region}]{store.store_config.symbol})',
+                    name=store.store_config.thread_name,
                 )
                 for store in stores
             ]
@@ -192,24 +192,24 @@ class Manager(ThreadMixin):
                 except Exception as e:
                     raise ConfigReadError(e)
                 sleep_secs = variable.sleep_limit
-                store_configs = variable.store_configs
+                store_configs = variable.store_configs_by_group()
                 if len(store_configs) != len(stores):
                     print(f'运行中的持仓对象数量和配置文件中的持仓配置数量不一致')
                     return
                 BrokerApiBase.set_up_var(var=variable)
                 html_thread.variable = variable
                 for store in stores:
+                    broker = store.store_config.broker
                     symbol = store.store_config.symbol
-                    new_config = store_configs.get(symbol)
-                    if new_config:
-                        with store.thread_lock():
-                            current_config = store.runtime_state.store_config
-                            if current_config != new_config:
-                                store.runtime_state.store_config = new_config
-                            store.runtime_state.variable = variable
-                    else:
+                    new_config = store_configs.get((broker, symbol, ), None)
+                    if not new_config:
                         print(f'找不到标的{symbol}的持仓配置信息')
                         return
+                    with store.thread_lock():
+                        current_config = store.runtime_state.store_config
+                        if current_config != new_config:
+                            store.runtime_state.store_config = new_config
+                        store.runtime_state.variable = variable
                     store.runtime_state.sleep_secs = sleep_secs
                     QuoteMixin.change_cache_ttl(sleep_secs)
                 self.monitor_alert(stores=stores)

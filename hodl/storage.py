@@ -428,10 +428,10 @@ class LocalDb:
                         `unique_id` TEXT NOT NULL,
                         `symbol` TEXT NOT NULL,
                         `order_id` TEXT NOT NULL,
-                        'region' TEXT NOT NULL,
-                        'broker' TEXT NOT NULL,
+                        `region` TEXT NOT NULL,
+                        `broker` TEXT NOT NULL,
                         `content` BLOB NOT NULL,
-                        'create_time' INTEGER NOT NULL,
+                        `create_time` INTEGER NOT NULL,
                         `update_time` INTEGER NOT NULL
                         );''')
         cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_unique_id ON `orders` (`unique_id`);')
@@ -442,7 +442,7 @@ class LocalDb:
                                 `key` TEXT NOT NULL,
                                 `is_set` INTEGER NOT NULL,
                                 `symbol` TEXT NOT NULL,
-                                'broker' TEXT NOT NULL,
+                                `broker` TEXT NOT NULL,
                                 `update_time` INTEGER NOT NULL
                                 );''')
         cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_alarm_main ON `alarm` (`key`);')
