@@ -292,6 +292,13 @@ class StoreConfig(dict):
         return days
 
     @property
+    def base_price_using_broker(self) -> bool:
+        """
+        查询上次买回价格时限制范围为指定交易通道的记录, 以使同品种标的的不同券商持仓不共享买回价
+        """
+        return self.get('base_price_using_broker', False)
+
+    @property
     def base_price_day_low(self) -> bool:
         """
         设置此项后， 当日最低价也可以是 base_price 的参考选项

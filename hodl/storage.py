@@ -78,6 +78,22 @@ class EarningRow:
         return None
 
     @classmethod
+    def latest_earning_by_symbol_broker(cls, con: sqlite3.Connection, broker: str, symbol: str, days: int = 14):
+        sql = "SELECT * FROM `earning` " \
+              "WHERE `symbol` = ? AND `buyback_price` IS NOT NULL AND `broker` = ? AND `day` >= ? " \
+              "ORDER BY `day` DESC LIMIT 1;"
+        begin_date = TimeTools.timedelta(TimeTools.utc_now(), days=-days)
+        begin_day = int(begin_date.strftime('%Y%m%d'))
+        with con:
+            cur = con.cursor()
+            cur.execute(sql, (symbol, broker, begin_day,))
+            row = cur.fetchone()
+        if row:
+            item = EarningRow(**row)
+            return item
+        return None
+
+    @classmethod
     def total_earning_group_by_month(cls, con: sqlite3.Connection, month=6):
         @dataclass
         class _MonthlyEarning:

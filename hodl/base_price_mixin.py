@@ -79,7 +79,15 @@ class BasePriceMixin(StoreBase, ABC):
         if db and store_config.base_price_last_buy:
             con = db.conn
             days = store_config.base_price_last_buy_days
-            earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol, days=days)
+            if store_config.base_price_using_broker:
+                earning_row = EarningRow.latest_earning_by_symbol_broker(
+                    con=con,
+                    broker=store_config.broker,
+                    symbol=symbol,
+                    days=days,
+                )
+            else:
+                earning_row = EarningRow.latest_earning_by_symbol(con=con, symbol=symbol, days=days)
             if earning_row and earning_row.buyback_price and earning_row.buyback_price > 0:
                 items.append(BasePriceItem(v=earning_row.buyback_price, desc='BuybackPrice', name='买回价'))
         if store_config.base_price_day_low:
