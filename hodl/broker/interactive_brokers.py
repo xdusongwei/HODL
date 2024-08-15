@@ -87,9 +87,8 @@ class InteractiveBrokersApi(BrokerApiBase):
                     return
                 except Exception as e:
                     print(f'has error {e}')
-                    pass
             if ib_socket:
-                ib_socket.disconnect()
+                AsyncProxyThread.call_from_sync(ib_socket.disconnect)
                 ib = ib_socket
             else:
                 ib = ib_insync.IB()
