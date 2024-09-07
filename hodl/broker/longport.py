@@ -69,9 +69,14 @@ class LongPortApi(BrokerApiBase):
     TOKEN_BUCKET = LeakyBucket(6)
     MARKET_STATUS_BUCKET = LeakyBucket(15)
     QUOTE_BUCKET = LeakyBucket(60)
+    ASSET_BUCKET = LeakyBucket(60)
     CONFIG = None
     QUOTE_CLIENT = None
+    TRADE_CLIENT = None
     KEEPER = None
+
+    def on_init(self):
+        self._update_client()
 
     def __post_init__(self):
         config_dict = self.broker_config
@@ -83,12 +88,14 @@ class LongPortApi(BrokerApiBase):
         self._update_client()
 
     def _update_client(self):
+        from longport.openapi import QuoteContext, TradeContext
         self.longport_config = LongPortApi.CONFIG
-        self.quote_client = LongPortApi.QUOTE_CLIENT
+        self.quote_client: QuoteContext = LongPortApi.QUOTE_CLIENT
+        self.trade_client: TradeContext = LongPortApi.TRADE_CLIENT
 
     @classmethod
     def _reset_client(cls, cfg: dict):
-        from longport.openapi import Config, QuoteContext
+        from longport.openapi import Config, QuoteContext, TradeContext
         app_key = cfg.get('app_key')
         app_secret = cfg.get('app_secret')
         token_path = cfg.get('token_path')
@@ -101,8 +108,10 @@ class LongPortApi(BrokerApiBase):
             access_token=LongPortApi.KEEPER.token,
         )
         ctx = QuoteContext(config)
+        trade_ctx = TradeContext(config)
         LongPortApi.CONFIG = config
         LongPortApi.QUOTE_CLIENT = ctx
+        LongPortApi.TRADE_CLIENT = trade_ctx
 
     def try_refresh(self):
         self._update_client()
@@ -217,6 +226,36 @@ class LongPortApi(BrokerApiBase):
             )
         except Exception as e:
             raise PrepareError(f'长桥证券快照接口调用失败: {e}')
+
+    @track_api
+    def query_cash(self):
+        try:
+            with self.ASSET_BUCKET:
+                self.try_refresh()
+                resp = self.trade_client.account_balance('USD')
+            for node in resp:
+                if node.currency != 'USD':
+                    continue
+                cash = float(node.total_cash)
+                return  cash
+            raise PrepareError('找不到指定币种的可用资金')
+        except Exception as e:
+            raise PrepareError(f'长桥证券资金接口调用失败: {e}')
+
+    @track_api
+    def query_chips(self):
+        symbol = self.broker_symbol()
+        try:
+            with self.ASSET_BUCKET:
+                self.try_refresh()
+                items = self.trade_client.stock_positions().channels
+            for channel in items:
+                for node in channel.positions:
+                    if node.symbol != symbol:
+                        continue
+                    return node.quantity
+        except Exception as e:
+            raise PrepareError(f'长桥证券持仓接口调用失败: {e}')
 
 
 __all__ = ['LongPortApi', 'TokenKeeper', ]
