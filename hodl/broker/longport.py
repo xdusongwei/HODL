@@ -250,12 +250,54 @@ class LongPortApi(BrokerApiBase):
                 self.try_refresh()
                 items = self.trade_client.stock_positions().channels
             for channel in items:
+                if channel.account_channel == 'lb':
+                    continue
                 for node in channel.positions:
                     if node.symbol != symbol:
                         continue
                     return node.quantity
         except Exception as e:
             raise PrepareError(f'长桥证券持仓接口调用失败: {e}')
+
+    @track_api
+    def place_order(self, order: Order):
+        from decimal import Decimal
+        from longport.openapi import OrderType, OrderSide, TimeInForceType
+        symbol = self.broker_symbol()
+        with self.ASSET_BUCKET:
+            self.try_refresh()
+            resp = self.trade_client.submit_order(
+                symbol=symbol,
+                order_type=OrderType.LO if order.limit_price else OrderType.MO,
+                side=OrderSide.Buy if order.is_buy else OrderSide.Sell,
+                submitted_quantity=order.qty,
+                time_in_force=TimeInForceType.Day,
+                submitted_price=Decimal(order.limit_price),
+            )
+            assert resp.order_id
+            order.order_id = resp.order_id
+
+    @track_api
+    def cancel_order(self, order: Order):
+        with self.ASSET_BUCKET:
+            self.try_refresh()
+            self.trade_client.cancel_order(order_id=order.order_id)
+
+    @track_api
+    def refresh_order(self, order: Order):
+        from longport.openapi import OrderStatus
+        with self.ASSET_BUCKET:
+            self.try_refresh()
+            resp = self.trade_client.order_detail(order_id=order.order_id)
+            self.modify_order_fields(
+                order=order,
+                qty=resp.quantity,
+                filled_qty=resp.executed_quantity,
+                avg_fill_price=float(resp.executed_price),
+                trade_timestamp=None,
+                reason='已拒绝' if resp.status == OrderStatus.Rejected else '',
+                is_cancelled=resp.status == OrderStatus.Canceled,
+            )
 
 
 __all__ = ['LongPortApi', 'TokenKeeper', ]
