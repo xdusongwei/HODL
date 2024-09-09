@@ -250,7 +250,7 @@ class LongPortApi(BrokerApiBase):
                 self.try_refresh()
                 items = self.trade_client.stock_positions().channels
             for channel in items:
-                if channel.account_channel == 'lb':
+                if channel.account_channel != 'lb':
                     continue
                 for node in channel.positions:
                     if node.symbol != symbol:
@@ -262,7 +262,7 @@ class LongPortApi(BrokerApiBase):
     @track_api
     def place_order(self, order: Order):
         from decimal import Decimal
-        from longport.openapi import OrderType, OrderSide, TimeInForceType
+        from longport.openapi import OrderType, OrderSide, TimeInForceType, OutsideRTH
         symbol = self.broker_symbol()
         with self.ASSET_BUCKET:
             self.try_refresh()
@@ -270,9 +270,10 @@ class LongPortApi(BrokerApiBase):
                 symbol=symbol,
                 order_type=OrderType.LO if order.limit_price else OrderType.MO,
                 side=OrderSide.Buy if order.is_buy else OrderSide.Sell,
+                outside_rth=OutsideRTH.RTHOnly,
                 submitted_quantity=order.qty,
                 time_in_force=TimeInForceType.Day,
-                submitted_price=Decimal(order.limit_price),
+                submitted_price=Decimal(order.limit_price) if order.limit_price else None,
             )
             assert resp.order_id
             order.order_id = resp.order_id
@@ -289,13 +290,20 @@ class LongPortApi(BrokerApiBase):
         with self.ASSET_BUCKET:
             self.try_refresh()
             resp = self.trade_client.order_detail(order_id=order.order_id)
+            reason = ''
+            if resp.status == OrderStatus.Rejected:
+                reason = '已拒绝'
+            if resp.status == OrderStatus.Expired:
+                reason = '已过期'
+            if resp.status == OrderStatus.PartialWithdrawal:
+                reason = '部分撤单'
             self.modify_order_fields(
                 order=order,
                 qty=resp.quantity,
                 filled_qty=resp.executed_quantity,
-                avg_fill_price=float(resp.executed_price),
+                avg_fill_price=float(resp.executed_price) if resp.executed_price else 0.0,
                 trade_timestamp=None,
-                reason='已拒绝' if resp.status == OrderStatus.Rejected else '',
+                reason=reason,
                 is_cancelled=resp.status == OrderStatus.Canceled,
             )
 
