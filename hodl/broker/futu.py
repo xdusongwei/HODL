@@ -192,8 +192,8 @@ class FutuApi(BrokerApiBase):
         self.try_unlock()
         with self.PLACE_ORDER_BUCKET:
             ret, data = self.trade_client.place_order(
-                code=self.to_futu_symbol(self.symbol),
-                price=order.limit_price,
+                code=self.to_futu_symbol(order.symbol),
+                price=order.limit_price or 1.0,
                 qty=order.qty,
                 trd_side=TrdSide.BUY if order.is_buy else TrdSide.SELL,
                 order_type=OrderType.NORMAL if order.limit_price else OrderType.MARKET,
@@ -219,7 +219,7 @@ class FutuApi(BrokerApiBase):
                 price=order.limit_price,
             )
         if ret != RET_OK:
-            raise Exception(f'富途证券撤单失败, 订单: {order}')
+            raise Exception(f'富途证券撤单失败, 订单: {order}, 原因: {data}')
 
     @track_api
     def refresh_order(self, order: Order):

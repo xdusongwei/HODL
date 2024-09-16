@@ -265,7 +265,7 @@ class Order(DictWrapper):
 
     @property
     def filled_qty(self) -> int:
-        return self.d.get('filledQty')
+        return self.d.get('filledQty', 0)
 
     @filled_qty.setter
     def filled_qty(self, v):
