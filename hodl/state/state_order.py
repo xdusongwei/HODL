@@ -281,7 +281,7 @@ class Order(DictWrapper):
 
     @property
     def avg_price(self) -> float:
-        return self.d['avgPrice']
+        return self.d.get('avgPrice')
 
     @avg_price.setter
     def avg_price(self, v: float):

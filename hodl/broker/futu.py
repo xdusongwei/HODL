@@ -22,10 +22,15 @@ class FutuApi(BrokerApiBase):
     SNAPSHOT_BUCKET = LeakyBucket(120)
     ASSET_BUCKET = LeakyBucket(20)
     POSITION_BUCKET = LeakyBucket(20)
+    UNLOCK_BUCKET = LeakyBucket(20)
+    PLACE_ORDER_BUCKET = LeakyBucket(30)
+    CANCEL_ORDER_BUCKET = LeakyBucket(30)
+    REFRESH_ORDER_BUCKET = LeakyBucket(20)
 
     def on_init(self):
         config_dict = self.broker_config
         pk_path = config_dict.get('pk_path', '')
+        self.unlock_pin = config_dict.get('unlock_pin', '')
         if pk_path:
             SysConfig.enable_proto_encrypt(is_encrypt=True)
             SysConfig.set_init_rsa_file(pk_path)
@@ -173,6 +178,77 @@ class FutuApi(BrokerApiBase):
                     raise PrepareError(f'富途证券持仓获取失败: {data}')
         except Exception as e:
             raise PrepareError(f'富途证券持仓接口调用失败: {e}')
+
+    def try_unlock(self):
+        if not self.unlock_pin:
+            return
+        with self.UNLOCK_BUCKET:
+            ret, data = self.trade_client.unlock_trade(password_md5=self.unlock_pin)
+        if ret != RET_OK:
+            raise Exception(f'富途证券解锁交易失败: {data}')
+
+    @track_api
+    def place_order(self, order: Order):
+        self.try_unlock()
+        with self.PLACE_ORDER_BUCKET:
+            ret, data = self.trade_client.place_order(
+                code=self.to_futu_symbol(self.symbol),
+                price=order.limit_price,
+                qty=order.qty,
+                trd_side=TrdSide.BUY if order.is_buy else TrdSide.SELL,
+                order_type=OrderType.NORMAL if order.limit_price else OrderType.MARKET,
+                time_in_force=TimeInForce.DAY,
+                fill_outside_rth=False,
+            )
+        if ret != RET_OK:
+            raise Exception(f'富途证券下单失败: {data}')
+        orders = FormatTool.dataframe_to_list(data)
+        assert len(orders) == 1
+        order_id = orders[0]['order_id']
+        assert order_id
+        order.order_id = order_id
+
+    @track_api
+    def cancel_order(self, order: Order):
+        self.try_unlock()
+        with self.CANCEL_ORDER_BUCKET:
+            ret, data = self.trade_client.modify_order(
+                modify_order_op=ModifyOrderOp.CANCEL,
+                order_id=order.order_id,
+                qty=order.qty,
+                price=order.limit_price,
+            )
+        if ret != RET_OK:
+            raise Exception(f'富途证券撤单失败, 订单: {order}')
+
+    @track_api
+    def refresh_order(self, order: Order):
+        with self.REFRESH_ORDER_BUCKET:
+            ret, data = self.trade_client.order_list_query(
+                order_id=order.order_id,
+                refresh_cache=True,
+            )
+            if ret != RET_OK:
+                raise OrderRefreshError(f'富途证券刷新失败, 订单: {order}')
+            orders = FormatTool.dataframe_to_list(data)
+            assert len(orders) == 1
+            futu_order = orders[0]
+            reason = ''
+            if futu_order['order_status'] == OrderStatus.FAILED:
+                reason = 'FAILED'
+            if futu_order['order_status'] == OrderStatus.DISABLED:
+                reason = 'DISABLED'
+            if futu_order['order_status'] == OrderStatus.DELETED:
+                reason = 'DELETED'
+            self.modify_order_fields(
+                order=order,
+                qty=order.qty,
+                filled_qty=int(futu_order['dealt_qty']),
+                avg_fill_price=float(futu_order['dealt_avg_price']) or 0.0,
+                trade_timestamp=None,
+                reason=reason,
+                is_cancelled=futu_order['order_status'] in {OrderStatus.CANCELLED_PART, OrderStatus.CANCELLED_ALL, },
+            )
 
 
 __all__ = ['FutuApi', ]
