@@ -121,7 +121,7 @@ class FutuApi(BrokerApiBase):
             futu_symbol = self.to_futu_symbol(symbol)
             ret, data = client.get_market_snapshot([futu_symbol, ])
         if ret == RET_OK:
-            table = data.to_dict(orient='records')
+            table = FormatTool.dataframe_to_list(data)
             for d in table:
                 update_time: str = d['update_time']
                 update_time = f"{update_time.replace(' ', 'T')}{tz_offset}"
@@ -149,8 +149,8 @@ class FutuApi(BrokerApiBase):
                     refresh_cache=True,
                     currency=Currency.USD,
                 )
-            if resp == RET_OK:
-                return float(data.to_dict(orient='records')[0]['cash'])
+            if resp == RET_OK and len(FormatTool.dataframe_to_list(data)) == 1:
+                return float(FormatTool.dataframe_to_list(data)[0]['cash'])
             else:
                 raise PrepareError(f'富途证券可用资金信息获取失败: {data}')
         except Exception as e:
@@ -166,8 +166,7 @@ class FutuApi(BrokerApiBase):
                     refresh_cache=True,
                 )
                 if resp == RET_OK:
-                    items = data.to_dict(orient='records')
-                    for d in items:
+                    for d in FormatTool.dataframe_to_list(data):
                         return int(d['qty'])
                     return 0
                 else:

@@ -26,12 +26,12 @@ class FormatTool:
 
     @classmethod
     def pretty_dt(
-            cls,
-            v: None | int | float | datetime,
-            region=None,
-            with_year=True,
-            with_tz=False,
-            with_ms=True,
+        cls,
+        v: None | int | float | datetime,
+        region=None,
+        with_year=True,
+        with_tz=False,
+        with_ms=True,
     ) -> str:
         if v is None:
             return '--'
@@ -67,13 +67,13 @@ class FormatTool:
 
     @classmethod
     def pretty_usd(
-            cls,
-            v: None | int | float,
-            currency=None,
-            unit='$',
-            only_int=False,
-            precision: int = 3,
-            show_currency_name=False,
+        cls,
+        v: None | int | float,
+        currency=None,
+        unit='$',
+        only_int=False,
+        precision: int = 3,
+        show_currency_name=False,
     ) -> str:
         if currency:
             unit = cls.currency_to_unit(currency)
@@ -161,6 +161,10 @@ class FormatTool:
             return broker_display
         else:
             return f'<image src="{broker_icon_path}/{broker_name}.png" style="height: 15px;" class="align-middle" alt="{broker_name}" >{broker_display}'
+
+    @classmethod
+    def dataframe_to_list(cls, df) -> list[dict]:
+        return df.to_dict(orient='records')
 
 
 __all__ = ['FormatTool', ]
