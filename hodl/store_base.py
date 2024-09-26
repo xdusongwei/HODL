@@ -342,7 +342,7 @@ class StoreBase(ThreadMixin):
 
         if rate := config.market_price_rate:
             market_price_set = '⚡'
-            tooltip = f'市场价格偏离超过预期幅度{FormatTool.factor_to_percent(rate)}触发市价单'
+            tooltip = f'市场价格偏离超过预期幅度{FormatTool.factor_to_percent(rate, fmt="{:.1%}")}触发市价单'
             bar.append(BarElementDesc(content=market_price_set, tooltip=tooltip))
 
         show_tp_elem = False
