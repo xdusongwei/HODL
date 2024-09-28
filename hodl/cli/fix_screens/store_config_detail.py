@@ -222,6 +222,11 @@ class StoreConfigScreen(Screen):
                         desc='上次买回价作为基准价格',
                     )
                     yield FormItem(
+                        'base_price_using_broker',
+                        Checkbox('', config.base_price_using_broker, disabled=True),
+                        desc='是否只使用单独的买回参考价格',
+                    )
+                    yield FormItem(
                         'base_price_last_buy_days',
                         Input(value=f'{config.base_price_last_buy_days}天', disabled=True),
                         desc='上次买回价可作用的自然天数',
@@ -336,7 +341,7 @@ class StoreConfigIndexScreen(Screen):
         items = [
             StoreConfigIndexScreen.ConfigListItem(
                 Label(
-                    f'分组{config.group} {config.full_name}',
+                    f'{config.full_name}',
                     classes='indexLabel',
                 ),
             ) for idx, config in enumerate(config_list)

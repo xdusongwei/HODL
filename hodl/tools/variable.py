@@ -54,7 +54,7 @@ class VariableTools:
         )
         return env
 
-    def store_config_list(self):
+    def store_config_list(self) -> list[StoreConfig]:
         store_config_list = [StoreConfig(d) for d in self._config.get('store', dict()).values()]
         return store_config_list
 
