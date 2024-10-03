@@ -4,8 +4,8 @@ https://ib-insync.readthedocs.io/readme.html
 """
 import threading
 import ib_insync
-from ib_insync import Stock, Contract, Ticker
-from ib_insync.util import startLoop
+from ib_insync import IB, Stock, Contract, Ticker, LimitOrder, MarketOrder, Trade
+from ib_insync.util import startLoop, UNSET_DOUBLE
 from hodl.broker.base import *
 from hodl.exception_tools import *
 from hodl.quote import *
@@ -20,7 +20,7 @@ class InteractiveBrokersApi(BrokerApiBase):
     ENABLE_BOOTING_CHECK = True
 
     LOCK = threading.RLock()
-    GATEWAY_SOCKET: ib_insync.IB = None
+    GATEWAY_SOCKET: IB = None
     LOOP_STARTED: bool = False
 
     PLUGIN_BUCKET = LeakyBucket(60)
@@ -28,17 +28,18 @@ class InteractiveBrokersApi(BrokerApiBase):
     ORDER_BUCKET = LeakyBucket(60)
     QUOTE_BUCKET = LeakyBucket(60)
 
-    CONTRACTS: dict[str, Contract] = {}
-    TICKERS: dict[str, Ticker] = {}
+    CONTRACTS: dict[str, Contract] = dict()
+    TICKERS: dict[str, Ticker] = dict()
 
     def account_id(self) -> str:
         return self.broker_config.get('account_id')
 
-    def ib_socket(self) -> ib_insync.IB:
+    def ib_socket(self) -> IB:
         return InteractiveBrokersApi.GATEWAY_SOCKET
     
     def __post_init__(self):
         super().__post_init__()
+        self.currency = 'USD'
         try:
             self._try_create_tws_client()
         except Exception as e:
@@ -59,7 +60,7 @@ class InteractiveBrokersApi(BrokerApiBase):
                     assert ib_socket.isConnected()
                     return
                 except Exception as e:
-                    print(f'has error {e}')
+                    print(f'InteractiveBrokersApi 测试连接失败: {e}')
             if ib_socket:
                 AsyncProxyThread.call_from_sync(ib_socket.disconnect)
                 ib = ib_socket
@@ -86,13 +87,14 @@ class InteractiveBrokersApi(BrokerApiBase):
         with InteractiveBrokersApi.LOCK:
             if symbol in InteractiveBrokersApi.CONTRACTS:
                 return
-            contract = Stock(symbol, 'SMART', currency='USD')
+            contract = Stock(symbol, 'SMART', currency=self.currency)
             InteractiveBrokersApi.CONTRACTS[symbol] = contract
             socket = self.ib_socket()
             AsyncProxyThread.call_from_sync(socket.qualifyContracts, *[contract])
             ticker = AsyncProxyThread.call_from_sync(socket.reqMktData, contract, '', False, False)
             assert ticker
             InteractiveBrokersApi.TICKERS[symbol] = ticker
+            TimeTools.sleep(1.0)
 
     @property
     def connection_type(self) -> str:
@@ -129,7 +131,6 @@ class InteractiveBrokersApi(BrokerApiBase):
                     item = d['TotalCashValue']
                     assert item.currency == 'USD'
                     amount = float(item.value)
-                    assert amount >= 0
                     return amount
                 case _:
                     return 0.0
@@ -158,7 +159,27 @@ class InteractiveBrokersApi(BrokerApiBase):
         with self.ORDER_BUCKET:
             match self.connection_type:
                 case 'TWS':
-                    raise TradingError(f'下单使用了不受支持的盈透证券交易连接通道')
+                    socket = self.ib_socket()
+                    self._try_fill_contract()
+                    contract = InteractiveBrokersApi.CONTRACTS[order.symbol]
+                    if order.limit_price:
+                        ib_order = LimitOrder(
+                            action=order.direction,
+                            totalQuantity=order.qty,
+                            lmtPrice=order.limit_price,
+                        )
+                    else:
+                        ib_order = MarketOrder(
+                            action=order.direction,
+                            totalQuantity=order.qty,
+                        )
+                    ib_order.tif = 'DAY'
+                    ib_order.outsideRth = False
+                    trade = AsyncProxyThread.call_from_sync(socket.placeOrder, contract, ib_order)
+                    TimeTools.sleep(2.0)
+                    order_id = trade.order.permId
+                    assert order_id
+                    order.order_id = order_id
                 case _:
                     raise TradingError(f'下单使用了不受支持的盈透证券交易连接通道')
 
@@ -171,13 +192,28 @@ class InteractiveBrokersApi(BrokerApiBase):
                     trades = socket.trades()
                     for ib_trade in trades:
                         ib_order = ib_trade.order
-                        if ib_order.orderId != order.order_id:
+                        if ib_order.permId != order.order_id:
                             continue
-                        socket.cancelOrder(order=ib_order)
+                        AsyncProxyThread.call_from_sync(socket.cancelOrder, ib_order)
                         return
-                    raise TradingError(f'没有找到有效订单用于撤单')
                 case _:
                     raise TradingError(f'撤单使用了不受支持的盈透证券交易连接通道')
+
+    @classmethod
+    def _reformat_float(cls, v):
+        return 0.0 if v == UNSET_DOUBLE else v
+
+    @classmethod
+    def _total_fills(cls, trade: Trade) -> int:
+        return int(trade.filled())
+
+    @classmethod
+    def _avg_price(cls, trade: Trade) -> float:
+        total_fills = cls._total_fills(trade)
+        if not total_fills:
+            return 0
+        cap = sum([fill.execution.shares * fill.execution.avgPrice for fill in trade.fills], 0.0)
+        return FormatTool.adjust_precision(cap / total_fills, 5)
 
     @track_api
     def refresh_order(self, order: Order):
@@ -185,19 +221,23 @@ class InteractiveBrokersApi(BrokerApiBase):
             match self.connection_type:
                 case 'TWS':
                     socket = self.ib_socket()
+                    self._try_fill_contract()
                     trades = socket.trades()
                     for ib_trade in trades:
                         ib_order = ib_trade.order
-                        if ib_order.orderId != order.order_id:
+                        if ib_order.permId != order.order_id:
                             continue
-                        qty = int(ib_order.totalQuantity)
-                        filled_qty = int(ib_trade.orderStatus.filled)
-                        avg_fill_price = ib_trade.orderStatus.avgFillPrice
+                        qty = int(self._total_fills(ib_trade) + ib_trade.remaining())
+                        filled_qty = self._total_fills(ib_trade)
+                        qty = qty or filled_qty
+                        assert qty >= filled_qty
+                        avg_fill_price = self._avg_price(ib_trade)
                         reason = ''
                         if ib_trade.orderStatus.status == ib_insync.OrderStatus.Inactive:
                             reason = 'Inactive'
 
-                        is_cancelled = ib_trade.orderStatus.status == ib_insync.OrderStatus.Cancelled
+                        cancel_status = {ib_insync.OrderStatus.Cancelled, ib_insync.OrderStatus.ApiCancelled, }
+                        is_cancelled = ib_trade.orderStatus.status in cancel_status
                         self.modify_order_fields(
                             order=order,
                             qty=qty,
@@ -213,7 +253,7 @@ class InteractiveBrokersApi(BrokerApiBase):
 
     @track_api
     def fetch_quote(self) -> Quote:
-        # 盈透证券的开盘价, 日高日低价格不正确, 非必要不要与盈透行情混用多个行情源, 以免污染数据库或者持仓线程的状态
+        # 盈透证券的开盘价, 日高日低价格不正确, 非必要不要与盈透行情混用多个行情源, 以免污染数据库或者持仓线程的状态跳变
         with self.QUOTE_BUCKET:
             symbol = self.symbol
             self._try_fill_contract()
