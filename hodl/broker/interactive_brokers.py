@@ -45,6 +45,9 @@ class InteractiveBrokersApi(BrokerApiBase):
         except Exception as e:
             pass
 
+    def on_init(self):
+        self._try_create_tws_client()
+
     def _try_create_tws_client(self):
         with InteractiveBrokersApi.LOCK:
             if not InteractiveBrokersApi.LOOP_STARTED:
