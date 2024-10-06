@@ -153,7 +153,8 @@ class BrokerApiBase(BrokerApiMixin):
         var: VariableTools = getattr(BrokerApiBase, '__var', None)
         if var is None:
             var = VariableTools()
-        return var.broker_config_dict(cls.BROKER_NAME)
+            cls.set_up_var(var)
+        return var.broker_config_dict(cls.BROKER_NAME) or dict()
 
     @classmethod
     def query_broker_meta(cls) -> list[BrokerMeta]:
