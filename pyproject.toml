@@ -3,7 +3,7 @@ name = "hodl"
 dynamic = ["version"]
 description = ""
 authors = [
-    {name = "xdusongwei", email = "github@songwei.io"},
+    {name = "xdusongwei", email = "github@songwei.name"},
 ]
 dependencies = [
     "pycryptodome>=3.19; sys_platform == 'win32'",
@@ -31,7 +31,7 @@ dependencies = [
     "filelock>=3.15.3",
 ]
 
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12"
 license = {text = "MIT"}
 
 [project.urls]

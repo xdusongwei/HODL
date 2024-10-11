@@ -1,4 +1,4 @@
-image: registry.cn-beijing.aliyuncs.com/kenny_ci/python-go:3.12-1.21
+image: registry.cn-beijing.aliyuncs.com/kenny_ci/python-go:3.13-1.21
 stages:
   - test
   - build
