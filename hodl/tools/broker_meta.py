@@ -27,7 +27,7 @@ class BrokerMeta:
     market_status_regions: set[str] = field(default_factory=set)
     quote_regions: set[str] = field(default_factory=set)
     trade_regions: set[str] = field(default_factory=set)
-    vix_symbol: str = field(default=None)
+    vix_symbol: str | None = field(default=None)
 
 
 __all__ = ['BrokerTradeType', 'BrokerMeta', ]

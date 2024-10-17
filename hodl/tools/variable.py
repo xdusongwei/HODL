@@ -170,7 +170,7 @@ class VariableTools:
         """
         收益文件近期可展示的时间范围
         """
-        return self._config.get('earning_csv_weeks', 4)
+        return self._config.get('earning_recent_weeks', 4)
 
     @property
     def db_path(self):
@@ -212,21 +212,22 @@ class VariableTools:
     @property
     def async_market_status(self) -> bool:
         """
-        是否启用异步线程更新市场状态，这样尽量不去阻塞到持仓线程
+        是否启用异步线程更新市场状态，这样尽量不去因为拉取市场状态接口的数据而阻塞到持仓线程.
+        如果持仓数量多, 每个持仓线程都去遍历市场状态接口, 可能因为券商接口限速的原因, 处理时间非常长.
         """
         return self._config.get('async_market_status', False)
 
     @property
-    def html_file_path(self) -> str:
+    def html_file_path(self) -> str | None:
         """
         将运行状态保存为网页文件
         """
         return self._config.get('html_file_path', None)
 
     @property
-    def html_manifest_path(self) -> str:
+    def html_manifest_path(self) -> str | None:
         """
-        PWA清单文件的站点位置
+        PWA 清单文件的站点位置
         Returns
         -------
 

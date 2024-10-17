@@ -44,22 +44,37 @@ class BrokerApiMixin(abc.ABC):
 
     def place_order(self, order: Order):
         """
-        根据订单参数完成下单，并将订单号填充进 Order.order_id。
+        根据订单参数完成下单，并将订单号填充进 Order.order_id 属性。
         注意系统支持限价单和市价单，这两种下单种类必须都支持。
         """
         raise NotImplementedError
 
     def cancel_order(self, order: Order):
         """
-        根据订单号执行撤单。
+        根据订单号(Order.order_id)执行撤单。
         """
         raise NotImplementedError
 
     def refresh_order(self, order: Order):
         """
-        根据订单号更新订单。
+        根据订单号(Order.order_id)更新订单。
         将订单需要的信息使用 self.modify_order_fields 方法填充进来。
         如果即方法引发了非项目定制的异常, 此次持仓循环将中止.
+
+        提示, 虽然众多券商提供了带有各种各自标准的订单状态分类, 接入会十分麻烦,
+        这里有一些处理原则, 因为该方法主要集中在如何更新 Order 对象的:
+        filled_qty: 最新已成交数量
+        avg_fill_price: 最新的成交均价
+        is_cancelled: 是否已经撤销
+        reason: 如果订单有返回错误
+
+        所以为了处理这些字段, 需要按顺序去分析每家券商的订单数据:
+        1. 把成交均价和已成交数量填充到指定字段, 无数据则填充 0
+        2. 订单是否进入券商定义的'已取消'状态, 如果是, 要填充 is_cancelled = True, 避免系统撤销不能执行撤销的订单
+        3. 如果命中了券商定义的各种订单状态的终结态,并且是消极的, 比如 '已过期', '已拒绝'. 再或者订单返回了人类可读的错误描述, 应该填充到 reason
+        剩下的状态由框架根据 Order 属性自己判断:
+        如果 filled_qty 等于 qty, 自动判断订单'已完成'
+        否则, 自动判断订单'待成交'
         """
         raise NotImplementedError
 
@@ -77,7 +92,8 @@ class BrokerApiMixin(abc.ABC):
 
     def detect_plug_in(self) -> bool:
         """
-        如果需要持仓线程每次都要提前检查券商服务的连通，需要在此处完成类似ping接口的调用工作。
+        如果需要持仓线程每次都要提前检查券商服务的连通，需要在此处完成类似 ping 接口的调用工作。
+        如果券商提供了类似的接口, 应尽量实现这个方法, 以避免 SDK 的连接断开时系统触发下单动作, 系统无法确认下单成否, 而引发持仓线程崩溃.
         """
         return True
 
