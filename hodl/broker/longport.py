@@ -15,6 +15,16 @@ from hodl.tools import *
 
 
 class TokenKeeper:
+    """
+    长桥证券的会话需要通过下发的 token 凭据验证身份,
+    这个 token, 有有效期, 所以, 这个类负责当 token 快要到过期时间的时候通过 SDK 接口去下载新 token.
+
+    因此, 初次使用的时候, 必须去他们的开发者网站上拿到新 token, 做成一个 toml 格式文件.
+    这个 toml 文件需要设置两个字段, 分别是 token 和 expiry,
+    token 字段填入给的令牌字符串,
+    expiry 是过期时间的字符串, 例如 "2025-01-01T00:00:00.000000+00:00"
+    没有这个 toml 文件, 或者 token 文件的 expiry 过期了, 系统便没办法连接到他们的接口上做自动更新, 因此会有启动上的问题.
+    """
     LOCK = threading.RLock()
 
     def __init__(self, token_file: str):
@@ -23,7 +33,7 @@ class TokenKeeper:
         with TokenKeeper.LOCK:
             text = LocateTools.read_file(token_file)
             d = tomllib.loads(text)
-            token, expiry = d['token'], d.get('expiry')
+            token, expiry = d.get('token'), d.get('expiry')
             assert token
             self.token = token
             self.expiry = datetime.fromisoformat(expiry)
