@@ -1,6 +1,8 @@
 """
-文档见
+长桥证券文档见
 https://open.longportapp.com/docs
+长桥 SDK 采用了预编译的软件包进行发布, 不适合的环境会导致系统安装失败, 如果需要使用长桥 SDK, 安装本项目需要使用命令:
+pdm install -G longport
 """
 import re
 import tomllib
@@ -170,6 +172,8 @@ class LongPortApi(BrokerApiBase):
 
     @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
+        # 尽量不要使用长桥证券提供的市场状态接口, 它返回的交易时段似乎不是动态的, 节假日仍提供交易时段.
+        # 有可能当全市场临时休市的信息该证券平台不会正确提供.
         result = BrokerMarketStatusResult()
         rl: list[MarketStatusResult] = list()
         ctx = self.quote_client
