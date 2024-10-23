@@ -1,9 +1,9 @@
 import base58
 import orjson
 import xxhash
+import humanize
 from decimal import Decimal
 from datetime import datetime
-import humanize
 from currency_symbols import CurrencySymbols
 from hodl.tools.time import TimeTools
 from hodl.tools.store_config import StoreConfig

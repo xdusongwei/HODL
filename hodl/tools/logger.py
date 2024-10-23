@@ -87,8 +87,8 @@ class Logger:
             handler = self._rotating_handler(
                 filename=filename_path,
                 mode='a',
-                maxBytes=self.file_max_size,
-                backupCount=self.file_max_count,
+                max_bytes=self.file_max_size,
+                backup_count=self.file_max_count,
                 encoding='utf8',
                 use_gzip=False,
             )
@@ -105,8 +105,8 @@ class Logger:
             handler = self._rotating_handler(
                 filename=filename_path,
                 mode='a',
-                maxBytes=self.file_max_size,
-                backupCount=self.file_max_count,
+                max_bytes=self.file_max_size,
+                backup_count=self.file_max_count,
                 encoding='utf8',
                 use_gzip=False,
             )
@@ -131,8 +131,8 @@ class Logger:
             cls,
             filename,
             mode='a',
-            maxBytes=128 * 1024,
-            backupCount=4,
+            max_bytes=128 * 1024,
+            backup_count=4,
             encoding='utf8',
             use_gzip=False,
     ):
@@ -143,8 +143,8 @@ class Logger:
             handler = ConcurrentRotatingFileHandler(
                 filename=filename,
                 mode=mode,
-                maxBytes=maxBytes,
-                backupCount=backupCount,
+                maxBytes=max_bytes,
+                backupCount=backup_count,
                 encoding=encoding,
                 use_gzip=use_gzip,
             )

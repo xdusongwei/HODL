@@ -6,8 +6,6 @@ import exchange_calendars
 class TradeStrategyEnum(enum.Enum):
     # 根据基准价格分价分量高价卖出, 当股价低于当前挡的买入价时买回卖出的部分, 以挣取差价
     HODL = enum.auto()
-    # 每日按计划小批量买入或者卖出股票
-    DAY_DAY_BUY = enum.auto()
 
 
 class StoreConfig(dict):
@@ -67,8 +65,6 @@ class StoreConfig(dict):
         match strategy:
             case 'hodl':
                 return TradeStrategyEnum.HODL
-            case 'dayDayBuy':
-                return TradeStrategyEnum.DAY_DAY_BUY
             case _:
                 return TradeStrategyEnum.HODL
 
@@ -120,42 +116,6 @@ class StoreConfig(dict):
             return self.get('max_shares')
 
     @property
-    def multistage_rocket(self) -> list[tuple[int, float, ]]:
-        """
-        多级火箭机制
-        假如已卖出较大比例证券，并且股价维持在高位，我们可以通过按剩余持仓股份重新套利，减少浪费掉可以继续套利的时间和机会。
-        若之后股价下跌到原先的买入价时，我们可以在配置中还原回原来的状态，这样原先的状态继续正常套利，不受到影响。
-        实现原理是我们根据这个配置项的列表项数，来确定使用 stage 为路径参数的状态文件，保存和隔离不同阶段的状态文件。
-        !   如果此项目有有效设定值，max_shares 配置将从这里获取最新(列表最后一项)的持仓设定股数
-        !   编辑此项目最好是当日无有效订单，或者在未开市的时段，以免使用旧有的状态文件触发 LSOD 警报
-
-        举例，假如原计划持股 45000, state_file_path="{broker}-{symbol}-stage{stage}.json"
-        我们在此项配置设定:
-            [
-                { max_shares = 45000, recover_price = 0.0 },
-            ]
-        此时，系统将使用"{broker}-{symbol}-stage1.json"状态文件管理此持仓
-
-        当股价涨至 $4.6,剩余股票 16000，买回价格是 $3.4, 我们打算在这个价位用剩余股票继续套利，
-        我们在此项配置设定:
-            [
-                { max_shares = 45000, recover_price = 0.0 },
-                { max_shares = 16000, recover_price = 3.4 },
-            ]
-        这样就可以让 16000 股重新套利，并且记录了还原状态需要的价格条件，
-        此时，我们将使用"{broker}-{symbol}-stage2.json"状态文件管理此持仓
-
-        假如股价下跌到 $3.4, 我们可以得到给定的价格预警提示，去删去配置中的最后一行来还原回状态文件即可：
-            [
-                { max_shares = 45000, recover_price = 0.0 },
-            ]
-        此时，我们将使用"{broker}-{symbol}-stage1.json"状态文件管理此持仓
-        """
-        stages: list[dict] = self.get('multistage_rocket', list())
-        result = [(item['max_shares'], item['recover_price'], ) for item in stages]
-        return result
-
-    @property
     def lock_position(self) -> bool:
         """
         设置此项后，如果每日风控核对持仓数量不能跟配置 max_shares 一致，否则会触发风控异常
@@ -163,10 +123,6 @@ class StoreConfig(dict):
         :return:
         """
         return self.get('lock_position', True)
-
-    @property
-    def stage(self) -> int:
-        return len(self.multistage_rocket)
 
     @property
     def state_file_path(self) -> str:
@@ -240,7 +196,7 @@ class StoreConfig(dict):
     def sell_spread_rate(self) -> float | None:
         """
         设置卖出价时需要舍去的点差(佣金、成本), 以目标价格的比例进行计算.
-        例如这里设置 0.005, 假如一个预期卖出价格是 10, 那么实际买入价格 = 10 * (1 + 0.005) = 10.05
+        例如这里设置 0.005, 假如一个预期卖出价格是 10, 那么实际卖出价格 = 10 * (1 + 0.005) = 10.05
         :return:
         """
         return self.get('sell_spread_rate', None)
@@ -450,18 +406,6 @@ class StoreConfig(dict):
         return self.get('closing_time', None)
 
     @property
-    def factors(self) -> list[tuple[float, float, float, ]] | None:
-        """
-        手动设置持仓下单因子，将根据列表项目的先后顺序逐级定义
-        每个列表项表达了(卖出因子，买入因子，权重)三项
-        设置此项将不参考默认因子，包括忽略惜售(prudent)配置项目
-        Returns
-        -------
-
-        """
-        return self.get('factors', None)
-
-    @property
     def market_price_rate(self) -> float | None:
         """
         设置一个系数，当市场价格偏离预期价格多少比例时，下达市价单而非限价单。
@@ -483,9 +427,21 @@ class StoreConfig(dict):
         return self.get('sleep_mode', True)
 
     @property
+    def factors(self) -> list[tuple[float, float, float,]] | None:
+        """
+        手动设置持仓下单因子，将根据列表项目的先后顺序逐级定义
+        每个列表项表达了(卖出因子，买入因子，权重)三项
+        设置此项将不参考任何默认因子，包括忽略惜售(prudent)配置项目
+        Returns
+        -------
+
+        """
+        return self.get('factors', None)
+
+    @property
     def factor_fear_and_greed(self) -> str:
         """
-        使用何种因子模板，
+        手动选择使用何种内置因子模板，
         可以是 fear, neutral, greed 三项，
         持仓将使用对应的因子模板进行操作
         """
@@ -494,7 +450,7 @@ class StoreConfig(dict):
     @property
     def cost_price(self) -> None | float:
         """
-        持仓成本，如果设定了此项，因子模板的选择将根据当前股价与 factor_fear_rate_limit 和 factor_greed_rate_limit 的计算来选择。
+        持仓成本，如果设定了此项，因子模板的选择将根据当前股价配合与 factor_fear_rate_limit 和 factor_greed_rate_limit 的计算来选择。
         """
         return self.get('cost_price', None)
 
@@ -511,6 +467,46 @@ class StoreConfig(dict):
         股价高于这个阈值比例时，将使用贪婪因子模板
         """
         return self.get('factor_greed_rate_limit', 1.8)
+
+    @property
+    def multistage_rocket(self) -> list[tuple[int, float,]]:
+        """
+        多级火箭机制
+        假如已卖出较大比例证券，并且股价维持在高位，我们可以通过按剩余持仓股份重新套利，减少浪费掉可以继续套利的时间和机会。
+        若之后股价下跌到原先的买入价时，我们可以在配置中还原回原来的状态，这样原先的状态继续正常套利，不受到影响。
+        实现原理是我们根据这个配置项的列表项数，来确定使用 stage 为路径参数的状态文件，保存和隔离不同阶段的状态文件。
+        !   如果此项目有有效设定值，max_shares 配置将从这里获取最新(列表最后一项)的持仓设定股数
+        !   编辑此项目最好是当日无有效订单，或者在未开市的时段，以免使用旧有的状态文件触发 LSOD 警报
+
+        举例，假如原计划持股 45000, state_file_path="{broker}-{symbol}-stage{stage}.json"
+        我们在此项配置设定:
+            [
+                { max_shares = 45000, recover_price = 0.0 },
+            ]
+        此时，系统将使用"{broker}-{symbol}-stage1.json"状态文件管理此持仓
+
+        当股价涨至 $4.6,剩余股票 16000，买回价格是 $3.4, 我们打算在这个价位用剩余股票继续套利，
+        我们在此项配置设定:
+            [
+                { max_shares = 45000, recover_price = 0.0 },
+                { max_shares = 16000, recover_price = 3.4 },
+            ]
+        这样就可以让 16000 股重新套利，并且记录了还原状态需要的价格条件，
+        此时，我们将使用"{broker}-{symbol}-stage2.json"状态文件管理此持仓
+
+        假如股价下跌到 $3.4, 我们可以得到给定的价格预警提示，去删去配置中的最后一行来还原回状态文件即可：
+            [
+                { max_shares = 45000, recover_price = 0.0 },
+            ]
+        此时，我们将使用"{broker}-{symbol}-stage1.json"状态文件管理此持仓
+        """
+        stages: list[dict] = self.get('multistage_rocket', list())
+        result = [(item['max_shares'], item['recover_price'],) for item in stages]
+        return result
+
+    @property
+    def stage(self) -> int:
+        return len(self.multistage_rocket)
 
     @property
     def full_name(self) -> str:

@@ -87,23 +87,32 @@ class LongPortApi(BrokerApiBase):
     TRADE_CLIENT = None
     KEEPER = None
 
-    def on_init(self):
-        self._update_client()
-
     def __post_init__(self):
         config_dict = self.broker_config
         auto_refresh_token = config_dict.get('auto_refresh_token', False)
-        if LongPortApi.QUOTE_CLIENT is None:
+        if self.longport_config is None:
             self._reset_client(config_dict)
-        self.token_keeper = LongPortApi.KEEPER
         self.auto_refresh_token = auto_refresh_token
-        self._update_client()
 
-    def _update_client(self):
-        from longport.openapi import QuoteContext, TradeContext
-        self.longport_config = LongPortApi.CONFIG
-        self.quote_client: QuoteContext = LongPortApi.QUOTE_CLIENT
-        self.trade_client: TradeContext = LongPortApi.TRADE_CLIENT
+    @property
+    def quote_client(self):
+        from longport.openapi import QuoteContext
+        client: QuoteContext = LongPortApi.QUOTE_CLIENT
+        return client
+
+    @property
+    def trade_client(self):
+        from longport.openapi import TradeContext
+        client: TradeContext = LongPortApi.TRADE_CLIENT
+        return client
+
+    @property
+    def longport_config(self):
+        return LongPortApi.CONFIG
+
+    @property
+    def token_keeper(self) -> TokenKeeper:
+        return LongPortApi.KEEPER
 
     @classmethod
     def _reset_client(cls, cfg: dict):
@@ -113,20 +122,19 @@ class LongPortApi(BrokerApiBase):
         token_path = cfg.get('token_path')
         assert app_key
         assert app_secret
-        LongPortApi.KEEPER = TokenKeeper(token_path)
+        LongPortApi.KEEPER = LongPortApi.KEEPER or TokenKeeper(token_path)
         config = Config(
             app_key=app_key,
             app_secret=app_secret,
             access_token=LongPortApi.KEEPER.token,
         )
-        ctx = QuoteContext(config)
+        quote_ctx = QuoteContext(config)
         trade_ctx = TradeContext(config)
         LongPortApi.CONFIG = config
-        LongPortApi.QUOTE_CLIENT = ctx
+        LongPortApi.QUOTE_CLIENT = quote_ctx
         LongPortApi.TRADE_CLIENT = trade_ctx
 
     def try_refresh(self):
-        self._update_client()
         if not self.auto_refresh_token:
             return
         cfg = self.longport_config
@@ -141,7 +149,6 @@ class LongPortApi(BrokerApiBase):
                 assert token
             keeper.update_token(token, expiry)
             self._reset_client(self.broker_config)
-            self._update_client()
 
     def broker_symbol(self):
         symbol = self.symbol
