@@ -345,16 +345,17 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin, FactorMixin):
         self.try_fire_sell(fire_state=state_fire)
         self.try_fire_buy(fire_state=state_fire)
 
-    def current_changed(self, current: str, new_current: str):
+    def on_current_changed(self, current: str, new_current: str):
         if new_current == self.STATE_SLEEP and self.store_config.closing_time:
             logger = self.logger
             logger.info(f'进入定制的收盘时间段, 执行主动撤单')
             orders = self.state.plan.orders
             for order in orders:
-                if order.cancelable:
-                    logger.info(f'开始撤销订单{order}')
-                    self.cancel_order(order=order)
-                    logger.info(f'撤销订单{order}成功')
+                if not order.cancelable:
+                    continue
+                logger.info(f'开始撤销订单{order}')
+                self.cancel_order(order=order)
+                logger.info(f'撤销订单{order}成功')
         if current == self.STATE_TRADE and new_current == self.STATE_GET_OFF:
             self.when_change_to_get_off()
 
@@ -483,34 +484,37 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin, FactorMixin):
                         )
 
                     state = self.state
-                    market_status = state.market_status
-                    current = state.current
-                    new_current = current
+                    market_status, current, new_current = state.market_status, state.current, state.current
+                    enable = self.store_config.enable
                     match current:
                         case self.STATE_SLEEP:
-                            if market_status == 'TRADING' and self.store_config.enable and not state.is_today_get_off():
+                            # 被抑制 -> 监控中
+                            if market_status == 'TRADING' and enable and not state.is_today_get_off():
                                 new_current = self.STATE_TRADE
                         case self.STATE_TRADE:
-                            if not self.store_config.enable:
+                            # 监控中 -> 被抑制
+                            # 监控中 -> 已套利
+                            if not enable:
                                 new_current = self.STATE_SLEEP
                             elif market_status != 'TRADING':
                                 new_current = self.STATE_SLEEP
                             elif state.is_today_get_off():
                                 new_current = self.STATE_GET_OFF
                         case self.STATE_GET_OFF:
+                            # 已套利 -> 被抑制
                             if not state.is_today_get_off():
                                 new_current = self.STATE_SLEEP
                         case _:
+                            # 无效状态 -> 被抑制
                             new_current = self.STATE_SLEEP
                     state.current = new_current
 
                     if current != new_current:
-                        logger.info(f'市场状态改变: {current} -> {new_current}')
                         now = FMT.pretty_dt(TimeTools.us_time_now())
-                        market_status = self.state.market_status
-                        quote_status = self.state.quote_status
-                        logger.info(f'状态: 当前日期{now}, 市场状态:{market_status}, 标的状态:{quote_status}')
-                        self.current_changed(current=current, new_current=new_current)
+                        market_status, quote_status = self.state.market_status, self.state.quote_status
+                        logger.info(f'状态改变: {current} -> {new_current}')
+                        logger.info(f'状态: 当前日期 {now}, 市场状态: {market_status}, 标的状态: {quote_status}')
+                        self.on_current_changed(current=current, new_current=new_current)
     
                     self.on_current(current=new_current)
 

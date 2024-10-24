@@ -35,7 +35,7 @@ HODL
 安装
 ---
 
-使用 [pdm](https://pdm.fming.dev/latest/) 管理项目，安装依赖:
+使用 [pdm](https://pdm-project.org/latest/) 管理项目，安装依赖:
 
 ```bash
 $ pdm install

@@ -178,7 +178,8 @@ class StoreBase(ThreadMixin):
         self.save_state()
         now = TimeTools.get_utc()
         begin_time = getattr(self, '_begin_time', now)
-        self.process_time = (now - begin_time).total_seconds()
+        process_time = FormatTool.adjust_precision((now - begin_time).total_seconds(), 3)
+        self.process_time = process_time
 
     @classmethod
     def build_table(cls, store_config: StoreConfig, plan: Plan):
@@ -305,7 +306,7 @@ class StoreBase(ThreadMixin):
         if config.base_price_last_buy:
             tooltip += f', 上次买回价格({config.base_price_last_buy_days}个自然天内) '
         if margin_amount:
-            tooltip += f'交易账户使用保证金融资.'
+            tooltip += f'; 交易账户使用保证金融资 '
         bar.append(BarElementDesc(content=factor_content, tooltip=tooltip))
 
         if config.stage > 1:
