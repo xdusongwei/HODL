@@ -46,7 +46,10 @@ class InteractiveBrokersApi(BrokerApiBase):
             pass
 
     def on_init(self):
-        self._try_create_tws_client()
+        try:
+            self._try_create_tws_client()
+        except Exception as e:
+            pass
 
     def _try_create_tws_client(self):
         with InteractiveBrokersApi.LOCK:
@@ -129,6 +132,8 @@ class InteractiveBrokersApi(BrokerApiBase):
             match self.connection_type:
                 case 'TWS':
                     socket = self.ib_socket()
+                    if not socket:
+                        raise PrepareError
                     l = AsyncProxyThread.call(socket.accountSummaryAsync(account=self.account_id()))
                     d: dict[str, ib_insync.AccountValue] = {i.tag: i for i in l}
                     item = d['TotalCashValue']
@@ -147,6 +152,8 @@ class InteractiveBrokersApi(BrokerApiBase):
             match self.connection_type:
                 case 'TWS':
                     socket = self.ib_socket()
+                    if not socket:
+                        raise PrepareError
                     l = socket.positions(account=self.account_id())
                     for position in l:
                         contract = position.contract
