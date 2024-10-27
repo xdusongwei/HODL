@@ -83,7 +83,7 @@ class MarketStatusProxy:
             session: Session = None,
     ):
         self.market_status_brokers: list[BrokerApiBase] = list()
-        prefer_list = var.prefer_market_state_brokers
+        prefer_list = var.prefer_market_status_brokers
         broker_info = sort_brokers(var=var, prefer_list=prefer_list)
         brokers = [
             t(
@@ -104,7 +104,7 @@ class MarketStatusProxy:
             for meta in broker.broker_meta:
                 if meta.trade_type.value != store_config.trade_type:
                     continue
-                if broker.BROKER_NAME != store_config.broker and not meta.share_market_state:
+                if broker.BROKER_NAME != store_config.broker and not meta.share_market_status:
                     continue
                 if store_config.region not in meta.market_status_regions:
                     continue
@@ -126,7 +126,7 @@ class MarketStatusProxy:
             for meta in broker.broker_meta:
                 if meta.trade_type.value != store_config.trade_type:
                     continue
-                if broker.BROKER_NAME != store_config.broker and not meta.share_market_state:
+                if broker.BROKER_NAME != store_config.broker and not meta.share_market_status:
                     continue
                 if store_config.region not in meta.market_status_regions:
                     continue

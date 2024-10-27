@@ -18,10 +18,10 @@ class Report(TelegramBotBase):
         if self.DB:
             await update.message.reply_text(
                 f'此命令可以查看持仓的买卖计划。 '
-                f'选择需要操作的标的序号\n'
+                f'选择需要操作的持仓序号\n'
                 f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
                 reply_markup=ReplyKeyboardMarkup(
-                    idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓标的序号'
+                    idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓序号'
                 ),
             )
             return self.K_RP_SELECT

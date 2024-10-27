@@ -1,5 +1,4 @@
 import os
-import time
 import platform
 from threading import Thread
 from hodl.bot import AlertBot
@@ -186,7 +185,7 @@ class Manager(ThreadMixin):
 
         while True:
             try:
-                time.sleep(4)
+                TimeTools.sleep(4.0)
                 try:
                     variable = VariableTools()
                 except Exception as e:
@@ -201,7 +200,7 @@ class Manager(ThreadMixin):
                 for store in stores:
                     broker = store.store_config.broker
                     symbol = store.store_config.symbol
-                    new_config = store_configs.get((broker, symbol, ), None)
+                    new_config = store_configs.get(StoreKey('default', broker, symbol, ), None)
                     if not new_config:
                         print(f'找不到标的{symbol}的持仓配置信息')
                         return

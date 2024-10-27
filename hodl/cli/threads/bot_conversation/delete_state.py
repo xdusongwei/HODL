@@ -22,10 +22,10 @@ class DeleteState(TelegramBotBase):
         idx_list = self._symbol_choice()
         await update.message.reply_text(
             f'你正在尝试[清除持仓状态]。警告，只用此功能前确认目标持仓没有任何订单记录，或者，目标持仓是已套利的状态。 '
-            f'选择需要操作的标的序号\n'
+            f'选择需要操作的持仓序号\n'
             f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
             reply_markup=ReplyKeyboardMarkup(
-                idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓标的序号'
+                idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓序号'
             ),
         )
         return self.K_DS_SELECT

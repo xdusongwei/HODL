@@ -17,10 +17,10 @@ class EnablePosition(TelegramBotBase):
             f'你正在尝试设置修改[使能](enable)的设定。 '
             f'[开启]时，正常交易时段可以执行下单逻辑，[关闭]时，正常交易时段不允许执行下单逻辑。'
             f'开启前，仔细确认[基准价格宽松]，[锁定持仓]以及[登记股数]是否会影响到期望的设定。'
-            f'选择需要操作的标的序号\n'
+            f'选择需要操作的持仓序号\n'
             f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
             reply_markup=ReplyKeyboardMarkup(
-                idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓标的序号'
+                idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓序号'
             ),
         )
         return self.K_EN_SELECT

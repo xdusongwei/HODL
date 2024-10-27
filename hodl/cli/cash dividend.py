@@ -9,7 +9,7 @@ from hodl.tools import *
 broker = input('broker:\n')
 symbol = input('symbol:\n')
 var = VariableTools()
-config = var.store_configs_by_group()[(broker, symbol, )]
+config = var.store_configs_by_group()[StoreKey('default', broker, symbol, )]
 assert config
 
 

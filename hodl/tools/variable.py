@@ -1,12 +1,31 @@
 import os
 import tomllib
 import tomlkit
+import dataclasses
 from telegram.ext import Application
 from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.locate import LocateTools
 from hodl.tools.store_config import StoreConfig
 from hodl.tools.broker_meta import BrokerMeta, BrokerTradeType
 from hodl.tools.tui_config import TuiConfig
+
+
+@dataclasses.dataclass
+class StoreKey:
+    group: str = dataclasses.field()
+    broker: str = dataclasses.field()
+    symbol: str = dataclasses.field()
+
+    @classmethod
+    def from_store_config(cls, store_config: StoreConfig) -> 'StoreKey':
+        return StoreKey(
+            group=store_config.group,
+            broker=store_config.broker,
+            symbol=store_config.symbol,
+        )
+
+    def __hash__(self):
+        return f'{self.group}.{self.broker}.{self.symbol}'.__hash__()
 
 
 class VariableTools:
@@ -66,14 +85,16 @@ class VariableTools:
         store_config_list = self.store_config_list()
         return {store_config.symbol: store_config for store_config in store_config_list}
 
-    def store_configs_by_group(self, group_name: str = 'default') -> dict[tuple[str, str], StoreConfig]:
+    def store_configs_by_group(self, group_name: str = 'default') -> dict[StoreKey, StoreConfig]:
         """
         根据分组返回持仓配置的字典结构，
         前面的方法有问题，一个持仓的唯一编码是由 分组名，券商通道和标的，即group, broker, symbol三元组合成的
         """
         store_config_list = self.store_config_list()
-        return {(store_config.broker, store_config.symbol, ): store_config
-                for store_config in store_config_list if store_config.group == group_name}
+        return {
+            StoreKey.from_store_config(store_config): store_config
+            for store_config in store_config_list if store_config.group == group_name
+        }
 
     def broker_config_dict(self, name):
         """
@@ -97,7 +118,7 @@ class VariableTools:
             result.append(
                 BrokerMeta(
                     trade_type=BrokerTradeType[meta['trade_type'].upper()],
-                    share_market_state=meta.get('share_market_state', False),
+                    share_market_status=meta.get('share_market_status', False),
                     share_quote=meta.get('share_quote', False),
                     market_status_regions=set(meta.get('market_status_regions', list())),
                     quote_regions=set(meta.get('quote_regions', list())),
@@ -182,12 +203,12 @@ class VariableTools:
         return self._config.get('db_path')
 
     @property
-    def prefer_market_state_brokers(self) -> list[str]:
+    def prefer_market_status_brokers(self) -> list[str]:
         """
         根据给定的broker类型顺序优先参考它们的市场状态信息
         比如证券交易，希望优先使用A券商的市场状态为主进行证券市场状态播报，而不是默认的broker顺序遍历市场状态
         """
-        return self._config.get('prefer_market_state_brokers', list())
+        return self._config.get('prefer_market_status_brokers', list())
 
     @property
     def prefer_quote_brokers(self) -> list[str]:
@@ -270,4 +291,7 @@ class VariableTools:
         return path
 
 
-__all__ = ['VariableTools', ]
+__all__ = [
+    'StoreKey',
+    'VariableTools',
+]

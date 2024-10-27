@@ -61,21 +61,21 @@ class OrderLinkScreen(Screen):
         level: Input = self.query_one('#levelInput')
         day: Input = self.query_one('#dayInput')
         direction: Select = self.query_one('#directionSelect')
-        order_id: Input = self.query_one('#idInput')
+        order_id_input: Input = self.query_one('#idInput')
         qty: Input = self.query_one('#qtyInput')
         filled: Input = self.query_one('#filledInput')
         avg: Input = self.query_one('#avgPriceInput')
         limit: Input = self.query_one('#limitPriceInput')
 
         var = VariableTools()
-        config = var.store_configs_by_group()[(broker.value, symbol.value, )]
+        config = var.store_configs_by_group()[StoreKey('default', broker.value, symbol.value, )]
         assert config
 
         level: int = int(level.value)
         order_day: str = str(day.value)
         direction: str = str(direction.value)
         qty: int = int(qty.value)
-        order_id: int | str = str(order_id.value)
+        order_id: int | str = str(order_id_input.value)
 
         if filled.value:
             filled_qty = int(filled.value)
@@ -133,7 +133,7 @@ class OrderLinkScreen(Screen):
         level: Input = self.query_one('#levelInput')
         day: Input = self.query_one('#dayInput')
         direction: Select = self.query_one('#directionSelect')
-        order_id: Input = self.query_one('#idInput')
+        order_id_input: Input = self.query_one('#idInput')
         qty: Input = self.query_one('#qtyInput')
         filled: Input = self.query_one('#filledInput')
         avg: Input = self.query_one('#avgPriceInput')
@@ -148,7 +148,7 @@ class OrderLinkScreen(Screen):
             return False
         if direction.value is None:
             return False
-        if not order_id.value or not re.match(r'^[a-zA-Z0-9.-]+$', order_id.value):
+        if not order_id_input.value or not re.match(r'^[a-zA-Z0-9.-]+$', order_id_input.value):
             return False
         if not qty.value or not re.match(r'^\d+$', qty.value):
             return False

@@ -15,10 +15,10 @@ class MaxShares(TelegramBotBase):
         idx_list = self._symbol_choice()
         await update.message.reply_text(
             f'你正在尝试设置修改[登记股数](maxShares)的设定，指定持仓未有任何买卖单时会有效执行。 '
-            f'选择需要操作的标的序号\n'
+            f'选择需要操作的持仓序号\n'
             f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
             reply_markup=ReplyKeyboardMarkup(
-                idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓标的序号'
+                idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓序号'
             ),
         )
         return self.K_MS_SELECT

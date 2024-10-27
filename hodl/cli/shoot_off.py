@@ -18,7 +18,7 @@ assert 1 > rate > 0
 
 
 var = VariableTools()
-config = var.store_configs_by_group()[(broker, symbol, )]
+config = var.store_configs_by_group()[StoreKey('default', broker, symbol, )]
 assert config
 state_file = config.state_file_path
 assert state_file

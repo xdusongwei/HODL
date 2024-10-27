@@ -16,10 +16,10 @@ class LockPosition(TelegramBotBase):
         await update.message.reply_text(
             f'你正在尝试设置修改[锁定持仓](lockPosition)的设定。 '
             f'[锁定]时，下单前会严格核对当前持仓量是否与[maxShares]一致，[解锁]时，允许当前持仓量是否大于或等于[maxShares]。'
-            f'选择需要操作的标的序号\n'
+            f'选择需要操作的持仓序号\n'
             f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
             reply_markup=ReplyKeyboardMarkup(
-                idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓标的序号'
+                idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓序号'
             ),
         )
         return self.K_LP_SELECT

@@ -1,7 +1,7 @@
 from hodl.tools.logger import Logger, LoggerWrapper
 from hodl.tools.time import TimeTools
 from hodl.tools.locate import LocateTools
-from hodl.tools.variable import VariableTools
+from hodl.tools.variable import VariableTools, StoreKey
 from hodl.tools.format import FormatTool
 from hodl.tools.store_config import TradeStrategyEnum, StoreConfig
 from hodl.tools.store_state_base import StoreStateBase
@@ -16,6 +16,7 @@ __all__ = [
     'Logger',
     'TimeTools',
     'LocateTools',
+    'StoreKey',
     'VariableTools',
     'FormatTool',
     'TradeStrategyEnum',
