@@ -276,7 +276,7 @@ class LongPortApi(BrokerApiBase):
                 for node in channel.positions:
                     if node.symbol != symbol:
                         continue
-                    return node.quantity
+                    return int(node.quantity)
         except Exception as e:
             raise PrepareError(f'长桥证券持仓接口调用失败: {e}')
 
