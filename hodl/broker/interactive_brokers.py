@@ -17,7 +17,8 @@ from hodl.async_proxy import *
 class InteractiveBrokersApi(BrokerApiBase):
     BROKER_NAME = 'interactiveBrokers'
     BROKER_DISPLAY = '盈透证券'
-    ENABLE_BOOTING_CHECK = True
+    ENABLE_BOOTING_CHECK = False
+    CASH_CURRENCY = 'USD'
 
     LOCK = threading.RLock()
     GATEWAY_SOCKET: IB = None

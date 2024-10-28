@@ -18,6 +18,7 @@ class OkxRestApi(BrokerApiBase):
     BROKER_NAME = 'okx'
     BROKER_DISPLAY = 'OKX'
     ENABLE_BOOTING_CHECK = True
+    CASH_CURRENCY = 'USDT'
 
     MARKET_STATUS_BUCKET = LeakyBucket(12)
     QUOTE_BUCKET = LeakyBucket(600)

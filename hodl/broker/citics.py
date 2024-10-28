@@ -10,6 +10,8 @@ class CiticsRestApi(BrokerApiBase):
     BROKER_NAME = 'citics'
     BROKER_DISPLAY = '中信证券'
     ENABLE_BOOTING_CHECK = False
+    CASH_CURRENCY = 'CNY'
+
     FILE_LOCK = None
 
     def on_init(self):

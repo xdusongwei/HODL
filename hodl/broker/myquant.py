@@ -9,6 +9,7 @@ class MyQuantApi(BrokerApiBase):
     BROKER_NAME = 'myquant'
     BROKER_DISPLAY = '掘金量化'
     ENABLE_BOOTING_CHECK = False
+    
     QUOTE_BUCKET = LeakyBucket(120)
 
     @classmethod

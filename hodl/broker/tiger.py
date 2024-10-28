@@ -30,6 +30,7 @@ class TigerApi(BrokerApiBase):
     BROKER_DISPLAY = '老虎国际'
     ENABLE_BOOTING_CHECK = True
     ORDER_ID_TYPE = int
+    CASH_CURRENCY = 'USD'
 
     HAS_GRAB = False
     GRAB_LOCK = threading.Lock()

@@ -78,10 +78,13 @@ class LongPortApi(BrokerApiBase):
     BROKER_NAME = 'longport'
     BROKER_DISPLAY = '长桥证券'
     ENABLE_BOOTING_CHECK = False
+    CASH_CURRENCY = 'USD'
+
     TOKEN_BUCKET = LeakyBucket(6)
     MARKET_STATUS_BUCKET = LeakyBucket(15)
     QUOTE_BUCKET = LeakyBucket(60)
     ASSET_BUCKET = LeakyBucket(60)
+
     CONFIG = None
     QUOTE_CLIENT = None
     TRADE_CLIENT = None

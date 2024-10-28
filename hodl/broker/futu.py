@@ -15,9 +15,11 @@ class FutuApi(BrokerApiBase):
     BROKER_NAME = 'futu'
     BROKER_DISPLAY = '富途证券'
     ENABLE_BOOTING_CHECK = True
+    CASH_CURRENCY = 'USD'
 
     QUOTE_CLIENT: OpenQuoteContext = None
     TRADE_CLIENT: OpenSecTradeContext = None
+
     MARKET_STATUS_BUCKET = LeakyBucket(10)
     SNAPSHOT_BUCKET = LeakyBucket(120)
     ASSET_BUCKET = LeakyBucket(20)

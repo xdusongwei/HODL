@@ -178,6 +178,11 @@ class BrokerProxy:
                     continue
                 try:
                     quote = broker.fetch_quote()
+                    assert isinstance(quote.pre_close, float)
+                    assert isinstance(quote.latest_price, float)
+                    assert isinstance(quote.day_high, float)
+                    assert isinstance(quote.day_low, float)
+                    assert isinstance(quote.open, float)
                 except Exception as e:
                     quote = None
                     exc = e
@@ -205,11 +210,15 @@ class BrokerProxy:
 
     def query_chips(self) -> int:
         broker = self._find_trade_broker()
-        return broker.query_chips()
+        chips = broker.query_chips()
+        assert isinstance(chips, int)
+        return chips
 
     def query_cash(self) -> float:
         broker = self._find_trade_broker()
-        return broker.query_cash()
+        cash_amount = broker.query_cash()
+        assert isinstance(cash_amount, float)
+        return cash_amount
 
     def detect_plug_in(self) -> bool:
         broker = self._find_trade_broker()

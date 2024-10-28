@@ -131,6 +131,11 @@ class BrokerApiBase(BrokerApiMixin):
     """
     ORDER_ID_TYPE = str
 
+    """
+    交易账户可用现金的币种
+    """
+    CASH_CURRENCY = 'USD'
+
     # 该转换表用于将各通道的地区格式进行转换, 不在此表中的地区将被忽略
     MS_REGION_TABLE = {
         # futu region
