@@ -7,7 +7,7 @@ from hodl.store import Store
 from hodl.quote_mixin import QuoteMixin
 from hodl.thread_mixin import *
 from hodl.broker.base import *
-from hodl.broker.broker_proxy import *
+from hodl.proxy import *
 from hodl.tools import *
 from hodl.exception_tools import *
 from hodl.cli.threads.market_status import *
@@ -156,7 +156,7 @@ class Manager(ThreadMixin):
             mkt_thread.prepare()
 
             Manager.MARKET_STATUS_THREAD = mkt_thread.start(
-                name='marketStatusPuller',
+                name='marketStatusProxy',
             )
 
         env = var.jinja_env

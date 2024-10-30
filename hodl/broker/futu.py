@@ -11,6 +11,7 @@ from hodl.exception_tools import *
 from hodl.state import *
 
 
+@register_broker
 class FutuApi(BrokerApiBase):
     BROKER_NAME = 'futu'
     BROKER_DISPLAY = '富途证券'

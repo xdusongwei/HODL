@@ -3,6 +3,7 @@ relative_files = False
 omit =
     hodl/bot/*
     hodl/broker/*
+    hodl/proxy/*
     hodl/simulation/*
     hodl/cli/*
     hodl/tools/*

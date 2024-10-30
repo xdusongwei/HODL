@@ -9,6 +9,7 @@ from hodl.state import *
 from hodl.tools import *
 
 
+@register_broker
 class BinanceApi(BrokerApiBase):
     BROKER_NAME = 'binance'
     BROKER_DISPLAY = '币安'

@@ -14,6 +14,7 @@ from hodl.state import *
 from hodl.tools import *
 
 
+@register_broker
 class OkxRestApi(BrokerApiBase):
     BROKER_NAME = 'okx'
     BROKER_DISPLAY = 'OKX'

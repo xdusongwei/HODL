@@ -11,7 +11,7 @@ class _CallResult:
     ex = None
 
 
-class AsyncProxyThread(ThreadMixin):
+class AsyncioProxyThread(ThreadMixin):
     LOCK = threading.RLock()
     THREAD = None
     INSTANCE = None
@@ -22,20 +22,20 @@ class AsyncProxyThread(ThreadMixin):
     def __init__(self):
         self.loop: asyncio.AbstractEventLoop = None
         self.ready = threading.Event()
-        AsyncProxyThread.INSTANCE = self
+        AsyncioProxyThread.INSTANCE = self
 
     def primary_bar(self) -> list[BarElementDesc]:
         bar = [
             BarElementDesc(
-                content=f'call: {AsyncProxyThread.COUNTER_CALL}',
+                content=f'call: {AsyncioProxyThread.COUNTER_CALL}',
                 tooltip=f'异步函数处理量',
             ),
             BarElementDesc(
-                content=f'future: {AsyncProxyThread.COUNTER_CORO_FUNC}',
+                content=f'future: {AsyncioProxyThread.COUNTER_CORO_FUNC}',
                 tooltip=f'Future构造函数处理量',
             ),
             BarElementDesc(
-                content=f'sync: {AsyncProxyThread.COUNTER_FROM_SYNC}',
+                content=f'sync: {AsyncioProxyThread.COUNTER_FROM_SYNC}',
                 tooltip=f'阻塞函数处理量',
             ),
         ]
@@ -43,18 +43,18 @@ class AsyncProxyThread(ThreadMixin):
 
     @classmethod
     def instance(cls) -> Self:
-        return AsyncProxyThread.INSTANCE
+        return AsyncioProxyThread.INSTANCE
 
     @classmethod
     def _try_create(cls):
-        lock = AsyncProxyThread.LOCK
-        thread = AsyncProxyThread.THREAD
+        lock = AsyncioProxyThread.LOCK
+        thread = AsyncioProxyThread.THREAD
         if thread is not None and cls.instance().ready.is_set():
             return
         with lock:
             if thread is None:
-                thread = AsyncProxyThread().start(name='asyncProxyThread')
-                AsyncProxyThread.THREAD = thread
+                thread = AsyncioProxyThread().start(name='asyncioProxy')
+                AsyncioProxyThread.THREAD = thread
             cls.instance().ready.wait()
 
     @classmethod
@@ -77,7 +77,7 @@ class AsyncProxyThread(ThreadMixin):
                     resp.ex = ex
                 finally:
                     evt.set()
-                    AsyncProxyThread.COUNTER_CORO_FUNC += 1
+                    AsyncioProxyThread.COUNTER_CORO_FUNC += 1
 
             instance.loop.call_soon_threadsafe(
                 instance.loop.create_task, _aio_wrap()
@@ -110,7 +110,7 @@ class AsyncProxyThread(ThreadMixin):
                 resp.ex = ex
             finally:
                 evt.set()
-                AsyncProxyThread.COUNTER_FROM_SYNC += 1
+                AsyncioProxyThread.COUNTER_FROM_SYNC += 1
 
         instance.loop.call_soon_threadsafe(
             _wrap, response,
@@ -140,7 +140,7 @@ class AsyncProxyThread(ThreadMixin):
                     resp.ex = ex
                 finally:
                     evt.set()
-                    AsyncProxyThread.COUNTER_CALL += 1
+                    AsyncioProxyThread.COUNTER_CALL += 1
 
             instance.loop.call_soon_threadsafe(
                 instance.loop.create_task, _aio_wrap()
@@ -167,4 +167,4 @@ class AsyncProxyThread(ThreadMixin):
         self.loop.run_until_complete(self._run())
 
 
-__all__ = ['AsyncProxyThread', ]
+__all__ = ['AsyncioProxyThread', ]

@@ -6,7 +6,7 @@ from textual.message import Message
 from textual.screen import Screen
 from textual.widgets import Header, Footer, Select, Input, Button
 from hodl.tools import *
-from hodl.broker import BROKERS
+from hodl.broker import *
 from hodl.state import *
 
 
@@ -21,13 +21,20 @@ class OrderLinkScreen(Screen):
         Binding("b", "back", "返回"),
     ]
 
+    @classmethod
+    def all_broker_types(cls):
+        return BrokerApiBase.all_brokers_type()
+
     def action_back(self):
         self.app.pop_screen()
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         yield Select(
-            [(f'{broker_type.BROKER_DISPLAY}({broker_type.BROKER_NAME})', broker_type.BROKER_NAME, ) for broker_type in BROKERS],
+            [
+                (f'{broker_type.BROKER_DISPLAY}({broker_type.BROKER_NAME})', broker_type.BROKER_NAME, )
+                for broker_type in self.all_broker_types()
+            ],
             prompt='交易通道',
             id='brokerSelect',
             allow_blank=False,
@@ -90,7 +97,7 @@ class OrderLinkScreen(Screen):
         else:
             limit_price = None
 
-        for broker_type in BROKERS:
+        for broker_type in self.all_broker_types():
             if broker_type.BROKER_NAME != config.broker:
                 continue
             order_id = broker_type.ORDER_ID_TYPE(order_id)

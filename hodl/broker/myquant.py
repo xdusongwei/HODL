@@ -5,6 +5,7 @@ from hodl.quote import *
 from hodl.tools import *
 
 
+@register_broker
 class MyQuantApi(BrokerApiBase):
     BROKER_NAME = 'myquant'
     BROKER_DISPLAY = '掘金量化'

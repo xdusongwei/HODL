@@ -2,7 +2,7 @@ from typing import Type
 from collections import defaultdict
 from hodl.thread_mixin import *
 from hodl.broker.base import *
-from hodl.broker.broker_proxy import *
+from hodl.proxy import *
 from hodl.state import *
 from hodl.tools import *
 

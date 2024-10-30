@@ -3,7 +3,7 @@ import time
 from hodl.exception_tools import *
 from hodl.store import Store
 from hodl.thread_mixin import *
-from hodl.broker.broker_proxy import *
+from hodl.proxy import *
 from hodl.tools import *
 
 

@@ -6,6 +6,7 @@ from hodl.state import *
 from hodl.tools import *
 
 
+@register_broker
 class CiticsRestApi(BrokerApiBase):
     BROKER_NAME = 'citics'
     BROKER_DISPLAY = '中信证券'

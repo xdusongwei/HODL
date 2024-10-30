@@ -25,6 +25,7 @@ from hodl.tools import *
 THREAD_LOCAL = threading.local()
 
 
+@register_broker
 class TigerApi(BrokerApiBase):
     BROKER_NAME = 'tiger'
     BROKER_DISPLAY = '老虎国际'

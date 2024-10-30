@@ -109,6 +109,8 @@ class BrokerApiMixin(abc.ABC):
 
 
 class BrokerApiBase(BrokerApiMixin):
+    _ALL_BROKER_TYPES = list()
+
     BROKER_NAME = 'unknown'
     BROKER_DISPLAY = '未知'
     """
@@ -164,6 +166,15 @@ class BrokerApiBase(BrokerApiMixin):
         'Normal': 'TRADING',
         'Post': 'POST_HOUR_TRADING',
     }
+
+    @classmethod
+    def all_brokers_type(cls) -> list[Type['BrokerApiBase']]:
+        return BrokerApiBase._ALL_BROKER_TYPES.copy()
+
+    @classmethod
+    def register_broker_type(cls, broker_type: Type['BrokerApiBase']):
+        assert issubclass(broker_type, BrokerApiBase)
+        BrokerApiBase._ALL_BROKER_TYPES.append(broker_type)
 
     @classmethod
     def set_up_var(cls, var: VariableTools):
@@ -414,8 +425,42 @@ def track_api(func):
     return wrapper
 
 
+def register_broker(cls: Type[BrokerApiBase]):
+    BrokerApiBase.register_broker_type(cls)
+    return cls
+
+
 def track_api_report():
     return _TrackApi.api_report()
+
+
+def sort_brokers(
+        var: VariableTools,
+        prefer_list: list[str] = None,
+) -> list[tuple[Type[BrokerApiBase], dict, list[BrokerMeta]]]:
+    brokers = BrokerApiBase.all_brokers_type()
+    prefer_list = prefer_list or list()
+    prefer_list = prefer_list.copy()
+    prefer_list.reverse()
+
+    def _key(item: Type[BrokerApiBase]) -> tuple[int, str]:
+        rank = 0
+        if item.BROKER_NAME in prefer_list:
+            rank = prefer_list.index(item.BROKER_NAME) + 1
+        return rank, item.BROKER_NAME,
+
+    ordered_brokers = sorted(brokers, key=_key, reverse=True)
+    ordered_brokers = [
+        (
+            broker,
+            var.broker_config_dict(name=broker.BROKER_NAME),
+            var.broker_meta(name=broker.BROKER_NAME),
+        )
+        for broker in ordered_brokers
+        if var.broker_config_dict(name=broker.BROKER_NAME)
+    ]
+    return ordered_brokers
+
 
 
 __all__ = [
@@ -423,5 +468,7 @@ __all__ = [
     'BrokerApiBase',
     'BrokerOrder',
     'track_api',
+    'register_broker',
     'track_api_report',
+    'sort_brokers',
 ]

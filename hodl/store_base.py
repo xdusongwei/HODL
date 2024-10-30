@@ -6,7 +6,7 @@ from hodl.risk_control import *
 from hodl.tools import *
 from hodl.storage import *
 from hodl.bot import *
-from hodl.broker.broker_proxy import *
+from hodl.proxy import *
 from hodl.thread_mixin import *
 from hodl.state import *
 

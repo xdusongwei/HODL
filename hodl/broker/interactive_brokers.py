@@ -11,9 +11,10 @@ from hodl.exception_tools import *
 from hodl.quote import *
 from hodl.state import *
 from hodl.tools import *
-from hodl.async_proxy import *
+from hodl.proxy import *
 
 
+@register_broker
 class InteractiveBrokersApi(BrokerApiBase):
     BROKER_NAME = 'interactiveBrokers'
     BROKER_DISPLAY = '盈透证券'
@@ -55,12 +56,12 @@ class InteractiveBrokersApi(BrokerApiBase):
     def _try_create_tws_client(self):
         with InteractiveBrokersApi.LOCK:
             if not InteractiveBrokersApi.LOOP_STARTED:
-                AsyncProxyThread.call_from_sync(startLoop)
+                AsyncioProxyThread.call_from_sync(startLoop)
                 InteractiveBrokersApi.LOOP_STARTED = True
             ib_socket = InteractiveBrokersApi.GATEWAY_SOCKET
             if ib_socket:
                 try:
-                    ib_dt = AsyncProxyThread.call_coro_func(ib_socket.reqCurrentTimeAsync)
+                    ib_dt = AsyncioProxyThread.call_coro_func(ib_socket.reqCurrentTimeAsync)
                     now = TimeTools.us_time_now(tz='UTC')
                     if TimeTools.timedelta(ib_dt, seconds=15) <= now:
                         raise TimeoutError
@@ -69,7 +70,7 @@ class InteractiveBrokersApi(BrokerApiBase):
                 except Exception as e:
                     print(f'InteractiveBrokersApi 测试连接失败: {e}')
             if ib_socket:
-                AsyncProxyThread.call_from_sync(ib_socket.disconnect)
+                AsyncioProxyThread.call_from_sync(ib_socket.disconnect)
                 ib = ib_socket
             else:
                 ib = ib_insync.IB()
@@ -78,7 +79,7 @@ class InteractiveBrokersApi(BrokerApiBase):
             client_id = self.broker_config.get('client_id', 0)
             timeout = self.broker_config.get('timeout', 8)
             account_id = self.account_id()
-            AsyncProxyThread.call(
+            AsyncioProxyThread.call(
                 ib.connectAsync(
                     host=host,
                     port=port,
@@ -97,8 +98,8 @@ class InteractiveBrokersApi(BrokerApiBase):
             contract = Stock(symbol, 'SMART', currency=self.currency)
             InteractiveBrokersApi.CONTRACTS[symbol] = contract
             socket = self.ib_socket()
-            AsyncProxyThread.call_from_sync(socket.qualifyContracts, *[contract])
-            ticker = AsyncProxyThread.call_from_sync(socket.reqMktData, contract, '', False, False)
+            AsyncioProxyThread.call_from_sync(socket.qualifyContracts, *[contract])
+            ticker = AsyncioProxyThread.call_from_sync(socket.reqMktData, contract, '', False, False)
             assert ticker
             InteractiveBrokersApi.TICKERS[symbol] = ticker
             TimeTools.sleep(1.0)
@@ -135,7 +136,7 @@ class InteractiveBrokersApi(BrokerApiBase):
                     socket = self.ib_socket()
                     if not socket:
                         raise PrepareError
-                    l = AsyncProxyThread.call(socket.accountSummaryAsync(account=self.account_id()))
+                    l = AsyncioProxyThread.call(socket.accountSummaryAsync(account=self.account_id()))
                     d: dict[str, ib_insync.AccountValue] = {i.tag: i for i in l}
                     item = d['TotalCashValue']
                     assert item.currency == 'USD'
@@ -186,7 +187,7 @@ class InteractiveBrokersApi(BrokerApiBase):
                         )
                     ib_order.tif = 'DAY'
                     ib_order.outsideRth = False
-                    trade = AsyncProxyThread.call_from_sync(socket.placeOrder, contract, ib_order)
+                    trade = AsyncioProxyThread.call_from_sync(socket.placeOrder, contract, ib_order)
                     TimeTools.sleep(2.0)
                     order_id = trade.order.permId
                     assert order_id
@@ -205,7 +206,7 @@ class InteractiveBrokersApi(BrokerApiBase):
                         ib_order = ib_trade.order
                         if ib_order.permId != order.order_id:
                             continue
-                        AsyncProxyThread.call_from_sync(socket.cancelOrder, ib_order)
+                        AsyncioProxyThread.call_from_sync(socket.cancelOrder, ib_order)
                         return
                 case _:
                     raise TradingError(f'撤单使用了不受支持的盈透证券交易连接通道')
