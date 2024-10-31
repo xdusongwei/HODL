@@ -147,10 +147,7 @@ class Manager(ThreadMixin):
                 db.conn.close()
             raise e
 
-        ms_proxy = MarketStatusProxy(
-            var=var,
-            session=Store.SESSION,
-        )
+        ms_proxy = MarketStatusProxy()
         if var.async_market_status:
             print('启动异步市场状态线程')
             mkt_thread = MarketStatusThread(ms_proxy=ms_proxy, var=var)

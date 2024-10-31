@@ -2,6 +2,7 @@ import os
 import tomllib
 import tomlkit
 import dataclasses
+import requests
 from telegram.ext import Application
 from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.currency_config import CurrencyConfig
@@ -34,6 +35,13 @@ class VariableTools:
     配置文件读写工具
     """
     DEBUG_CONFIG = dict()
+
+    _HTTP_SESSION = requests.Session()
+
+    @classmethod
+    def http_session(cls):
+        VariableTools._HTTP_SESSION.trust_env = False
+        return VariableTools._HTTP_SESSION
 
     @classmethod
     def _get_config_path(cls):

@@ -193,7 +193,6 @@ class BrokerApiBase(BrokerApiMixin):
             broker_config: dict = None,
             broker_meta: list[BrokerMeta] = None,
             logger: LoggerWrapper = None,
-            session: requests.Session = None,
     ):
         if broker_config is None:
             broker_config = self.query_broker_config()
@@ -204,7 +203,7 @@ class BrokerApiBase(BrokerApiMixin):
         self.custom_client = None
         self.symbol = symbol
         self.name = name
-        self.http_session = session
+        self.http_session = VariableTools.http_session()
         self.logger = logger
         self.__post_init__()
 

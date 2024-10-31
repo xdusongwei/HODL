@@ -120,9 +120,11 @@ class RiskControl:
             if self.store_config.lock_position:
                 base_chip_count = chip_count
                 if self.max_shares != base_chip_count + total_sell - total_buy:
-                    raise RiskControlError(f'持仓核算失败, 应清算核对共计{self.max_shares:,}股, '
-                                           f'实际持仓{chip_count:,}股, '
-                                           f'已累计卖出{total_sell:,}股, 已累计买入{total_buy:,}股')
+                    raise RiskControlError(
+                        f'持仓核算失败, 应清算核对共计{self.max_shares:,}股, '
+                        f'实际持仓{chip_count:,}股, '
+                        f'已累计卖出{total_sell:,}股, 已累计买入{total_buy:,}股'
+                    )
             if not self.store_config.market_price_rate and not order.limit_price:
                 raise RiskControlError(f'当日首单交易不能是市价单')
             elif diff := total_sell - total_buy:
@@ -130,9 +132,19 @@ class RiskControl:
                     raise RiskControlError(f'当日首单检查时,总买卖量差额({diff:,})出现了做空情形')
                 if order.is_buy and order.limit_price:
                     if diff > 0 and cash_amount / order.limit_price < diff:
-                        raise RiskControlError(f'当日首单检查时,现金无法完全买入总买卖量差量的股票: 差额{diff:,}股, 现金{cash_amount:,}')
+                        cash_text = FMT.pretty_price(cash_amount, self.store_config)
+                        raise RiskControlError(
+                            f'当日首单检查时, '
+                            f'现金无法完全买入总买卖量差量的股票: 差额{diff:,}股, '
+                            f'现金{cash_text}'
+                        )
                     if order.qty * order.limit_price > cash_amount:
-                        raise RiskControlError(f'当日首单检查时,限价单价值({order.qty * order.limit_price:,})超过现金额{cash_amount:,}')
+                        cash_text = FMT.pretty_price(cash_amount, self.store_config)
+                        order_value = FMT.pretty_price(order.qty * order.limit_price, self.store_config)
+                        raise RiskControlError(
+                            f'当日首单检查时, '
+                            f'限价单价值({order_value})超过现金额{cash_text}'
+                        )
 
         order_day_times_limit = self.state.plan.plan_calc().table_size * 2 + 1
         if times >= order_day_times_limit:

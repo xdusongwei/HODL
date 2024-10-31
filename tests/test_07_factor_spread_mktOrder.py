@@ -11,8 +11,8 @@ class OrderTestCase(unittest.TestCase):
         config = VariableTools().store_configs['TEST']
         config['market_price_rate'] = 0.02
         pc = 10.0
-        p_sell = pc * 1.03 * (1 + config.market_price_rate) + 0.02
-        p_buy = pc * 1.00 * (1 - config.market_price_rate) - 0.02
+        p_sell = FormatTool.adjust_precision(pc * 1.03 * (1 + config.market_price_rate) + 0.02, 2)
+        p_buy = FormatTool.adjust_precision(pc * 1.00 * (1 - config.market_price_rate) - 0.02, 2)
         tickets = [
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
@@ -33,7 +33,7 @@ class OrderTestCase(unittest.TestCase):
         config = VariableTools().store_configs['TEST']
         config['market_price_rate'] = 0.02
         pc = 10.0
-        p_sell = pc * 1.03 * (1 + config.market_price_rate) + 0.02
+        p_sell = FormatTool.adjust_precision(pc * 1.03 * (1 + config.market_price_rate) + 0.02, 2)
         tickets = [
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
@@ -53,7 +53,7 @@ class OrderTestCase(unittest.TestCase):
         ]
         store = start_simulation(store=store, tickets=tickets)
         # 修改订单的成交价格为低于保护限价, 继续运行触发风控异常
-        sell_order.avg_price = sell_order.protect_price - 0.01
+        sell_order.avg_price = FormatTool.adjust_precision(sell_order.protect_price - 0.01, 2)
         tickets = [
             Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
         ]

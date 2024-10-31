@@ -30,7 +30,6 @@ class MarketStatusProxy:
                     symbol=vix_symbol,
                     name='VIX',
                     logger=b.logger,
-                    session=b.http_session,
                 )
                 quote = broker.fetch_quote()
                 d.append_vix(quote)
@@ -50,12 +49,9 @@ class MarketStatusProxy:
         MarketStatusProxy.MARKET_STATUS = all_status
         return all_status
 
-    def __init__(
-            self,
-            var: VariableTools,
-            session: Session = None,
-    ):
+    def __init__(self):
         self.market_status_brokers: list[BrokerApiBase] = list()
+        var = HotReloadVariableTools.config()
         prefer_list = var.prefer_market_status_brokers
         broker_info = sort_brokers(var=var, prefer_list=prefer_list)
         brokers = [
@@ -63,7 +59,6 @@ class MarketStatusProxy:
                 symbol=None,
                 name='MarketStatus',
                 logger=None,
-                session=session,
             )
             for t, d, m in broker_info
             if any(meta for meta in m if meta.market_status_regions or meta.vix_symbol)

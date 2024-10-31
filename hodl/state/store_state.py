@@ -7,7 +7,6 @@ from hodl.tools import *
 @dataclass
 class StoreState(StoreStateBase):
     store_config: StoreConfig = field(default=None)
-    http_session: Session = field(default=None)
     enable: bool = field(default=None)
     alive_log: Logger = field(default=None)
     log: Logger = field(default=None)
@@ -47,8 +46,6 @@ class StoreState(StoreStateBase):
             file_max_size=128 * 1024,
         )
         self.log.set_up()
-
-        self.http_session.trust_env = False
 
 
 __all__ = ['StoreState', ]

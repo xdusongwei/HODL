@@ -80,8 +80,8 @@ class BrokerProxy:
     # proxy APIs end
 
     def __init__(
-            self,
-            runtime_state: StoreState,
+        self,
+        runtime_state: StoreState,
     ):
         store_config = runtime_state.store_config
         var = runtime_state.variable
@@ -95,7 +95,6 @@ class BrokerProxy:
                 symbol=store_config.symbol,
                 name=store_config.name,
                 logger=self.runtime_state.log.logger(),
-                session=self.runtime_state.http_session,
             )
             for t, d, m in broker_info
             if any(meta for meta in m if meta.quote_regions)
@@ -110,7 +109,6 @@ class BrokerProxy:
                 symbol=store_config.symbol,
                 name=store_config.name,
                 logger=self.runtime_state.log.logger(),
-                session=self.runtime_state.http_session,
             )
             for t, d, m in broker_info
             if t.BROKER_NAME == store_config.broker

@@ -20,8 +20,6 @@ class StoreBase(ThreadMixin):
     ENABLE_BROKER = True
     SHOW_EXCEPTION_DETAIL = False
 
-    SESSION = requests.Session()
-
     def __init__(
             self,
             store_config: StoreConfig,
@@ -29,7 +27,6 @@ class StoreBase(ThreadMixin):
     ):
         self.runtime_state: StoreState = StoreState(
             store_config=store_config,
-            http_session=self.SESSION,
             calendar=store_config.trading_calendar,
         )
         self.thread_context = self.runtime_state
@@ -205,10 +202,7 @@ class StoreBase(ThreadMixin):
         self.broker_proxy = BrokerProxy(
             runtime_state=self.runtime_state,
         )
-        self.market_status_proxy = MarketStatusProxy(
-            var=self.runtime_state.variable,
-            session=self.runtime_state.http_session,
-        )
+        self.market_status_proxy = MarketStatusProxy()
         self.broker_proxy.on_init()
 
     def margin_amount(self) -> float:
