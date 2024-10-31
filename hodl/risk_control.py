@@ -114,7 +114,7 @@ class RiskControl:
                 raise RiskControlError(f'每日现金检查日期({cash_day}不是当天{us_day}')
             orders = self.state.plan.orders
             chip_count = self.state.chip_count
-            cash_amount = self.state.cash_amount
+            cash_amount = self.state.cash_amount + self.margin_amount
             total_sell = sum(order.filled_qty for order in orders if order.is_sell)
             total_buy = sum(order.filled_qty for order in orders if order.is_buy)
             if self.store_config.lock_position:

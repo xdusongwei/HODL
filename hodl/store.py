@@ -475,7 +475,7 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin, FactorMixin):
                     finally:
                         self.risk_control = RiskControl(
                             store_config=self.store_config,
-                            margin_amount=self.margin_amount,
+                            margin_amount=self.margin_amount(),
                             state=self.state,
                             max_shares=self.state.plan.total_chips,
                             cash_balance_func=self.current_cash,

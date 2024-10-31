@@ -211,7 +211,6 @@ class StoreBase(ThreadMixin):
         )
         self.broker_proxy.on_init()
 
-    @property
     def margin_amount(self) -> float:
         try:
             if self.broker_proxy:
@@ -427,7 +426,7 @@ class StoreBase(ThreadMixin):
             config=self.store_config,
             state=self.state,
             process_time=self.process_time,
-            margin_amount=self.margin_amount,
+            margin_amount=self.margin_amount(),
         )
 
     def warning_alert_bar(self) -> list[str]:

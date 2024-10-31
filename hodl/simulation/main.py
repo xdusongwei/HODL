@@ -65,6 +65,10 @@ def chip_count_mock(function):
     return basic_mock(Store, 'current_chip', side_effect=function)
 
 
+def margin_mock(function):
+    return basic_mock(Store, 'margin_amount', side_effect=function)
+
+
 def file_read_mock(function):
     return basic_mock(LocateTools, 'read_file', side_effect=function)
 
@@ -194,9 +198,6 @@ class SimulationStore(Store):
     def broker_cash_currency_mock(self) -> str:
         return self.store_config.currency
 
-    def current_cash_mock(self) -> float:
-        return 10_000_000.0
-
     def read_file_mock(self, path: str):
         return self.files.get(path, None)
 
@@ -261,6 +262,8 @@ def start_simulation(
         store_type: Type[SimulationStore] = SimulationStore,
         db: LocalDb = None,
         broker_currency: str = None,
+        cash_amount: float = 10_000_000.0,
+        margin_amount: float = 0.0,
 ):
     if tickets is None and quote_csv is None:
         raise ValueError(f'测试报价数据来源需要指定')
@@ -287,9 +290,10 @@ def start_simulation(
             submit_order_mock(store.create_fake_order),
             refresh_order_mock(store.refresh_fake_order),
             chip_count_mock(store.current_chip_mock),
-            cash_amount_mock(store.current_cash_mock),
+            cash_amount_mock(lambda cls: cash_amount),
             file_read_mock(store.read_file_mock),
             file_write_mock(store.write_file_mock),
+            margin_mock(lambda cls: margin_amount),
         ]
         if broker_currency:
             mocks.append(
