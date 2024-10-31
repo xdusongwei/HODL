@@ -23,6 +23,7 @@ class Manager(ThreadMixin):
     MARKET_STATUS_THREAD: Thread = None
     HTML_THREAD: Thread = None
     JSON_THREAD: Thread = None
+    CURRENCY_THREAD: Thread = None
     PSUTIL_THREAD: Thread = None
 
     def __init__(self):
@@ -30,7 +31,7 @@ class Manager(ThreadMixin):
         env = self.var.jinja_env
         template = env.get_template("api_status.html")
         self.template = template
-        BrokerApiBase.set_up_var(var=self.var)
+        HotReloadVariableTools.set_up_var(var=self.var)
 
     @classmethod
     def monitor_alert(cls, stores: list[Store]):
@@ -179,6 +180,14 @@ class Manager(ThreadMixin):
         )
         print(f'json刷新线程已启动')
 
+        if var.currency_config:
+            print('启动汇率更新线程')
+            currency_thread = CurrencyProxy()
+            currency_thread.prepare()
+            Manager.CURRENCY_THREAD = currency_thread.start(
+                name='currencyProxy',
+            )
+
         Manager.PSUTIL_THREAD = PsUtilThread().start(name='psutil')
 
         print('准备工作结束')
@@ -195,7 +204,7 @@ class Manager(ThreadMixin):
                 if len(store_configs) != len(stores):
                     print(f'运行中的持仓对象数量和配置文件中的持仓配置数量不一致')
                     return
-                BrokerApiBase.set_up_var(var=variable)
+                HotReloadVariableTools.set_up_var(var=variable)
                 html_thread.variable = variable
                 for store in stores:
                     broker = store.store_config.broker
@@ -219,9 +228,6 @@ class Manager(ThreadMixin):
                         thread.join()
                 if db:
                     db.conn.close()
-
-                if updater := Manager.CONVERSATION_BOT.updater:
-                    updater.stop()
                 return
             except ConfigReadError as e:
                 print(f'读取配置文件出错: {e}')

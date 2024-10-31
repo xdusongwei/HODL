@@ -4,6 +4,7 @@ import tomlkit
 import dataclasses
 from telegram.ext import Application
 from jinja2 import Environment, PackageLoader, select_autoescape
+from hodl.tools.currency_config import CurrencyConfig
 from hodl.tools.locate import LocateTools
 from hodl.tools.store_config import StoreConfig
 from hodl.tools.broker_meta import BrokerMeta, BrokerTradeType
@@ -173,6 +174,10 @@ class VariableTools:
         return TuiConfig(self._config.get('tui', dict()))
 
     @property
+    def currency_config(self) -> CurrencyConfig:
+        return CurrencyConfig(self._config.get('currency', dict()))
+
+    @property
     def manager_state_path(self):
         """
         manager汇总持仓状态文件写入的路径
@@ -291,7 +296,25 @@ class VariableTools:
         return path
 
 
+class HotReloadVariableTools:
+    """
+    提供服务运行时热改动配置的能力
+    """
+    @classmethod
+    def set_up_var(cls, var: VariableTools):
+        setattr(HotReloadVariableTools, '__var', var)
+
+    @classmethod
+    def config(cls) -> VariableTools:
+        var: VariableTools = getattr(HotReloadVariableTools, '__var', None)
+        if var is None:
+            var = VariableTools()
+            cls.set_up_var(var)
+        return var
+
+
 __all__ = [
     'StoreKey',
     'VariableTools',
+    'HotReloadVariableTools',
 ]

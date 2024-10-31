@@ -4,6 +4,7 @@ from expiringdict import ExpiringDict
 from hodl.store_base import StoreBase
 from hodl.state import *
 from hodl.storage import *
+from hodl.proxy import *
 from hodl.tools import *
 from hodl.tools import FormatTool as FMT
 
@@ -91,8 +92,25 @@ class TradeMixin(StoreBase, ABC):
     def current_chip(self) -> int:
         return self.broker_proxy.query_chips()
 
+    def broker_cash_currency(self) -> str:
+        broker = self.broker_proxy.trade_broker
+        return broker.CASH_CURRENCY
+
+    def _current_cash(self) -> float:
+        cash = self.broker_proxy.query_cash()
+        return cash
+
     def current_cash(self) -> float:
-        return self.broker_proxy.query_cash()
+        sc = self.store_config
+        broker_cash_currency = self.broker_cash_currency()
+        cash = self._current_cash()
+        if sc.currency != broker_cash_currency:
+            cash = CurrencyProxy.convert_currency(
+                base_currency=broker_cash_currency,
+                target_currency=sc.currency,
+                amount=cash,
+            )
+        return cash
 
     @classmethod
     def _best_buy_price(

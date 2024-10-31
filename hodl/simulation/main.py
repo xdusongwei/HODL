@@ -54,7 +54,11 @@ def submit_order_mock(function):
 
 
 def cash_amount_mock(function):
-    return basic_mock(Store, 'current_cash', side_effect=function)
+    return basic_mock(Store, '_current_cash', side_effect=function)
+
+
+def broker_cash_currency_mock(function):
+    return basic_mock(Store, 'broker_cash_currency', side_effect=function)
 
 
 def chip_count_mock(function):
@@ -187,6 +191,9 @@ class SimulationStore(Store):
         diff = sum(order.filled_qty * (1 if order.is_sell else -1) for order in orders)
         return self.store_config.max_shares - diff
 
+    def broker_cash_currency_mock(self) -> str:
+        return self.store_config.currency
+
     def current_cash_mock(self) -> float:
         return 10_000_000.0
 
@@ -253,6 +260,7 @@ def start_simulation(
         output_state: bool = True,
         store_type: Type[SimulationStore] = SimulationStore,
         db: LocalDb = None,
+        broker_currency: str = None,
 ):
     if tickets is None and quote_csv is None:
         raise ValueError(f'测试报价数据来源需要指定')
@@ -283,6 +291,14 @@ def start_simulation(
             file_read_mock(store.read_file_mock),
             file_write_mock(store.write_file_mock),
         ]
+        if broker_currency:
+            mocks.append(
+                broker_cash_currency_mock(lambda c: broker_currency),
+            )
+        else:
+            mocks.append(
+                broker_cash_currency_mock(store.broker_cash_currency_mock),
+            )
         store.mocks = mocks
     elif tickets:
         store.reset_tickets(tickets)

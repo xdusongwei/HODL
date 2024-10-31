@@ -86,7 +86,7 @@ class BrokerApiMixin(abc.ABC):
 
     def query_cash(self) -> float:
         """
-        获取可用资金数量。
+        获取可用资金数量, 券商其主币种需要在类定义的 CASH_CURRENCY 静态成员中设置。
         """
         raise NotImplementedError
 
@@ -177,22 +177,13 @@ class BrokerApiBase(BrokerApiMixin):
         BrokerApiBase._ALL_BROKER_TYPES.append(broker_type)
 
     @classmethod
-    def set_up_var(cls, var: VariableTools):
-        setattr(BrokerApiBase, '__var', var)
-
-    @classmethod
     def query_broker_config(cls) -> dict:
-        var: VariableTools = getattr(BrokerApiBase, '__var', None)
-        if var is None:
-            var = VariableTools()
-            cls.set_up_var(var)
+        var: VariableTools = HotReloadVariableTools.config()
         return var.broker_config_dict(cls.BROKER_NAME) or dict()
 
     @classmethod
     def query_broker_meta(cls) -> list[BrokerMeta]:
-        var: VariableTools = getattr(BrokerApiBase, '__var', None)
-        if var is None:
-            var = VariableTools()
+        var: VariableTools = HotReloadVariableTools.config()
         return var.broker_meta(cls.BROKER_NAME)
 
     def __init__(
