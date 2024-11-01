@@ -5,7 +5,6 @@ import functools
 import threading
 from collections import defaultdict
 from dataclasses import dataclass
-import requests
 from tigeropen.common.consts import OrderStatus
 from tigeropen.trade.domain.order import Order as BrokerOrder
 from hodl.quote import Quote
