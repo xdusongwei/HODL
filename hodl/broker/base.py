@@ -173,6 +173,8 @@ class BrokerApiBase(BrokerApiMixin):
     @classmethod
     def register_broker_type(cls, broker_type: Type['BrokerApiBase']):
         assert issubclass(broker_type, BrokerApiBase)
+        if broker_type in BrokerApiBase._ALL_BROKER_TYPES:
+            return
         BrokerApiBase._ALL_BROKER_TYPES.append(broker_type)
 
     @classmethod

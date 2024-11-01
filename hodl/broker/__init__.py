@@ -7,3 +7,4 @@ from hodl.broker.futu import *
 from hodl.broker.interactive_brokers import *
 from hodl.broker.myquant import *
 from hodl.broker.longport import *
+from hodl.broker.alpaca import *

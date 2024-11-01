@@ -13,7 +13,7 @@ from hodl.tools import *
 class AlpacaApi(BrokerApiBase):
     BROKER_NAME = 'alpaca'
     BROKER_DISPLAY = 'alpaca'
-    ENABLE_BOOTING_CHECK = False
+    ENABLE_BOOTING_CHECK = True
     CASH_CURRENCY = 'USD'
 
     MARKET_STATUS_BUCKET = LeakyBucket(12)

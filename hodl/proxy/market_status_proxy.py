@@ -1,7 +1,6 @@
 import random
 import multiprocessing.pool
 from typing import Type
-from requests import Session
 from hodl.broker import *
 from hodl.quote import *
 from hodl.state import *

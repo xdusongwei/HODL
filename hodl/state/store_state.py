@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 import exchange_calendars
-from requests import Session
 from hodl.tools import *
 
 
