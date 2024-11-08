@@ -1,4 +1,6 @@
 import dataclasses
+from functools import reduce
+from operator import mul
 import requests
 from hodl.tools import *
 from hodl.thread_mixin import *
@@ -129,6 +131,52 @@ class CurrencyProxy(ThreadMixin):
         return html
 
     @classmethod
+    def search_rate(
+        cls,
+        base_currency: str,
+        target_currency: str,
+    ):
+        def _search_dfs(edges: list[CurrencyNode], current_path: list[CurrencyNode] = None):
+            current_path = current_path or list()
+            if len(current_path) > len(edges):
+                raise ValueError(f'搜索货币对的路径栈大小超出了容量')
+            for edge in edges:
+                if edge.base_currency == edge.target_currency:
+                    continue
+                if edge in current_path:
+                    continue
+                if len(current_path) == 0:
+                    if edge.base_currency != base_currency and edge.target_currency != base_currency:
+                        continue
+                else:
+                    top_pairs = {current_path[-1].base_currency, current_path[-1].target_currency, }
+                    if edge.base_currency not in top_pairs and edge.target_currency not in top_pairs:
+                        continue
+                new_current_path = current_path.copy()
+                new_current_path.append(edge)
+                if edge.target_currency == target_currency or edge.base_currency == target_currency:
+                    return new_current_path
+                else:
+                    result = _search_dfs(edges, new_current_path)
+                    if result:
+                        return result
+            return None
+        currency_edges = list(CurrencyProxy._CURRENCY)
+        path = _search_dfs(currency_edges)
+        if not path:
+            raise ValueError(f'无法搜索到{base_currency}->{target_currency}货币兑换方式.')
+        rate_link = list()
+        currency_tail = base_currency
+        for node in path:
+            if node.base_currency == currency_tail:
+                rate_link.append(node.rate)
+                currency_tail = node.target_currency
+            else:
+                rate_link.append(1.0 / node.rate)
+                currency_tail = node.base_currency
+        return reduce(mul, rate_link)
+
+    @classmethod
     def convert_currency(
         cls,
         base_currency: str,
@@ -136,17 +184,10 @@ class CurrencyProxy(ThreadMixin):
         amount: float,
         precision: int = 2,
     ) -> float:
-        currency_list = list(CurrencyProxy._CURRENCY)
-        for currency in currency_list:
-            if currency.base_currency != base_currency:
-                continue
-            if currency.target_currency != target_currency:
-                continue
-            rate = currency.rate
-            converted_amount = amount * rate
-            converted_amount = FormatTool.adjust_precision(converted_amount, precision=precision)
-            return converted_amount
-        raise ValueError(f'无法转换货币{base_currency}->{target_currency}')
+        rate = cls.search_rate(base_currency, target_currency)
+        converted_amount = amount * rate
+        converted_amount = FormatTool.adjust_precision(converted_amount, precision=precision)
+        return converted_amount
 
 
 __all__ = [
