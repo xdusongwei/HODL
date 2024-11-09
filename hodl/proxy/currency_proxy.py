@@ -33,12 +33,16 @@ class CurrencyNode:
     def currency_pair(self) -> str:
         return f'{self.base_currency}{self.target_currency}'
 
+    @property
+    def unique_pair(self) -> str:
+        return ''.join(sorted([self.base_currency, self.target_currency, ]))
+
     def __hash__(self):
-        return self.currency_pair.__hash__()
+        return self.unique_pair.__hash__()
 
     def __eq__(self, other):
         if isinstance(other, CurrencyNode):
-            return self.currency_pair == other.currency_pair
+            return self.unique_pair == other.unique_pair
         return False
 
 
