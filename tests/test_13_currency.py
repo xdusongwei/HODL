@@ -7,7 +7,22 @@ from hodl.tools import *
 
 
 class CurrencyTestCase(unittest.TestCase):
-    def test_currency(self):
+    def test_currency_unique(self):
+        """
+        验证货币对对象在集合中具有特定的唯一性
+        """
+        CurrencyProxy._CURRENCY = {
+            CurrencyNode(base_currency='X', target_currency='Y', rate=1.0),
+            CurrencyNode(base_currency='X', target_currency='Z', rate=1.0),
+            CurrencyNode(base_currency='Y', target_currency='X', rate=1.0),
+            CurrencyNode(base_currency='Y', target_currency='Z', rate=1.0),
+            CurrencyNode(base_currency='Z', target_currency='X', rate=1.0),
+            CurrencyNode(base_currency='Z', target_currency='Y', rate=1.0),
+        }
+        # 3种币种的6个货币汇率对组合一半是重复的, 只需记录 3 * 2 * 1 种
+        assert len(CurrencyProxy._CURRENCY) == 3
+
+    def test_currency_exchange(self):
         """
         验证汇率计算函数的正确性
         """
@@ -16,7 +31,7 @@ class CurrencyTestCase(unittest.TestCase):
         }
         # 不存在这样的货币转换信息
         with pytest.raises(ValueError):
-            CurrencyProxy.convert_currency('A', 'B', 100, 2)
+            CurrencyProxy.convert_currency('USD', 'ABC', 100, 2)
 
         # 测试简单汇率计算
         assert CurrencyProxy.convert_currency('USD', 'XYZ', 100, 2) == 100
@@ -49,6 +64,10 @@ class CurrencyTestCase(unittest.TestCase):
         }
         # 验证 A币 换 E币, 这里有两种间接兑换的路径, 哪一种都是合理的
         assert CurrencyProxy.convert_currency('A', 'E', 100, 2) in {800, 1200, }
+        # 五种货币任意兑换, 包括自己兑自己
+        for base_currency in ['A', 'B', 'C', 'D', 'E', ]:
+            for target_currency in ['A', 'B', 'C', 'D', 'E', ]:
+                assert CurrencyProxy.convert_currency(base_currency, target_currency, 100, 2) > 0
 
     def test_store_currency(self):
         """

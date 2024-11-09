@@ -1,3 +1,4 @@
+import random
 import dataclasses
 from functools import reduce
 from operator import mul
@@ -140,7 +141,11 @@ class CurrencyProxy(ThreadMixin):
         base_currency: str,
         target_currency: str,
     ):
-        def _search_dfs(edges: list[CurrencyNode], current_path: list[CurrencyNode] = None):
+        def _search_dfs(
+                edges: list[CurrencyNode],
+                current_path: list[CurrencyNode] = None,
+                tail_currency: str = None,
+        ) -> list[CurrencyNode]:
             current_path = current_path or list()
             if len(current_path) > len(edges):
                 raise ValueError(f'搜索货币对的路径栈大小超出了容量')
@@ -152,21 +157,23 @@ class CurrencyProxy(ThreadMixin):
                 if len(current_path) == 0:
                     if edge.base_currency != base_currency and edge.target_currency != base_currency:
                         continue
+                    tail_currency = base_currency
                 else:
-                    top_pairs = {current_path[-1].base_currency, current_path[-1].target_currency, }
-                    if edge.base_currency not in top_pairs and edge.target_currency not in top_pairs:
+                    if tail_currency not in {edge.base_currency, edge.target_currency, }:
                         continue
+                new_tail_currency = edge.target_currency if edge.base_currency == tail_currency else edge.base_currency
                 new_current_path = current_path.copy()
                 new_current_path.append(edge)
                 if edge.target_currency == target_currency or edge.base_currency == target_currency:
                     return new_current_path
                 else:
-                    result = _search_dfs(edges, new_current_path)
+                    result = _search_dfs(edges, new_current_path, new_tail_currency)
                     if result:
                         return result
-            return None
+            return list()
         currency_edges = list(CurrencyProxy._CURRENCY)
-        path = _search_dfs(currency_edges)
+        random.shuffle(currency_edges)
+        path = _search_dfs(edges=currency_edges)
         if not path:
             raise ValueError(f'无法搜索到{base_currency}->{target_currency}货币兑换方式.')
         rate_link = list()
@@ -178,7 +185,8 @@ class CurrencyProxy(ThreadMixin):
             else:
                 rate_link.append(1.0 / node.rate)
                 currency_tail = node.base_currency
-        return reduce(mul, rate_link)
+        rate = reduce(mul, rate_link)
+        return rate
 
     @classmethod
     def convert_currency(
