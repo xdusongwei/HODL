@@ -330,7 +330,6 @@ class SimulationBuilder:
         cls,
         symbol: str,
         tickets: list[Ticket],
-        store_config: StoreConfig = None,
         auto_run: bool = True,
         output_state: bool = True,
         store_type: Type[SimulationStore] = SimulationStore,
@@ -342,7 +341,6 @@ class SimulationBuilder:
         return cls._build(
             symbol=symbol,
             tickets=tickets,
-            store_config=store_config,
             auto_run=auto_run,
             output_state=output_state,
             store_type=store_type,
@@ -355,11 +353,6 @@ class SimulationBuilder:
         symbol: str,
         quote_csv: str,
         quote_length: int,
-        store_config: StoreConfig = None,
-        auto_run: bool = True,
-        output_state: bool = True,
-        store_type: Type[SimulationStore] = SimulationStore,
-        db: LocalDb = None,
     ):
         """
         直接读取配置文件中的持仓设定来运行测试, 但是使用 csv 行情源
@@ -368,11 +361,6 @@ class SimulationBuilder:
             symbol=symbol,
             quote_csv=quote_csv,
             quote_length=quote_length,
-            store_config=store_config,
-            auto_run=auto_run,
-            output_state=output_state,
-            store_type=store_type,
-            db=db,
         )
 
     @classmethod
@@ -410,7 +398,6 @@ class SimulationBuilder:
         tickets: list[Ticket],
         auto_run: bool = True,
         output_state: bool = True,
-        db: LocalDb = None,
     ):
         """
         对已经创建的模拟持仓对象, 按照新的数据源继续执行
@@ -420,7 +407,6 @@ class SimulationBuilder:
             tickets=tickets,
             auto_run=auto_run,
             output_state=output_state,
-            db=db,
         )
 
 

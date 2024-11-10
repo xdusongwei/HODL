@@ -97,7 +97,7 @@ class TumbleProtectTestCase(unittest.TestCase):
             Ticket(day='23-04-18T09:30:00-04:00:00', pre_close=10.0, open=15.0, latest=15.0, low=15.0, high=15.0),
             Ticket(day='23-04-19T09:30:00-04:00:00', pre_close=15.0, open=20.0, latest=20.0, low=20.0, high=20.0),
         ]
-        store = SimulationBuilder.resume(store=store, db=db, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, tickets=tickets)
         _, state, _ = store.args()
         assert state.bp_function == 'min'
         assert state.ta_tumble_protect_rsi is None

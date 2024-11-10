@@ -47,7 +47,7 @@ class BasePriceTestCase(unittest.TestCase):
             Ticket(day='23-04-11T09:30:00-04:00:00', pre_close=pn5, open=pn5, latest=p0, ),
             Ticket(day='23-04-11T09:31:00-04:00:00', pre_close=pn5, open=pn5, latest=p0, ),
         ]
-        store = SimulationBuilder.resume(store=store, db=db, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, tickets=tickets)
         state = store.state
         plan = state.plan
         assert plan.sell_volume > 0
