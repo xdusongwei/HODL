@@ -201,7 +201,6 @@ class Manager(ThreadMixin):
                     print(f'运行中的持仓对象数量和配置文件中的持仓配置数量不一致')
                     return
                 HotReloadVariableTools.set_up_var(var=variable)
-                html_thread.variable = variable
                 for store in stores:
                     broker = store.store_config.broker
                     symbol = store.store_config.symbol
