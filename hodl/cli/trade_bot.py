@@ -160,7 +160,6 @@ class Manager(ThreadMixin):
         env = var.jinja_env
         template = env.get_template("index.html")
         html_thread = HtmlWriterThread(
-            variable=var,
             db=db,
             template=template,
         )

@@ -20,8 +20,7 @@ class HtmlWriterThread(ThreadMixin):
     def _new_time(cls) -> str:
         return TimeTools.utc_now().strftime('%Y-%m-%dT%H:%M')
 
-    def __init__(self, variable: VariableTools, db: LocalDb, template):
-        self.variable = variable
+    def __init__(self, db: LocalDb, template):
         self.db = db
         self.template = template
         self.total_write = 0
@@ -32,6 +31,10 @@ class HtmlWriterThread(ThreadMixin):
         self.earning_json = '{}'
         self.total_earning = list()
         self.order_times_ytd_json = '{}'
+
+    @property
+    def variable(self):
+        return HotReloadVariableTools.config()
 
     def primary_bar(self) -> list[BarElementDesc]:
         bar = [
@@ -132,7 +135,8 @@ class HtmlWriterThread(ThreadMixin):
 
     def write_html(self):
         variable = self.variable
-        currency_list = ('USD', 'CNY', 'HKD', )
+        total_earning_currency = variable.html_total_earning_currency
+        html_asserts_currency = variable.html_asserts_currency
         new_hash = self.current_hash
         new_time = self._new_time()
         try:
@@ -163,11 +167,14 @@ class HtmlWriterThread(ThreadMixin):
                 create_time = int(TimeTools.us_time_now().timestamp())
                 self.total_earning = [
                     (currency, EarningRow.total_amount_before_time(db.conn, create_time=create_time, currency=currency))
-                    for currency in currency_list
+                    for currency in total_earning_currency
                 ]
                 if db:
                     self.order_times_ytd_json = self._order_times_ytd()
-            hodl_list, sell_list, earning_list = self.store_value(currency_list=currency_list, store_list=store_list)
+            hodl_list, sell_list, earning_list = self.store_value(
+                currency_list=html_asserts_currency,
+                store_list=store_list,
+            )
 
             html = template.render(
                 order_times_ytd=self.order_times_ytd_json,
