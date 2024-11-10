@@ -38,7 +38,7 @@ class SubmitOrderTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p0, ),
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_not_sell, ),
         ]
-        store = start_simulation('TEST', tickets=tickets)
+        store = SimulationBuilder.from_symbol('TEST', tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 0
@@ -47,7 +47,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         tickets = [
             Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_submit_sell, ),
         ]
-        store = start_simulation(store=store, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 1
@@ -57,7 +57,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         tickets = [
             Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
         ]
-        store = start_simulation(store=store, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 1
@@ -66,7 +66,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         tickets = [
             Ticket(day='23-04-10T09:34:00-04:00:00', pre_close=pc, open=pc, latest=p_not_buy, ),
         ]
-        store = start_simulation(store=store, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 1
@@ -74,7 +74,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         tickets = [
             Ticket(day='23-04-10T09:35:00-04:00:00', pre_close=pc, open=pc, latest=p_submit_buy, ),
         ]
-        store = start_simulation(store=store, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 2
@@ -84,7 +84,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         tickets = [
             Ticket(day='23-04-10T09:36:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
         ]
-        store = start_simulation(store=store, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 2

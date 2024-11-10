@@ -22,7 +22,7 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:29:30-04:00:00', ms='-', qs='NORMAL', pre_close=1.0, open=10.0, latest=40.0, ),
         ]
 
-        store = start_simulation(symbol='TEST', tickets=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets)
         state = store.state
         assert state.chip_count is None
 
@@ -37,7 +37,7 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:30-04:00:00', ms='TRADING', qs='', pre_close=10.0, open=10.0, latest=40.0, ),
         ]
 
-        store = start_simulation(symbol='TEST', tickets=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets)
         state = store.state
         plan = state.plan
         assert plan.sell_volume == 0
@@ -54,7 +54,7 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:30-04:00:00', pre_close=p, open=p, latest=p, ),
         ]
 
-        store = start_simulation(symbol='TEST', tickets=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets)
         state = store.state
         plan = state.plan
         max_shares = store.store_config.max_shares
@@ -79,7 +79,7 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
 
-        store = start_simulation(symbol='TEST', tickets=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets)
         state = store.state
         plan = state.plan
         max_shares = store.store_config.max_shares
@@ -102,7 +102,7 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
 
-        store = start_simulation(symbol='TEST', tickets=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets)
         state = store.state
         plan = state.plan
         max_shares = store.store_config.max_shares
@@ -128,7 +128,7 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:37:30-04:00:00', pre_close=pc, open=p0, latest=p0, ),
         ]
 
-        store = start_simulation(symbol='TEST', tickets=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets)
         state = store.state
         plan = state.plan
         max_shares = store.store_config.max_shares
@@ -160,7 +160,7 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:40-04:00:00', pre_close=pc, open=p0, latest=p0, ),
         ]
 
-        store = start_simulation(symbol='TEST', db=db, tickets=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', db=db, tickets=tickets)
         state = store.state
         plan = state.plan
         files = store.files
@@ -182,7 +182,7 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p0, latest=p100, ),
         ]
 
-        store = start_simulation(store_config=store_config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets)
         state = store.state
         plan = state.plan
         orders = plan.orders
@@ -201,7 +201,7 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p0, latest=p100, ),
         ]
 
-        store = start_simulation(store_config=store_config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets)
         files = store.files
         assert files['/a/b/c.json']
 
@@ -213,5 +213,5 @@ class StoreTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
         ]
 
-        store = start_simulation(symbol='TEST', tickets=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets)
         store.call_bars()

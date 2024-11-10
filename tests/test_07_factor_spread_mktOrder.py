@@ -18,7 +18,7 @@ class OrderTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
             Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
         ]
-        store = start_simulation(store_config=config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 2
@@ -38,7 +38,7 @@ class OrderTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
         ]
-        store = start_simulation(store_config=config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 1
@@ -51,14 +51,14 @@ class OrderTestCase(unittest.TestCase):
         tickets = [
             Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
         ]
-        store = start_simulation(store=store, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, tickets=tickets)
         # 修改订单的成交价格为低于保护限价, 继续运行触发风控异常
         sell_order.avg_price = FormatTool.adjust_precision(sell_order.protect_price - 0.01, 2)
         tickets = [
             Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
         ]
         with pytest.raises(RiskControlError):
-            start_simulation(store=store, tickets=tickets)
+            SimulationBuilder.resume(store=store, tickets=tickets)
 
     def test_price_rate(self):
         # 验证 price_rate 设定对执行计划的幅度进行缩放，
@@ -72,7 +72,7 @@ class OrderTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
             Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
         ]
-        store = start_simulation(store_config=config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 2
@@ -95,7 +95,7 @@ class OrderTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
             Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
         ]
-        store = start_simulation(store_config=config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 2
@@ -118,7 +118,7 @@ class OrderTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
             Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
         ]
-        store = start_simulation(store_config=config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 2
@@ -144,7 +144,7 @@ class OrderTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p20, ),
             Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p10, ),
         ]
-        store = start_simulation(store_config=config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
         plan = state.plan
         assert len(plan.orders) == 3

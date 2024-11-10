@@ -7,13 +7,13 @@ from tigeropen.common.consts import OrderStatus
 from tigeropen.trade.domain.order import Order as TigerOrder
 from hodl.risk_control import *
 from hodl.storage import *
-from hodl.quote import Quote
+from hodl.quote import *
 from hodl.state import *
 from hodl.plan_calc import *
 from hodl.quote_mixin import *
 from hodl.tools import *
 from hodl.store import *
-from hodl.simulation.fake_quote import generate_quote, generate_from_tickets, Ticket, FakeQuote
+from hodl.simulation.fake_quote import *
 
 
 def basic_mock(client_type: type, method: str, side_effect=None, return_value=None, autospec=True):
@@ -96,7 +96,7 @@ class SimulationStore(Store):
             generate_quote(quote_csv, limit=quote_length) if quote_csv else generate_from_tickets(tickets)
         self.tiger_order_pool: dict[int, TigerOrder] = dict()
         self.order_pool: dict[int, Order] = dict()
-        self.current_fake_quote: FakeQuote = None
+        self.current_fake_quote: FakeQuote | None = None
         if tickets:
             self.current_fake_quote = tickets[0].to_fake_quote()
         self.order_seq = 1
@@ -249,7 +249,10 @@ class SimulationStore(Store):
             mock.stop()
 
 
-def start_simulation(
+class SimulationBuilder:
+    @classmethod
+    def _build(
+        cls,
         symbol: str = None,
         tickets: list[Ticket] = None,
         quote_csv: str = None,
@@ -264,63 +267,161 @@ def start_simulation(
         broker_currency: str = None,
         cash_amount: float = 10_000_000.0,
         margin_amount: float = 0.0,
-):
-    if tickets is None and quote_csv is None:
-        raise ValueError(f'测试报价数据来源需要指定')
+    ) -> SimulationStore:
+        if tickets is None and quote_csv is None:
+            raise ValueError(f'测试报价数据来源需要指定')
 
-    if store is None:
-        if not symbol and not store_config:
-            raise ValueError(f'创建持仓对象需要指定symbol')
-        if store_config is None:
-            var = VariableTools()
-            store_config = var.store_configs[symbol]
-        store = store_type(
-            store_config=store_config,
+        if store is None:
+            if not symbol and not store_config:
+                raise ValueError(f'创建持仓对象需要指定symbol')
+            if store_config is None:
+                var = VariableTools()
+                store_config = var.store_configs[symbol]
+            store = store_type(
+                store_config=store_config,
+                tickets=tickets,
+                quote_csv=quote_csv,
+                quote_length=quote_length,
+                db=db,
+            )
+            mocks = [
+                sleep_mock(store.sleep_mock),
+                now_mock(store.now_mock),
+                quote_mock(store.quote_mock),
+                market_status_mock(store.market_status_mock),
+                cancel_order_mock(store.cancel_fake_order),
+                submit_order_mock(store.create_fake_order),
+                refresh_order_mock(store.refresh_fake_order),
+                chip_count_mock(store.current_chip_mock),
+                cash_amount_mock(lambda cls: cash_amount),
+                file_read_mock(store.read_file_mock),
+                file_write_mock(store.write_file_mock),
+                margin_mock(lambda cls: margin_amount),
+            ]
+            if broker_currency:
+                mocks.append(
+                    broker_cash_currency_mock(lambda c: broker_currency),
+                )
+            else:
+                mocks.append(
+                    broker_cash_currency_mock(store.broker_cash_currency_mock),
+                )
+            store.mocks = mocks
+        elif tickets:
+            store.reset_tickets(tickets)
+
+        if show_plan_table:
+            store_config = store.store_config
+            plan = Plan.new_plan(store_config)
+            plan.base_price = 10.0
+            store.state.plan = plan
+            table = SimulationStore.build_table(store_config=store_config, plan=plan)
+            for row in table:
+                row: ProfitRow = row
+                print(f'表格项: {row} totalRate:{row.total_rate}')
+
+        if auto_run:
+            with store:
+                store.run(output_state=output_state)
+        return store
+
+    @classmethod
+    def from_symbol(
+        cls,
+        symbol: str,
+        tickets: list[Ticket],
+        store_config: StoreConfig = None,
+        auto_run: bool = True,
+        output_state: bool = True,
+        store_type: Type[SimulationStore] = SimulationStore,
+        db: LocalDb = None,
+    ):
+        """
+        直接读取配置文件中的持仓设定来运行测试, 即不会临时改动持仓配置的细节而运行
+        """
+        return cls._build(
+            symbol=symbol,
             tickets=tickets,
-            quote_csv=quote_csv,
-            quote_length=quote_length,
+            store_config=store_config,
+            auto_run=auto_run,
+            output_state=output_state,
+            store_type=store_type,
             db=db,
         )
-        mocks = [
-            sleep_mock(store.sleep_mock),
-            now_mock(store.now_mock),
-            quote_mock(store.quote_mock),
-            market_status_mock(store.market_status_mock),
-            cancel_order_mock(store.cancel_fake_order),
-            submit_order_mock(store.create_fake_order),
-            refresh_order_mock(store.refresh_fake_order),
-            chip_count_mock(store.current_chip_mock),
-            cash_amount_mock(lambda cls: cash_amount),
-            file_read_mock(store.read_file_mock),
-            file_write_mock(store.write_file_mock),
-            margin_mock(lambda cls: margin_amount),
-        ]
-        if broker_currency:
-            mocks.append(
-                broker_cash_currency_mock(lambda c: broker_currency),
-            )
-        else:
-            mocks.append(
-                broker_cash_currency_mock(store.broker_cash_currency_mock),
-            )
-        store.mocks = mocks
-    elif tickets:
-        store.reset_tickets(tickets)
 
-    if show_plan_table:
-        store_config = store.store_config
-        plan = Plan.new_plan(store_config)
-        plan.base_price = 10.0
-        store.state.plan = plan
-        table = SimulationStore.build_table(store_config=store_config, plan=plan)
-        for row in table:
-            row: ProfitRow = row
-            print(f'表格项: {row} totalRate:{row.total_rate}')
+    @classmethod
+    def from_symbol_csv(
+        cls,
+        symbol: str,
+        quote_csv: str,
+        quote_length: int,
+        store_config: StoreConfig = None,
+        auto_run: bool = True,
+        output_state: bool = True,
+        store_type: Type[SimulationStore] = SimulationStore,
+        db: LocalDb = None,
+    ):
+        """
+        直接读取配置文件中的持仓设定来运行测试, 但是使用 csv 行情源
+        """
+        return cls._build(
+            symbol=symbol,
+            quote_csv=quote_csv,
+            quote_length=quote_length,
+            store_config=store_config,
+            auto_run=auto_run,
+            output_state=output_state,
+            store_type=store_type,
+            db=db,
+        )
 
-    if auto_run:
-        with store:
-            store.run(output_state=output_state)
-    return store
+    @classmethod
+    def from_config(
+        cls,
+        store_config: StoreConfig,
+        tickets: list[Ticket],
+        auto_run: bool = True,
+        output_state: bool = True,
+        store_type: Type[SimulationStore] = SimulationStore,
+        db: LocalDb = None,
+        broker_currency: str = None,
+        cash_amount: float = 10_000_000.0,
+        margin_amount: float = 0.0,
+    ):
+        """
+        使用特定的持仓配置对象运行持仓
+        """
+        return cls._build(
+            store_config=store_config,
+            tickets=tickets,
+            auto_run=auto_run,
+            output_state=output_state,
+            store_type=store_type,
+            db=db,
+            broker_currency=broker_currency,
+            cash_amount=cash_amount,
+            margin_amount=margin_amount,
+        )
+
+    @classmethod
+    def resume(
+        cls,
+        store: SimulationStore,
+        tickets: list[Ticket],
+        auto_run: bool = True,
+        output_state: bool = True,
+        db: LocalDb = None,
+    ):
+        """
+        对已经创建的模拟持仓对象, 按照新的数据源继续执行
+        """
+        return cls._build(
+            store=store,
+            tickets=tickets,
+            auto_run=auto_run,
+            output_state=output_state,
+            db=db,
+        )
 
 
 __all__ = [
@@ -336,11 +437,10 @@ __all__ = [
     'file_read_mock',
     'file_write_mock',
     'SimulationStore',
-    'start_simulation',
     'generate_quote',
     'generate_from_tickets',
     'FakeQuote',
     'Ticket',
-    'start_simulation',
     'SimulationStore',
+    'SimulationBuilder',
 ]

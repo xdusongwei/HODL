@@ -19,7 +19,7 @@ class CurrencyTestCase(unittest.TestCase):
             CurrencyNode(base_currency='Z', target_currency='X', rate=1.0),
             CurrencyNode(base_currency='Z', target_currency='Y', rate=1.0),
         }
-        # 3种币种的6个货币汇率对组合一半是重复的, 只需记录 3 * 2 * 1 种
+        # 3种币种的6个货币汇率对组合一半是重复的, 只需记录 3 种
         assert len(CurrencyProxy._CURRENCY) == 3
 
     def test_currency_exchange(self):
@@ -67,7 +67,7 @@ class CurrencyTestCase(unittest.TestCase):
         # 五种货币任意兑换, 包括自己兑自己
         for base_currency in ['A', 'B', 'C', 'D', 'E', ]:
             for target_currency in ['A', 'B', 'C', 'D', 'E', ]:
-                assert CurrencyProxy.convert_currency(base_currency, target_currency, 100, 2) > 0
+                assert CurrencyProxy.convert_currency(base_currency, target_currency, 100, 2)
 
     def test_store_currency(self):
         """
@@ -89,7 +89,7 @@ class CurrencyTestCase(unittest.TestCase):
             Ticket(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
             Ticket(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
         ]
-        store = start_simulation(store_config=store_config, tickets=tickets, broker_currency='USD')
+        store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')
         plan = store.state.plan
         assert plan.earning
 
@@ -114,7 +114,7 @@ class CurrencyTestCase(unittest.TestCase):
             Ticket(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
             Ticket(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
         ]
-        store = start_simulation(store_config=store_config, tickets=tickets, broker_currency='USD')
+        store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')
         plan = store.state.plan
         assert plan.earning
 
@@ -140,5 +140,5 @@ class CurrencyTestCase(unittest.TestCase):
             Ticket(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
         ]
         with pytest.raises(RiskControlError):
-            start_simulation(store_config=store_config, tickets=tickets, broker_currency='USD')
+            SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')
     

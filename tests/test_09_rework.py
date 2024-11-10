@@ -18,7 +18,7 @@ class ReworkTestCase(unittest.TestCase):
             Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
             Ticket(day='23-04-10T09:34:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
         ]
-        store = start_simulation(store_config=config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         _, _, plan = store.args()
         assert plan.earning
         assert plan.rework_price == p3
