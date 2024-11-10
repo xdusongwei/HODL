@@ -61,14 +61,10 @@ requires = ["pdm-pep517"]
 build-backend = "pdm.pep517.api"
 
 [tool.pdm.scripts]
-bot = {cmd = "pdm run python -m hodl.cli.trade_bot"}
-tui = {cmd = "pdm run python -m hodl.cli.tui"}
-test = {cmd = "pdm run coverage run --source=./hodl -m pytest --disable-pytest-warnings tests"}
-html = {cmd = "pdm run coverage html"}
-report = {cmd = "pdm run coverage report"}
-xml = {cmd = "pdm run coverage xml"}
-fixtools = {cmd = "pdm run python -m hodl.cli.fix_tools"}
-shootoff = {cmd = "pdm run python -m hodl.cli.shoot_off"}
-earninglink = {cmd = "pdm run python -m hodl.cli.earning_link"}
-refreshearnings = {cmd = "pdm run python -m hodl.cli.refresh_earnings"}
-cashdividend = {cmd = "pdm run python -m hodl.cli.cash_dividend"}
+bot = {cmd = "python -m hodl.cli.trade_bot"}
+tui = {cmd = "python -m hodl.cli.tui"}
+test = {cmd = "coverage run --source=./hodl -m pytest --disable-pytest-warnings tests"}
+html = {cmd = "coverage html"}
+report = {cmd = "coverage report"}
+xml = {cmd = "coverage xml"}
+fixtools = {cmd = "python -m hodl.cli.fix_tools"}
