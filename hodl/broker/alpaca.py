@@ -47,7 +47,12 @@ class AlpacaApi(BrokerApiBase):
             us_clock = self.trading_client.get_clock()
         is_open = us_clock.is_open
         k = 'US'
-        v = 'TRADING' if is_open else 'UNAVAILABLE'
+        if is_open:
+            v = 'TRADING'
+        elif us_clock.timestamp.date() == us_clock.next_open.date():
+            v = 'NOT_YET_OPEN'
+        else:
+            v = 'CLOSING'
         result.append(
             BrokerTradeType.STOCK,
             [
