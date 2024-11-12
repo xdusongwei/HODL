@@ -165,8 +165,9 @@ class OkxRestApi(BrokerApiBase):
                 reason = title
                 break
         k = 'US'
-        v = f'UNAVAILABLE: {reason}' if unavailable else 'TRADING'
-        result.append(BrokerTradeType.CRYPTO, [MarketStatusResult(region=k, status=v)])
+        display = f'UNAVAILABLE: {reason}' if unavailable else self.MS_TRADING
+        status = self.MS_CLOSED if unavailable else self.MS_TRADING
+        result.append(BrokerTradeType.CRYPTO, [MarketStatusResult(region=k, status=status, display=display)])
         return result
 
     @track_api

@@ -137,34 +137,10 @@ class BrokerApiBase(BrokerApiMixin):
     """
     CASH_CURRENCY = 'USD'
 
-    # 该转换表用于将各通道的地区格式进行转换, 不在此表中的地区将被忽略
-    MS_REGION_TABLE = {
-        # futu region
-        'market_sh': 'CN',
-        'market_hk': 'HK',
-        'market_us': 'US',
-        # tiger region
-        'CN': 'CN',
-        'HK': 'HK',
-        'US': 'US',
-    }
-
-    # 该转换表用于将各通道的市场状态值进行转换, 不在此表中的状态值将保留
-    MS_STATUS_TABLE = {
-        # futu status
-        'CLOSED': 'CLOSING',
-        'AFTER_HOURS_END': 'CLOSING',
-        'MORNING': 'TRADING',
-        'AFTERNOON': 'TRADING',
-        # 如果不映射盘后时段, 盘后时间段不会更新订单信息, 这段时间即不会用来记录lsod当日的有效检查
-        'AFTER_HOURS_BEGIN': 'POST_HOUR_TRADING',
-        # tiger status
-        'EARLY_CLOSED': 'CLOSING',
-        'MARKET_CLOSED': 'CLOSING',
-        # longport status
-        'Normal': 'TRADING',
-        'Post': 'POST_HOUR_TRADING',
-    }
+    # 市场盘后、当日收盘的状态
+    MS_CLOSED = 'CLOSING'
+    # 市场交易中的状态
+    MS_TRADING = 'TRADING'
 
     @classmethod
     def all_brokers_type(cls) -> list[Type['BrokerApiBase']]:

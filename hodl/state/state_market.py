@@ -3,10 +3,11 @@ from hodl.tools import *
 
 
 class MarketStatusResult(dict):
-    def __init__(self, region: str, status: str):
+    def __init__(self, region: str, status: str, display: str = None):
         super().__init__()
         self['region'] = region
         self['status'] = status
+        self['display'] = display or status
 
     @property
     def region(self) -> str:

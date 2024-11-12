@@ -148,7 +148,7 @@ def generate_quote(csv_path, coin=None, limit: int = 0):
             s = 0
             for _ in range(5):
                 time = date + t + timedelta(seconds=s)
-                seq.append(_build_item(time, p, 'POST_HOUR_TRADING', open=o, pre_close=pre_close))
+                seq.append(_build_item(time, p, 'CLOSING', open=o, pre_close=pre_close))
                 s += 1
             for _ in range(5):
                 time = date + t + timedelta(seconds=s)

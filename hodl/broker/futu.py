@@ -78,6 +78,17 @@ class FutuApi(BrokerApiBase):
 
     @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
+        region_map = {
+            'market_sh': 'CN',
+            'market_hk': 'HK',
+            'market_us': 'US',
+        }
+        status_map = {
+            'CLOSED': self.MS_CLOSED,
+            'AFTER_HOURS_END': self.MS_CLOSED,
+            'MORNING': self.MS_TRADING,
+            'AFTERNOON': self.MS_TRADING,
+        }
         result = BrokerMarketStatusResult()
         client = self.quote_client
         with self.MARKET_STATUS_BUCKET:
@@ -85,11 +96,12 @@ class FutuApi(BrokerApiBase):
         if ret == RET_OK:
             rl: list[MarketStatusResult] = list()
             for k, v in data.items():
-                if k not in self.MS_REGION_TABLE:
+                if k not in region_map:
                     continue
-                region = self.MS_REGION_TABLE[k]
-                status = v
-                rl.append(MarketStatusResult(region=region, status=status))
+                region = region_map[k]
+                status = status_map.get(v, v)
+                display = v
+                rl.append(MarketStatusResult(region=region, status=status, display=display))
 
             result.append(BrokerTradeType.STOCK, rl)
             return result

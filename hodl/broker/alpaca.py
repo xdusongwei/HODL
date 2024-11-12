@@ -48,11 +48,11 @@ class AlpacaApi(BrokerApiBase):
         is_open = us_clock.is_open
         k = 'US'
         if is_open:
-            v = 'TRADING'
+            v = self.MS_TRADING
         elif us_clock.timestamp.date() == us_clock.next_open.date():
             v = 'NOT_YET_OPEN'
         else:
-            v = 'CLOSING'
+            v = self.MS_CLOSED
         result.append(
             BrokerTradeType.STOCK,
             [
@@ -62,7 +62,7 @@ class AlpacaApi(BrokerApiBase):
         result.append(
             BrokerTradeType.CRYPTO,
             [
-                MarketStatusResult(region=k, status='TRADING'),
+                MarketStatusResult(region=k, status=self.MS_TRADING),
             ]
         )
         return result

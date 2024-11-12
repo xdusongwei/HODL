@@ -79,9 +79,7 @@ class MarketStatusProxy:
                 for msr in market_status_dict.get(type(broker), dict()).get(meta.trade_type.value, list()):
                     msr: MarketStatusResult = msr
                     if msr.region == store_config.region:
-                        status = msr.status
-                        status = BrokerApiBase.MS_STATUS_TABLE.get(status, status)
-                        ms = status
+                        ms = msr.status
                 if ms:
                     return broker.BROKER_NAME, broker.BROKER_DISPLAY, ms
         else:

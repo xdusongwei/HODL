@@ -131,17 +131,28 @@ class TigerApi(BrokerApiBase):
 
     @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
+        region_map = {
+            'CN': 'CN',
+            'HK': 'HK',
+            'US': 'US',
+        }
+        status_map = {
+            'AFTER_HOURS_BEGIN': self.MS_CLOSED,
+            'EARLY_CLOSED': self.MS_CLOSED,
+            'MARKET_CLOSED': self.MS_CLOSED,
+        }
         result = BrokerMarketStatusResult()
         client = self.quote_client
         with self.MARKET_STATUS_BUCKET:
             market_status_list: list[MarketStatus] = client.get_market_status(Market.ALL)
         rl = [
             MarketStatusResult(
-                region=self.MS_REGION_TABLE[ms.market],
-                status=ms.trading_status,
+                region=region_map[ms.market],
+                status=status_map.get(ms.trading_status, ms.trading_status),
+                display=ms.trading_status,
             )
             for ms in market_status_list
-            if ms.market in self.MS_REGION_TABLE
+            if ms.market in region_map
         ]
         result.append(BrokerTradeType.STOCK, rl)
         return result

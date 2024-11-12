@@ -450,7 +450,6 @@ class Store(QuoteMixin, TradeMixin, BasePriceMixin, SleepMixin, FactorMixin):
                         self.prepare_market_status()
                         if self.state.market_status in {
                             'TRADING',
-                            'POST_HOUR_TRADING',
                             'CLOSING',
                         }:
                             self.refresh_orders()

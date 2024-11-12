@@ -185,6 +185,10 @@ class LongPortApi(BrokerApiBase):
     def fetch_market_status(self) -> BrokerMarketStatusResult:
         # 尽量不要使用长桥证券提供的市场状态接口, 它返回的交易时段似乎不是动态的, 节假日仍提供交易时段.
         # 有可能当全市场临时休市的信息该证券平台不会正确提供.
+        status_map = {
+            'Normal': self.MS_TRADING,
+            'Post': self.MS_CLOSED,
+        }
         result = BrokerMarketStatusResult()
         rl: list[MarketStatusResult] = list()
         ctx = self.quote_client
@@ -198,7 +202,7 @@ class LongPortApi(BrokerApiBase):
                 region = str(market).replace('Market.', '')
                 tz = TimeTools.region_to_tz(region)
                 now = TimeTools.us_time_now(tz)
-                ts = 'CLOSING'
+                ts = self.MS_CLOSED
                 for session in sessions:
                     begin_time = TimeTools.from_params(
                         year=now.year,
@@ -220,7 +224,9 @@ class LongPortApi(BrokerApiBase):
                     )
                     if begin_time <= now < end_time:
                         ts = str(session.trade_session).replace('TradeSession.', '')
-                rl.append(MarketStatusResult(region=region, status=ts))
+                status = status_map.get(ts, self.MS_CLOSED)
+                display = ts
+                rl.append(MarketStatusResult(region=region, status=status, display=display))
             result.append(BrokerTradeType.STOCK, rl)
             return result
         except Exception as e:
