@@ -5,6 +5,7 @@ from textual.binding import Binding
 from hodl.tools import *
 from hodl.cli.fix_screens.order_link import *
 from hodl.cli.fix_screens.store_config_detail import *
+from hodl.cli.fix_screens.earning_link import *
 
 
 class IndexScreen(Screen):
@@ -13,8 +14,6 @@ class IndexScreen(Screen):
         menu = ListView(
             ListItem(Label("1.补录订单信息", classes='indexLabel'), id='indexMenuOrderLink'),
             ListItem(Label("2.补录收益信息", classes='indexLabel'), id='indexMenuEarningLink'),
-            ListItem(Label("3.刷新收益json文件", classes='indexLabel'), id='indexMenuRefreshEarnings'),
-            ListItem(Label("4.弹射持仓", classes='indexLabel'), id='indexMenuShootOff'),
             ListItem(Label("0.查看持仓设定", classes='indexLabel'), id='indexMenuStoreConfig'),
             initial_index=None,
             classes='indexListView',
@@ -30,6 +29,8 @@ class IndexScreen(Screen):
                     self.app.push_screen(OrderLinkScreen())
                 case 'indexMenuStoreConfig':
                     self.app.push_screen(StoreConfigIndexScreen())
+                case 'indexMenuEarningLink':
+                    self.app.push_screen(EarningLinkScreen())
                 case _:
                     pass
 
