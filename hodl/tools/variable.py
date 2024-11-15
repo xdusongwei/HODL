@@ -290,11 +290,11 @@ class VariableTools:
         return self._config.get('html_total_earning_currency', ['USD', 'CNY', 'HKD', ])
 
     @property
-    def html_asserts_currency(self) -> list[str]:
+    def html_assets_currency(self) -> list[str]:
         """
         网页文件中当前资产汇总部分的币种选择, 默认为 美元\人民币\港币 三种
         """
-        return self._config.get('html_asserts_currency', ['USD', 'CNY', 'HKD', ])
+        return self._config.get('html_assets_currency', ['USD', 'CNY', 'HKD', ])
 
     @property
     def broker_icon_path(self) -> str | None:

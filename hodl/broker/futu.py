@@ -3,6 +3,7 @@
 https://openapi.futunn.com/futu-api-doc/
 """
 import re
+from datetime import datetime
 from futu import *
 from hodl.broker.base import *
 from hodl.quote import *
@@ -123,35 +124,48 @@ class FutuApi(BrokerApiBase):
     @classmethod
     def to_tz(cls, symbol: str) -> str:
         if re.match(r'^[56]\d{5}$', symbol):
-            tz_offset = '+08:00'
+            return TimeTools.region_to_tz('CN')
         elif re.match(r'^[013]\d{5}$', symbol):
-            tz_offset = '+08:00'
+            return TimeTools.region_to_tz('CN')
         elif re.match(r'^\d{5}$', symbol):
-            tz_offset = '+08:00'
+            return TimeTools.region_to_tz('HK')
+        elif re.match(r'^[A-Z]+$', symbol):
+            return TimeTools.region_to_tz('US')
         else:
             raise PrepareError(f'不能转换{symbol}为任何富途证券的时区信息')
-        return tz_offset
 
     @track_api
     def fetch_quote(self) -> Quote:
         symbol = self.symbol
         client = self.quote_client
         with self.SNAPSHOT_BUCKET:
-            tz_offset = self.to_tz(symbol)
+            tz = self.to_tz(symbol)
             futu_symbol = self.to_futu_symbol(symbol)
             ret, data = client.get_market_snapshot([futu_symbol, ])
         if ret == RET_OK:
             table = FormatTool.dataframe_to_list(data)
             for d in table:
+                """
+                格式：yyyy-MM-dd HH:mm:ss
+                港股和 A 股市场默认是北京时间，美股市场默认是美东时间
+                """
                 update_time: str = d['update_time']
-                update_time = f"{update_time.replace(' ', 'T')}{tz_offset}"
-                date = datetime.fromisoformat(update_time)
+                update_dt = datetime.strptime(update_time, '%Y-%m-%d %H:%M:%S')
+                update_dt = TimeTools.from_params(
+                    year=update_dt.year,
+                    month=update_dt.month,
+                    day=update_dt.day,
+                    hour=update_dt.hour,
+                    minute=update_dt.minute,
+                    second=update_dt.second,
+                    tz=tz,
+                )
                 return Quote(
                     symbol=self.symbol,
                     open=d['open_price'],
                     pre_close=d['prev_close_price'],
                     latest_price=d['last_price'],
-                    time=date,
+                    time=update_dt,
                     status=d['sec_status'],
                     day_low=d['low_price'],
                     day_high=d['high_price'],

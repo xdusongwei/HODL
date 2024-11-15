@@ -136,7 +136,7 @@ class HtmlWriterThread(ThreadMixin):
     def write_html(self):
         variable = self.variable
         total_earning_currency = variable.html_total_earning_currency
-        html_asserts_currency = variable.html_asserts_currency
+        html_asserts_currency = variable.html_assets_currency
         new_hash = self.current_hash
         new_time = self._new_time()
         try:
