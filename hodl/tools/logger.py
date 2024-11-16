@@ -39,6 +39,10 @@ class LoggerWrapper:
 
 
 class Logger:
+    """
+    提供滚动日志生成的能力
+    另外可以控制生成 json 格式的日志文件, 以便日志收集系统采集结构化日志
+    """
     def __init__(
             self,
             logger_name,

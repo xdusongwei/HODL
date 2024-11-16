@@ -82,12 +82,12 @@ class CurrencyTestCase(unittest.TestCase):
         p_sell = pc * 1.03
         p_buy = pc * 1.0
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-11T09:31:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
-            Ticket(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
-            Ticket(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-11T09:31:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
+            Tick(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
+            Tick(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
         ]
         store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')
         plan = store.state.plan
@@ -107,12 +107,12 @@ class CurrencyTestCase(unittest.TestCase):
         p_sell = pc * 1.03
         p_buy = pc * 1.0
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-11T09:31:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
-            Ticket(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
-            Ticket(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-11T09:31:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
+            Tick(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
+            Tick(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
         ]
         store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')
         plan = store.state.plan
@@ -132,12 +132,12 @@ class CurrencyTestCase(unittest.TestCase):
         p_sell = pc * 1.03
         p_buy = pc * 1.0
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-11T09:31:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
-            Ticket(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
-            Ticket(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-11T09:31:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
+            Tick(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
+            Tick(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
         ]
         with pytest.raises(RiskControlError):
             SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')

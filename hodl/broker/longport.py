@@ -74,7 +74,7 @@ class TokenKeeper:
             LocateTools.write_file(self.token_file, text)
 
 
-@register_broker
+@broker_api
 class LongPortApi(BrokerApiBase):
     BROKER_NAME = 'longport'
     BROKER_DISPLAY = '长桥证券'

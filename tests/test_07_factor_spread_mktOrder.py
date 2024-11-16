@@ -14,9 +14,9 @@ class OrderTestCase(unittest.TestCase):
         p_sell = FormatTool.adjust_precision(pc * 1.03 * (1 + config.market_price_rate) + 0.02, 2)
         p_buy = FormatTool.adjust_precision(pc * 1.00 * (1 - config.market_price_rate) - 0.02, 2)
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
         ]
         store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
@@ -35,8 +35,8 @@ class OrderTestCase(unittest.TestCase):
         pc = 10.0
         p_sell = FormatTool.adjust_precision(pc * 1.03 * (1 + config.market_price_rate) + 0.02, 2)
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
         ]
         store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
@@ -49,13 +49,13 @@ class OrderTestCase(unittest.TestCase):
         # 修改订单的成交价格为等于保护限价, 继续运行不会有异常
         sell_order.avg_price = sell_order.protect_price
         tickets = [
-            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
         ]
         store = SimulationBuilder.resume(store=store, tickets=tickets)
         # 修改订单的成交价格为低于保护限价, 继续运行触发风控异常
         sell_order.avg_price = FormatTool.adjust_precision(sell_order.protect_price - 0.01, 2)
         tickets = [
-            Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
         ]
         with pytest.raises(RiskControlError):
             SimulationBuilder.resume(store=store, tickets=tickets)
@@ -68,9 +68,9 @@ class OrderTestCase(unittest.TestCase):
         pc = 10.0
         p_sell = pc * 1.015
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
         ]
         store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
@@ -91,9 +91,9 @@ class OrderTestCase(unittest.TestCase):
         p_sell = pc * 1.03 + 0.03
         p_buy = pc - 0.04
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
         ]
         store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
@@ -114,9 +114,9 @@ class OrderTestCase(unittest.TestCase):
         p_sell = pc * 1.03 * (1 + 0.003)
         p_buy = pc * (1 - 0.004)
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
         ]
         store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state
@@ -139,10 +139,10 @@ class OrderTestCase(unittest.TestCase):
         p10 = pc * 1.1
         p20 = pc * 1.2
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p10, ),
-            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p20, ),
-            Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p10, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pc, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p10, ),
+            Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p20, ),
+            Tick(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p10, ),
         ]
         store = SimulationBuilder.from_config(store_config=config, tickets=tickets)
         state = store.state

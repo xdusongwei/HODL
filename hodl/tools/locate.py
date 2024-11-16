@@ -4,6 +4,10 @@ import sys
 
 
 class LocateTools:
+    """
+    文件系统定位工具
+    帮助在 $PATH, IDE 和 $PYTHONPATH 等位置中搜索需要的文件和目录
+    """
     ENVIRONMENT_KEY_PYTHON_PATH = 'PYTHONPATH'
     ENVIRONMENT_KEY_IDE_ROOTS = 'IDE_PROJECT_ROOTS'
 

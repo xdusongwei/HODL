@@ -223,7 +223,7 @@ class StoreConfigScreen(Screen):
                     )
                     yield FormItem(
                         'base_price_using_broker',
-                        Checkbox('', config.base_price_using_broker, disabled=True),
+                        Checkbox('', config.base_price_isolated, disabled=True),
                         desc='是否只使用单独的买回参考价格',
                     )
                     yield FormItem(

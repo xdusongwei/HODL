@@ -17,6 +17,11 @@ class BarElementDesc:
 
 
 class ThreadMixin:
+    """
+    所有线程(包括 MainThread)级对象的基类
+    这样可以在网页中观察到所有相关线程的存活
+    查找特定 tag 的线程, 以及类似 erlang 机制强制 MFA 调用对象方法.
+    """
     _THREADS: set['ThreadMixin'] = set()
 
     @classmethod

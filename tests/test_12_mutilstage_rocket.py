@@ -21,14 +21,14 @@ class MultistageRocketTestCase(unittest.TestCase):
         p_sell = pc * 1.27
         p_buy = pc * 1.14
         tickets = [
-            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:01-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:02-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:03-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:04-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:05-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-10T09:32:06-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
-            Ticket(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:01-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:02-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:03-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:04-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:05-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-10T09:32:06-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
+            Tick(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
         ]
         store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets)
         plan = store.state.plan
@@ -46,14 +46,14 @@ class MultistageRocketTestCase(unittest.TestCase):
         p_sell_lv2 = pc_lv2 * 1.09
         p_buy_lv2 = pc_lv2 * 1.03
         tickets = [
-            Ticket(day='23-04-11T09:32:00-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=pc_lv2, ),
-            Ticket(day='23-04-11T09:32:00-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_sell_lv2, ),
-            Ticket(day='23-04-11T09:32:01-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_sell_lv2, ),
-            Ticket(day='23-04-11T09:32:02-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_sell_lv2, ),
-            Ticket(day='23-04-11T09:33:01-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
-            Ticket(day='23-04-11T09:33:02-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
-            Ticket(day='23-04-11T09:33:02-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
-            Ticket(day='23-04-11T20:00:00-04:00:00', ms='CLOSING', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
+            Tick(day='23-04-11T09:32:00-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=pc_lv2, ),
+            Tick(day='23-04-11T09:32:00-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_sell_lv2, ),
+            Tick(day='23-04-11T09:32:01-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_sell_lv2, ),
+            Tick(day='23-04-11T09:32:02-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_sell_lv2, ),
+            Tick(day='23-04-11T09:33:01-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
+            Tick(day='23-04-11T09:33:02-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
+            Tick(day='23-04-11T09:33:02-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
+            Tick(day='23-04-11T20:00:00-04:00:00', ms='CLOSING', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
         ]
         store = SimulationBuilder.resume(store=store, tickets=tickets)
         plan = store.state.plan
@@ -68,10 +68,10 @@ class MultistageRocketTestCase(unittest.TestCase):
             {'max_shares': 100_000, 'recover_price': 0.0, },
         ]
         tickets = [
-            Ticket(day='23-04-12T09:32:00-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
-            Ticket(day='23-04-12T09:32:01-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
-            Ticket(day='23-04-12T09:32:02-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
-            Ticket(day='23-04-12T09:32:02-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
+            Tick(day='23-04-12T09:32:00-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
+            Tick(day='23-04-12T09:32:01-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
+            Tick(day='23-04-12T09:32:02-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
+            Tick(day='23-04-12T09:32:02-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
         ]
         store = SimulationBuilder.resume(store=store, tickets=tickets)
         plan = store.state.plan

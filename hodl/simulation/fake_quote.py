@@ -36,7 +36,7 @@ def _build_item(
 
 
 @dataclass
-class Ticket:
+class Tick:
     day: str = field()
     pre_close: float = field()
     open: float = field()
@@ -64,7 +64,7 @@ class Ticket:
         )
 
 
-def generate_from_tickets(tickets: list[Ticket]):
+def generate_from_tickets(tickets: list[Tick]):
     for ticket in tickets:
         yield ticket.to_fake_quote()
 
@@ -162,5 +162,5 @@ __all__ = [
     'generate_quote',
     'generate_from_tickets',
     'FakeQuote',
-    'Ticket',
+    'Tick',
 ]

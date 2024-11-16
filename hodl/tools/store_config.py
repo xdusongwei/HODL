@@ -264,11 +264,11 @@ class StoreConfig(dict):
         return days
 
     @property
-    def base_price_using_broker(self) -> bool:
+    def base_price_isolated(self) -> bool:
         """
         查询上次买回价格时限制范围为指定交易通道的记录, 以使同品种标的的不同券商持仓不共享买回价
         """
-        return self.get('base_price_using_broker', False)
+        return self.get('base_price_isolated', False)
 
     @property
     def base_price_day_low(self) -> bool:
@@ -424,7 +424,7 @@ class StoreConfig(dict):
         -------
 
         """
-        return self.get('sleep_mode', True)
+        return self.get('sleep_mode', False)
 
     @property
     def factors(self) -> list[tuple[float, float, float,]] | None:
@@ -510,7 +510,7 @@ class StoreConfig(dict):
 
     @property
     def full_name(self) -> str:
-        return f'[{self.broker}][{self.region}]{self.symbol}({self.name})'
+        return f'{{{self.broker}}}[{self.region}]{self.symbol}({self.name})'
 
     @property
     def thread_name(self) -> str:

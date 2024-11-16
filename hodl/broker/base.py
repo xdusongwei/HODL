@@ -44,7 +44,7 @@ class BrokerApiMixin(abc.ABC):
     def place_order(self, order: Order):
         """
         根据订单参数完成下单，并将订单号填充进 Order.order_id 属性。
-        注意系统支持限价单和市价单，这两种下单种类必须都支持。
+        注意系统需要限价单和市价单能力，这两种下单种类必须都支持。
         """
         raise NotImplementedError
 
@@ -58,9 +58,9 @@ class BrokerApiMixin(abc.ABC):
         """
         根据订单号(Order.order_id)更新订单。
         将订单需要的信息使用 self.modify_order_fields 方法填充进来。
-        如果即方法引发了非项目定制的异常, 此次持仓循环将中止.
+        如果该方法引发了非项目定制的异常, 此次持仓循环将中止.
 
-        提示, 虽然众多券商提供了带有各种各自标准的订单状态分类, 接入会十分麻烦,
+        提示, 虽然券商提供了各自标准的订单状态分类, 导致接入会十分麻烦,
         这里有一些处理原则, 因为该方法主要集中在如何更新 Order 对象的:
         filled_qty: 最新已成交数量
         avg_fill_price: 最新的成交均价
@@ -68,9 +68,11 @@ class BrokerApiMixin(abc.ABC):
         reason: 如果订单有返回错误
 
         所以为了处理这些字段, 需要按顺序去分析每家券商的订单数据:
-        1. 把成交均价和已成交数量填充到指定字段, 无数据则填充 0
-        2. 订单是否进入券商定义的'已取消'状态, 如果是, 要填充 is_cancelled = True, 避免系统撤销不能执行撤销的订单
-        3. 如果命中了券商定义的各种订单状态的终结态,并且是消极的, 比如 '已过期', '已拒绝'. 再或者订单返回了人类可读的错误描述, 应该填充到 reason
+        1. 把成交均价和已成交数量填充到指定字段, 若字段无数据则填充 0
+        2. 订单是否进入券商定义的'已取消'状态, 如果是, 要填充 is_cancelled = True, 避免系统撤销了不能执行撤销的订单
+        3. 如果命中了券商定义的各种订单状态的终结态,并且是消极的,
+            比如 '已过期', '已拒绝', '部成撤单'. 再或者订单返回了人类可读的错误描述, 应该填充到 reason
+        4. 不要试图处理券商提供的'已完成', '已成交'等积极的终结状态
         剩下的状态由框架根据 Order 属性自己判断:
         如果 filled_qty 等于 qty, 自动判断订单'已完成'
         否则, 自动判断订单'待成交'
@@ -99,7 +101,7 @@ class BrokerApiMixin(abc.ABC):
     def on_init(self):
         """
         每当创建了一个持仓对象后，此方法会被调用。
-        这里的场景多用于执行券商的交易操作的初始化动作，比如正式使用前必须创建交易对象；
+        这里的场景多用于执行券商的交易操作的初始化动作，比如正式使用前必须创建SDK的交易对象；
         而BrokerApiBase.__post_init__多用于构建券商通道对象的成员变量。
         这两者不能混淆，如果初始化工作部分是持仓交易相关的, 应使用on_init, 每个持仓线程启动后会执行一次;
         如果初始化工作有关行情、市场状态, 因为它们可能因为配置上的原因, 和持仓线程并不是耦合的, 应使用__post_init__。
@@ -119,7 +121,7 @@ class BrokerApiBase(BrokerApiMixin):
     注意：
     有些持仓的broker联通方面可能需要其他的维护动作，例如券商通道服务不是24小时随时可用，如果在broker对应的券商系统并未准备好的情况下，
     启动了本系统，该持仓的联通性检查必然失败，导致持仓线程自杀；
-    反而需要等到券商通道可用时，本系统进程方可开始启动, 搞得事情很复杂，所以不需要启用这种检查。
+    反而需要等到券商通道可用时，本系统进程方可开始启动, 搞得事情很复杂，所以针对这类券商通道则不需要启用这种检查。
     另外的，对于这类broker，建议完善 detect_plug_in 方法，使得在持仓线程循环里提前ping一下broker系统，
     如果不可用时不影响持仓线程存活，而是中止此次循环。
     """
@@ -152,6 +154,7 @@ class BrokerApiBase(BrokerApiMixin):
         if broker_type in BrokerApiBase._ALL_BROKER_TYPES:
             return
         BrokerApiBase._ALL_BROKER_TYPES.append(broker_type)
+        BrokerApiBase._ALL_BROKER_TYPES.sort(key=lambda t: t.BROKER_NAME)
 
     @classmethod
     def query_broker_config(cls) -> dict:
@@ -363,6 +366,10 @@ class _TrackApi:
 
 
 def track_api(func):
+    """
+    用于统计方法调用情况的装饰器,
+    记录发生时间, 类名, 方法名. 耗时, 是否产生异常
+    """
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         api_type = type(self)
@@ -392,7 +399,24 @@ def track_api(func):
     return wrapper
 
 
-def register_broker(cls: Type[BrokerApiBase]):
+def broker_api(cls: Type[BrokerApiBase]):
+    """
+    用于标记所有种类的券商接口类的装饰器,
+    功能类似 C# 的 Attribute, 记录相关的类型.
+    这样可以自定义任何新的券商接口比如:
+
+    @broker_api
+    class CustomBrokerApi(BrokerApiBase):
+        def __post_init__(self):
+            self.quote_client = BrokerSdkQuoteApi()
+
+        def on_init(self):
+            self.trade_client = BrokerSdkTradeApi()
+
+        @track_api
+        def fetch_market_status(self) -> BrokerMarketStatusResult:
+            return BrokerMarketStatusResult()
+    """
     BrokerApiBase.register_broker_type(cls)
     return cls
 
@@ -435,7 +459,7 @@ __all__ = [
     'BrokerApiBase',
     'BrokerOrder',
     'track_api',
-    'register_broker',
+    'broker_api',
     'track_api_report',
     'sort_brokers',
 ]

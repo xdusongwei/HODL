@@ -79,7 +79,7 @@ class BasePriceMixin(StoreBase, ABC):
         if db and store_config.base_price_last_buy:
             con = db.conn
             days = store_config.base_price_last_buy_days
-            if store_config.base_price_using_broker:
+            if store_config.base_price_isolated:
                 earning_row = EarningRow.latest_earning_by_symbol_broker(
                     con=con,
                     broker=store_config.broker,

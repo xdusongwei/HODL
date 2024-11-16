@@ -20,6 +20,9 @@ class FormatTool:
 
     @classmethod
     def adjust_precision(cls, f: float, precision: int) -> float:
+        """
+        根据小数精度重新格式化浮点数
+        """
         d = cls._precision(precision=precision)
         f = float(Decimal(f).quantize(d))
         return f
@@ -58,11 +61,17 @@ class FormatTool:
 
     @classmethod
     def currency_to_unit(cls, currency: str) -> str:
+        """
+        根据币种转换为货币符号
+        """
         unit = CurrencySymbols.get_symbol(currency) or '$'
         return unit
 
     @classmethod
     def number_to_size(cls, number: int) -> str:
+        """
+        将整数格式化为字节表示的字符串
+        """
         return humanize.naturalsize(number, binary=True, format="%.2f")
 
     @classmethod
@@ -90,6 +99,9 @@ class FormatTool:
 
     @classmethod
     def pretty_price(cls, v: None | int | float, config: StoreConfig, only_int=False):
+        """
+        根据持仓配置自动完成金额格式化
+        """
         return cls.pretty_usd(
             v=v,
             currency=config.currency,
@@ -99,6 +111,9 @@ class FormatTool:
 
     @classmethod
     def pretty_number(cls, v: None | int | float):
+        """
+        把数值格式化为千分位字符串
+        """
         return cls.pretty_usd(
             v=v,
             unit='',
@@ -164,6 +179,9 @@ class FormatTool:
 
     @classmethod
     def dataframe_to_list(cls, df) -> list[dict]:
+        """
+        把 DataFrame 对象转为列表, 不必到处在模块上 import pandas
+        """
         return df.to_dict(orient='records')
 
 

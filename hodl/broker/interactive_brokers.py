@@ -14,7 +14,7 @@ from hodl.tools import *
 from hodl.proxy import *
 
 
-@register_broker
+@broker_api
 class InteractiveBrokersApi(BrokerApiBase):
     BROKER_NAME = 'interactiveBrokers'
     BROKER_DISPLAY = '盈透证券'

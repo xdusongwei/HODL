@@ -10,8 +10,8 @@ class BasePriceTestCase(unittest.TestCase):
         p0 = pc
         p3 = pc * 1.03
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p0, ),
-            Ticket(day='23-04-10T09:30:01-04:00:00', pre_close=pc, open=pc, latest=p3, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p0, ),
+            Tick(day='23-04-10T09:30:01-04:00:00', pre_close=pc, open=pc, latest=p3, ),
         ]
         db = LocalDb(':memory:')
         store = SimulationBuilder.from_symbol('TEST', db=db, tickets=tickets)
@@ -28,12 +28,12 @@ class BasePriceTestCase(unittest.TestCase):
         p3 = pc * 1.03
         pn5 = pc * 0.95
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p0, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p3, ),
-            Ticket(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=pn5, ),
-            Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=pn5, ),
-            Ticket(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=pn5, ),
-            Ticket(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=pc, latest=pn5, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p0, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p3, ),
+            Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=pn5, ),
+            Tick(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=pn5, ),
+            Tick(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=pn5, ),
+            Tick(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=pc, latest=pn5, ),
         ]
         db = LocalDb(':memory:')
         store = SimulationBuilder.from_symbol('TEST', db=db, tickets=tickets)
@@ -44,8 +44,8 @@ class BasePriceTestCase(unittest.TestCase):
 
         # 第二天从跌5%价格恢复到0%的价格，完全可以根据上次买回价格为基准价格，触发新的卖出订单。
         tickets = [
-            Ticket(day='23-04-11T09:30:00-04:00:00', pre_close=pn5, open=pn5, latest=p0, ),
-            Ticket(day='23-04-11T09:31:00-04:00:00', pre_close=pn5, open=pn5, latest=p0, ),
+            Tick(day='23-04-11T09:30:00-04:00:00', pre_close=pn5, open=pn5, latest=p0, ),
+            Tick(day='23-04-11T09:31:00-04:00:00', pre_close=pn5, open=pn5, latest=p0, ),
         ]
         store = SimulationBuilder.resume(store=store, tickets=tickets)
         state = store.state
@@ -61,8 +61,8 @@ class BasePriceTestCase(unittest.TestCase):
         pn5 = pc * 0.95
 
         tickets = [
-            Ticket(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pn5, low=pn5, ),
-            Ticket(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p0, low=pn5, ),
+            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=pn5, low=pn5, ),
+            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p0, low=pn5, ),
         ]
         db = LocalDb(':memory:')
         store = SimulationBuilder.from_symbol('TEST', db=db, tickets=tickets)

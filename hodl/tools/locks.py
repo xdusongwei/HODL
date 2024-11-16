@@ -3,6 +3,10 @@ from filelock import FileLock
 
 
 class Filelock:
+    """
+    文件锁
+    帮助实现多进程互斥, 没有提供锁的路径则降级为 RLock 对象
+    """
     def __init__(self, lock_file: str = None):
         self.timeout = 30
         if lock_file is None:

@@ -9,7 +9,7 @@ from hodl.state import *
 from hodl.tools import *
 
 
-@register_broker
+@broker_api
 class AlpacaApi(BrokerApiBase):
     BROKER_NAME = 'alpaca'
     BROKER_DISPLAY = 'alpaca'

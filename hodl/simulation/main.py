@@ -86,7 +86,7 @@ class SimulationStore(Store):
             self,
             store_config: StoreConfig,
             quote_csv: str,
-            tickets: list[Ticket] = None,
+            tickets: list[Tick] = None,
             db: LocalDb = None,
             quote_length: int = 0,
     ):
@@ -105,7 +105,7 @@ class SimulationStore(Store):
         self.earning = 0.0
         self.times_per_level = defaultdict(int)
 
-    def reset_tickets(self, tickets: list[Ticket]):
+    def reset_tickets(self, tickets: list[Tick]):
         self.history_quote = generate_from_tickets(tickets)
 
     def cancel_fake_order(self, order: Order):
@@ -254,7 +254,7 @@ class SimulationBuilder:
     def _build(
         cls,
         symbol: str = None,
-        tickets: list[Ticket] = None,
+        tickets: list[Tick] = None,
         quote_csv: str = None,
         quote_length: int = 0,
         show_plan_table: bool = False,
@@ -329,7 +329,7 @@ class SimulationBuilder:
     def from_symbol(
         cls,
         symbol: str,
-        tickets: list[Ticket],
+        tickets: list[Tick],
         auto_run: bool = True,
         output_state: bool = True,
         store_type: Type[SimulationStore] = SimulationStore,
@@ -367,7 +367,7 @@ class SimulationBuilder:
     def from_config(
         cls,
         store_config: StoreConfig,
-        tickets: list[Ticket],
+        tickets: list[Tick],
         auto_run: bool = True,
         output_state: bool = True,
         store_type: Type[SimulationStore] = SimulationStore,
@@ -395,7 +395,7 @@ class SimulationBuilder:
     def resume(
         cls,
         store: SimulationStore,
-        tickets: list[Ticket],
+        tickets: list[Tick],
         auto_run: bool = True,
         output_state: bool = True,
     ):
@@ -426,7 +426,7 @@ __all__ = [
     'generate_quote',
     'generate_from_tickets',
     'FakeQuote',
-    'Ticket',
+    'Tick',
     'SimulationStore',
     'SimulationBuilder',
 ]

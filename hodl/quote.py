@@ -9,7 +9,7 @@ class Quote:
     pre_close: float
     latest_price: float
     time: datetime
-    status: str
+    status: str # 如果证券状态正常, 此字段填充 NORMAL, 停牌熔断等情形填充非 NORMAL 即可
     day_low: float = None
     day_high: float = None
     broker_name: str = '--'
