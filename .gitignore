@@ -28,9 +28,9 @@ tags
 .idea/
 bugsnag-sourcemaps*
 
-config*.toml
-debug*.py
-debug*.json
+/config*.toml
+/debug*.py
+/debug*.json
 debug/
 *egg-info/
 .coverage
