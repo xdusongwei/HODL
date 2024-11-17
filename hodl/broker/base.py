@@ -1,6 +1,7 @@
 from typing import Type
 import abc
 import time
+import random
 import functools
 import threading
 from collections import defaultdict
@@ -435,7 +436,7 @@ def sort_brokers(
     prefer_list.reverse()
 
     def _key(item: Type[BrokerApiBase]) -> tuple[int, str]:
-        rank = 0
+        rank = -random.randint(1, 1000)
         if item.BROKER_NAME in prefer_list:
             rank = prefer_list.index(item.BROKER_NAME) + 1
         return rank, item.BROKER_NAME,

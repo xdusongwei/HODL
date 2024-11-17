@@ -59,7 +59,6 @@ class StoreConfig(dict):
         """
         持仓使用的交易策略，可以是：
         hodl：默认，长期持有套利；
-        recycle：保本型拐点套利；
         """
         strategy = self.get('trade_strategy', 'hodl')
         match strategy:
@@ -503,6 +502,14 @@ class StoreConfig(dict):
         stages: list[dict] = self.get('multistage_rocket', list())
         result = [(item['max_shares'], item['recover_price'],) for item in stages]
         return result
+
+    @property
+    def prefer_quote_brokers(self) -> list[str]:
+        """
+        根据给定的broker类型顺序优先使用他们的市场报价
+        比如证券交易，优先使用A券商的行情数据，其次是B券商数据作为备用数据在A券商拉取失败时轮替
+        """
+        return self.get('prefer_quote_brokers', list())
 
     @property
     def stage(self) -> int:

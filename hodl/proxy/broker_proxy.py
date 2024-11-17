@@ -1,4 +1,3 @@
-import random
 from hodl.broker import *
 from hodl.state import *
 from hodl.exception_tools import *
@@ -88,7 +87,7 @@ class BrokerProxy:
         self.runtime_state = runtime_state
         self.store_config = store_config
         self.quote_brokers: list[BrokerApiBase] = list()
-        prefer_list = var.prefer_quote_brokers
+        prefer_list = store_config.prefer_quote_brokers or var.prefer_quote_brokers or list()
         broker_info = sort_brokers(var=var, prefer_list=prefer_list)
         brokers = [
             t(
@@ -99,7 +98,6 @@ class BrokerProxy:
             for t, d, m in broker_info
             if any(meta for meta in m if meta.quote_regions)
         ]
-        random.shuffle(brokers)
         self.quote_brokers = brokers
 
         self.trade_brokers = list()
