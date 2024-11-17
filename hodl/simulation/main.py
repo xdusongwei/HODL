@@ -12,7 +12,7 @@ from hodl.state import *
 from hodl.plan_calc import *
 from hodl.quote_mixin import *
 from hodl.tools import *
-from hodl.store import *
+from hodl.store_hodl import *
 from hodl.simulation.fake_quote import *
 
 
@@ -42,31 +42,31 @@ def market_status_mock(new_function):
 
 
 def refresh_order_mock(function):
-    return basic_mock(Store, '_get_order', side_effect=function)
+    return basic_mock(StoreHodl, '_get_order', side_effect=function)
 
 
 def cancel_order_mock(function):
-    return basic_mock(Store, '_cancel_order', side_effect=function)
+    return basic_mock(StoreHodl, '_cancel_order', side_effect=function)
 
 
 def submit_order_mock(function):
-    return basic_mock(Store, '_submit_order', side_effect=function)
+    return basic_mock(StoreHodl, '_submit_order', side_effect=function)
 
 
 def cash_amount_mock(function):
-    return basic_mock(Store, '_current_cash', side_effect=function)
+    return basic_mock(StoreHodl, '_current_cash', side_effect=function)
 
 
 def broker_cash_currency_mock(function):
-    return basic_mock(Store, 'broker_cash_currency', side_effect=function)
+    return basic_mock(StoreHodl, 'broker_cash_currency', side_effect=function)
 
 
 def chip_count_mock(function):
-    return basic_mock(Store, 'current_chip', side_effect=function)
+    return basic_mock(StoreHodl, 'current_chip', side_effect=function)
 
 
 def margin_mock(function):
-    return basic_mock(Store, 'margin_amount', side_effect=function)
+    return basic_mock(StoreHodl, 'margin_amount', side_effect=function)
 
 
 def file_read_mock(function):
@@ -77,7 +77,7 @@ def file_write_mock(function):
     return basic_mock(LocateTools, 'write_file', side_effect=function)
 
 
-class SimulationStore(Store):
+class SimulationStore(StoreHodl):
     ENABLE_LOG_ALIVE = False
     ENABLE_BROKER = False
     SHOW_EXCEPTION_DETAIL = True

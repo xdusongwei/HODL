@@ -113,8 +113,7 @@ class Manager(ThreadMixin):
         var = self.var
         store_configs = var.store_configs_by_group()
         if not store_configs:
-            print('没有任何持仓配置')
-            return
+            print('警告, 没有任何持仓配置')
 
         db = None
         if path := var.db_path:
@@ -132,7 +131,7 @@ class Manager(ThreadMixin):
                 )
         try:
             print('启动持仓线程')
-            stores = [Store(store_config=config, db=db) for config in store_configs.values()]
+            stores = [Store.factory(store_config=config, db=db) for config in store_configs.values()]
             for store in stores:
                 store.prepare()
             threads = [

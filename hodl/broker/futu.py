@@ -51,6 +51,7 @@ class FutuApi(BrokerApiBase):
             )
             trade_ctx.set_sync_query_connect_timeout(6.0)
             FutuApi.TRADE_CLIENT = trade_ctx
+        self.trd_env: str = config_dict.get('trade_env', TrdEnv.REAL) or TrdEnv.REAL
         self.trade_client = FutuApi.TRADE_CLIENT
 
     def __post_init__(self):
@@ -180,6 +181,7 @@ class FutuApi(BrokerApiBase):
         try:
             with self.ASSET_BUCKET:
                 resp, data = self.trade_client.accinfo_query(
+                    trd_env=self.trd_env,
                     refresh_cache=True,
                     currency=Currency.USD,
                 )
@@ -196,6 +198,7 @@ class FutuApi(BrokerApiBase):
         try:
             with self.POSITION_BUCKET:
                 resp, data = self.trade_client.position_list_query(
+                    trd_env=self.trd_env,
                     code=self.to_futu_symbol(symbol),
                     refresh_cache=True,
                 )
@@ -228,6 +231,7 @@ class FutuApi(BrokerApiBase):
                 order_type=OrderType.NORMAL if order.limit_price else OrderType.MARKET,
                 time_in_force=TimeInForce.DAY,
                 fill_outside_rth=False,
+                trd_env=self.trd_env,
             )
         if ret != RET_OK:
             raise Exception(f'富途证券下单失败: {data}')
@@ -246,6 +250,7 @@ class FutuApi(BrokerApiBase):
                 order_id=order.order_id,
                 qty=order.qty,
                 price=order.limit_price,
+                trd_env=self.trd_env,
             )
         if ret != RET_OK:
             raise Exception(f'富途证券撤单失败, 订单: {order}, 原因: {data}')
@@ -256,6 +261,7 @@ class FutuApi(BrokerApiBase):
             ret, data = self.trade_client.order_list_query(
                 order_id=order.order_id,
                 refresh_cache=True,
+                trd_env=self.trd_env,
             )
             if ret != RET_OK:
                 raise OrderRefreshError(f'富途证券刷新失败, 订单: {order}')

@@ -162,7 +162,7 @@ class StoreConfigScreen(Screen):
                 with TabPane("策略"):
                     yield FormItem(
                         'trade_strategy',
-                        Input(value=config.trade_strategy.name, disabled=True),
+                        Input(value=config.trade_strategy, disabled=True),
                         desc='交易策略',
                     )
                     yield FormItem(

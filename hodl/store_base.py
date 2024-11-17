@@ -1,6 +1,5 @@
 import os
 import threading
-import requests
 from hodl.exception_tools import *
 from hodl.risk_control import *
 from hodl.tools import *

@@ -1,11 +1,10 @@
 import os
-import enum
 import exchange_calendars
 
 
-class TradeStrategyEnum(enum.Enum):
+class TradeStrategyEnum:
     # 根据基准价格分价分量高价卖出, 当股价低于当前挡的买入价时买回卖出的部分, 以挣取差价
-    HODL = enum.auto()
+    HODL = 'hodl'
 
 
 class StoreConfig(dict):
@@ -55,7 +54,7 @@ class StoreConfig(dict):
         return self.get('currency', None)
 
     @property
-    def trade_strategy(self) -> TradeStrategyEnum:
+    def trade_strategy(self) -> str:
         """
         持仓使用的交易策略，可以是：
         hodl：默认，长期持有套利；
