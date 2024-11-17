@@ -43,7 +43,8 @@ class StoreBase(ThreadMixin):
         )
 
         try:
-            self.init_trade_service()
+            if self.ENABLE_BROKER:
+                self.init_trade_service()
         except Exception as e:
             self.logger.exception(e)
             self.exception = e
@@ -196,8 +197,6 @@ class StoreBase(ThreadMixin):
         return self.build_table(store_config=self.store_config, plan=self.state.plan)
 
     def init_trade_service(self):
-        if not self.ENABLE_BROKER:
-            return
         self.broker_proxy = BrokerProxy(
             runtime_state=self.runtime_state,
         )

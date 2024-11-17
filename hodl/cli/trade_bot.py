@@ -3,13 +3,14 @@ import platform
 from threading import Thread
 from hodl.bot import AlertBot
 from hodl.storage import *
-from hodl.store import Store
-from hodl.quote_mixin import QuoteMixin
+from hodl.store import *
+from hodl.quote_mixin import *
 from hodl.thread_mixin import *
 from hodl.broker.base import *
 from hodl.proxy import *
 from hodl.tools import *
 from hodl.exception_tools import *
+from hodl.store_hodl import *
 from hodl.cli.threads.market_status import *
 from hodl.cli.threads.ps_util import *
 from hodl.cli.threads.html_writer import *
