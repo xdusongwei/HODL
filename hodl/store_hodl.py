@@ -5,6 +5,7 @@ from hodl.risk_control import *
 from hodl.base_price_mixin import *
 from hodl.sleep_mixin import *
 from hodl.factor_mixin import *
+from hodl.ui_mixin import *
 from hodl.store import *
 from hodl.storage import *
 from hodl.exception_tools import *
@@ -12,7 +13,7 @@ from hodl.tools import FormatTool as FMT
 
 
 @trade_strategy(strategy_name=TradeStrategyEnum.HODL)
-class StoreHodl(Store, BasePriceMixin, SleepMixin, FactorMixin):
+class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
     def booting_check(self):
         trade_broker = self.broker_proxy.trade_broker
         if not trade_broker.ENABLE_BOOTING_CHECK:
@@ -288,20 +289,15 @@ class StoreHodl(Store, BasePriceMixin, SleepMixin, FactorMixin):
                 create_time=int(TimeTools.us_time_now().timestamp()),
             )
             earning_item.save(con=db.conn)
-            variable = self.runtime_state.variable
-            if path := variable.earning_json_path:
-                self.rewrite_earning_json(
-                    db=self.db,
-                    earning_json_path=path,
-                    now=now,
-                    weeks=variable.earning_recent_weeks,
-                )
         error = self.bot.send_text(earning_text)
         if error:
             self.logger.warning(f'聊天消息发送失败: {error}')
         else:
             self.logger.info(f'聊天消息发送成功')
         return buyback_price
+
+    def current_table(self):
+        return self.build_table(store_config=self.store_config, plan=self.state.plan)
 
     def set_up_rework(self):
         store_config = self.store_config
@@ -410,7 +406,7 @@ class StoreHodl(Store, BasePriceMixin, SleepMixin, FactorMixin):
         self.after_loop()
 
     def run(self):
-        super(Store, self).run()
+        super().run()
         is_checked = False
         logger = self.logger
         logger.info(f'启动线程')

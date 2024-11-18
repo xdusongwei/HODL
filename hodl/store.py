@@ -1,15 +1,13 @@
 from typing import Type
+from hodl.store_base import *
 from hodl.tools import *
 from hodl.quote_mixin import *
 from hodl.trade_mixin import *
 from hodl.storage import *
 
 
-class Store(QuoteMixin, TradeMixin):
+class Store(StoreBase):
     STORE_MAP: dict[str, Type['Store']] = dict()
-    
-    def run(self):
-        super().run()
 
     @classmethod
     def all_store_type(cls) -> list[Type['Store']]:
@@ -31,6 +29,10 @@ class Store(QuoteMixin, TradeMixin):
         return t(store_config=store_config, db=db)
 
 
+class IsolatedStore(Store, QuoteMixin, TradeMixin):
+    pass
+
+
 def trade_strategy(strategy_name: str):
     def decorator(cls: Type[Store]):
         Store.register_strategy(strategy_name, cls)
@@ -40,5 +42,6 @@ def trade_strategy(strategy_name: str):
 
 __all__ = [
     'Store',
+    'IsolatedStore',
     'trade_strategy',
 ]

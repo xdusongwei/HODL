@@ -193,20 +193,6 @@ class VariableTools:
         return self._config.get('manager_state_path')
 
     @property
-    def earning_json_path(self) -> str:
-        """
-        收益json文件写入的路径
-        """
-        return self._config.get('earning_json_path')
-
-    @property
-    def earning_recent_weeks(self) -> int:
-        """
-        收益文件近期可展示的时间范围
-        """
-        return self._config.get('earning_recent_weeks', 4)
-
-    @property
     def db_path(self):
         """
         sqlite数据库路径

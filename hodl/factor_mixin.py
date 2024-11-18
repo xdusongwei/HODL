@@ -1,8 +1,8 @@
 from abc import ABC
-from hodl.store_base import StoreBase
+from hodl.store_hodl_base import *
 
 
-class FactorMixin(StoreBase, ABC):
+class FactorMixin(StoreHodlBase, ABC):
     FACTORS_DICT = {
         'fear': [
             (1.0, 1.07, 1.04,),

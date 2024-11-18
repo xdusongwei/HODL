@@ -7,6 +7,7 @@ from hodl.store import *
 from hodl.tools import *
 from hodl.state import *
 from hodl.store_base import *
+from hodl.store_hodl import *
 
 
 def default_style(state: State):
@@ -51,7 +52,7 @@ class StorePanel(Widget):
                 args.append('日低')
             tags.append(f'{state.bp_function}({",".join(args)})')
             text.append(f'策略: {"|".join(tags)}\n')
-            state_bar = StoreBase.state_bar(
+            state_bar = StoreHodl.state_bar(
                 thread_alive=not thread.get('dead'),
                 config=config,
                 state=state,
@@ -82,7 +83,7 @@ class StatusPanel(Widget):
             text.append(f'[{config.region}]{config.symbol} {dt}\n')
             text.append(f'报价: ')
             text.append(f'{latest} {rate}\n', style=color)
-            buff_bar = StoreBase.buff_bar(
+            buff_bar = StoreHodl.buff_bar(
                 config=config,
                 state=state,
                 process_time=store.get('processTime'),
@@ -113,7 +114,7 @@ class PlanPanel(Widget):
             thread, store, config, state = item
             default_color = default_style(state)
             base_price = FormatTool.pretty_price(state.plan.base_price, config=config)
-            profit_tool = Store.ProfitRowTool(config=config, state=state)
+            profit_tool = StoreHodl.ProfitRowTool(config=config, state=state)
             text = Text(style=default_color)
             id_title = f'[{config.region}]{config.symbol}'
             if profit_tool.has_table and profit_tool.filled_level:

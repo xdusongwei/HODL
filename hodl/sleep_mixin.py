@@ -1,11 +1,11 @@
 from abc import ABC
 from datetime import datetime
 import exchange_calendars
-from hodl.store_base import *
+from hodl.store_hodl_base import *
 from hodl.tools import *
 
 
-class SleepMixin(StoreBase, ABC):
+class SleepMixin(StoreHodlBase, ABC):
     @classmethod
     def is_trading_minute(
             cls,

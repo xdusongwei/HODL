@@ -73,13 +73,16 @@ class TradeMixin(StoreBase, ABC):
         order.remain_qty = order.qty
         order.avg_price = None
 
-        def _wrap():
-            self._submit_order(order=order)
+        if self.risk_control:
+            def _wrap():
+                self._submit_order(order=order)
 
-        self.risk_control.place_order_check(
-            order=order,
-            function=_wrap,
-        )
+            self.risk_control.place_order_check(
+                order=order,
+                function=_wrap,
+            )
+        else:
+            self._submit_order(order=order)
         plan = self.state.plan
         plan.latest_order_day = TimeTools.us_day_now()
         self.state.plan.append_order(order=order)

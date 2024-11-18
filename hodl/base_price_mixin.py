@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass, field, asdict
 import numpy
 from hodl.quote import *
-from hodl.store_base import *
+from hodl.store_hodl_base import *
 from hodl.storage import *
 from hodl.tools import *
 from hodl.ta import *
@@ -15,7 +15,7 @@ class BasePriceItem:
     name: str = field()
 
 
-class BasePriceMixin(StoreBase, ABC):
+class BasePriceMixin(StoreHodlBase, ABC):
     @property
     def enable_rework(self) -> bool:
         return not self.is_rsi_tp

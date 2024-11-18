@@ -143,11 +143,7 @@ class StoreTestCase(unittest.TestCase):
     def test_sell_and_buy(self):
         """
         完成买卖完整一档, 即涨3%卖出一部分, 跌回0%买回卖出的部分，并得到收益，
-        同时验证模拟状态文件被成功触发写盘。
         """
-        VariableTools.DEBUG_CONFIG = {
-            'earning_json_path': '/a/b/c/earning.json'
-        }
         db = LocalDb(':memory:')
         pc = 10.0
         p0 = pc
@@ -163,9 +159,7 @@ class StoreTestCase(unittest.TestCase):
         store = SimulationBuilder.from_symbol(symbol='TEST', db=db, tickets=tickets)
         state = store.state
         plan = state.plan
-        files = store.files
         assert plan.earning > 0
-        assert files['/a/b/c/earning.json']
         store.call_bars()
 
         VariableTools.DEBUG_CONFIG.clear()

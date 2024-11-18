@@ -3,7 +3,8 @@ import datetime
 import dataclasses
 import traceback
 from hodl.storage import *
-from hodl.store import Store
+from hodl.store import *
+from hodl.store_hodl import *
 from hodl.thread_mixin import *
 from hodl.tools import *
 
@@ -110,7 +111,7 @@ class HtmlWriterThread(ThreadMixin):
                 sell_cost = sum(order.filled_value for order in orders if order.is_sell)
                 sell_dict[currency] += sell_cost
             forecast_earning = 0.0
-            if plan.table_ready:
+            if isinstance(store, StoreHodl) and plan.table_ready:
                 rows = store.current_table()
             else:
                 rows = list()
@@ -180,7 +181,7 @@ class HtmlWriterThread(ThreadMixin):
                 order_times_ytd=self.order_times_ytd_json,
                 store_list=store_list,
                 FMT=FormatTool,
-                ProfitRowTool=Store.ProfitRowTool,
+                ProfitRowTool=StoreHodl.ProfitRowTool,
                 earning_list=self.earning_list,
                 earning_json=self.earning_json,
                 threads=ThreadMixin.threads(),

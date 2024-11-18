@@ -12,7 +12,7 @@ requires_python = ">=3.12"
 
 [[package]]
 name = "alpaca-py"
-version = "0.31.0"
+version = "0.33.0"
 requires_python = "<4.0.0,>=3.8.0"
 summary = "The Official Python SDK for Alpaca APIs"
 groups = ["default"]
@@ -25,8 +25,8 @@ dependencies = [
     "websockets>=10.4",
 ]
 files = [
-    {file = "alpaca_py-0.31.0-py3-none-any.whl", hash = "sha256:e6726a381330b10ecff83bc05f7f51d18b305a1005ca08c1c22e866d1b60ba29"},
-    {file = "alpaca_py-0.31.0.tar.gz", hash = "sha256:e5223408defb592dc0b7b2feb62689957289abbf6dd9c8aa36612423fbbebfae"},
+    {file = "alpaca_py-0.33.0-py3-none-any.whl", hash = "sha256:5fe53e95918fbd21dd87aff3d22f719aa26444a402a0555e6e153efe5563bd72"},
+    {file = "alpaca_py-0.33.0.tar.gz", hash = "sha256:f5c5f339a4af896544b80cb2436b94c6353898e024f021a19554151717baff6f"},
 ]
 
 [[package]]
@@ -347,7 +347,7 @@ files = [
 
 [[package]]
 name = "exchange-calendars"
-version = "4.5.7"
+version = "4.5.8"
 requires_python = "~=3.10"
 summary = "Calendars for securities exchanges"
 groups = ["default"]
@@ -360,8 +360,8 @@ dependencies = [
     "tzdata",
 ]
 files = [
-    {file = "exchange_calendars-4.5.7-py3-none-any.whl", hash = "sha256:a9606f6942c877eb97d60db988fe7a3cd67f97f0ac68a219cc42fbe55c36da36"},
-    {file = "exchange_calendars-4.5.7.tar.gz", hash = "sha256:03e451302250be94b902e108349e01ba3c608b08e4e1e7a661332d06af2086f5"},
+    {file = "exchange_calendars-4.5.8-py3-none-any.whl", hash = "sha256:6f9311a3aca6948f13ec93f6ddafc6b29c424fe564263816d4ce70a2203b6018"},
+    {file = "exchange_calendars-4.5.8.tar.gz", hash = "sha256:6ff3d2314a28b9b5aa52a5cebe974d8453e8b1803aee139238637eb2eecc0c30"},
 ]
 
 [[package]]

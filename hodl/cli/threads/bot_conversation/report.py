@@ -5,7 +5,7 @@ from hodl.plan_calc import ProfitRow
 from hodl.state import *
 from hodl.storage import StateRow
 from hodl.bot import *
-from hodl.store_base import StoreBase
+from hodl.store_hodl import *
 from hodl.tools import *
 
 
@@ -95,7 +95,7 @@ class Report(TelegramBotBase):
 
     @classmethod
     def build_table(cls, store_config: StoreConfig, plan: Plan):
-        return StoreBase.build_table(store_config=store_config, plan=plan)
+        return StoreHodl.build_table(store_config=store_config, plan=plan)
 
 
 __all__ = ['Report']
