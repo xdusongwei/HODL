@@ -32,7 +32,11 @@ class PsUtilThread(ThreadMixin):
         new_bar.append(BarElementDesc(content=f'cpu: {cpu_percent}'))
         new_bar.append(BarElementDesc(content=f'memory: {memory_usage}'))
         new_bar.append(BarElementDesc(content=f'threads: {process.num_threads()}'))
-        new_bar.append(BarElementDesc(content=f'fds: {process.num_fds()}'))
+        try:
+            new_bar.append(BarElementDesc(content=f'fds: {process.num_fds()}'))
+        except Exception as e:
+            # POSIX 不支持
+            new_bar.append(BarElementDesc(content=f'fds: --'))
         new_bar.append(BarElementDesc(content=f'read: {total_read}'))
         new_bar.append(BarElementDesc(content=f'write: {total_write}'))
         return new_bar

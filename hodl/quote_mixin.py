@@ -1,12 +1,12 @@
 from abc import ABC
 from threading import Lock
 from hodl.quote import *
-from hodl.store_base import *
+from hodl.store import *
 from hodl.exception_tools import *
 from hodl.tools import *
 
 
-class QuoteMixin(StoreBase, ABC):
+class QuoteMixin(IsolatedStoreBase, ABC):
     CACHE_MARKET_STATUS = True
     CACHE_LOCK = Lock()
     LAST_TIMESTAMP = 0

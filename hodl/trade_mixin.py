@@ -1,7 +1,7 @@
 from abc import ABC
 from datetime import time
 from expiringdict import ExpiringDict
-from hodl.store_base import StoreBase
+from hodl.store import *
 from hodl.state import *
 from hodl.storage import *
 from hodl.proxy import *
@@ -9,7 +9,7 @@ from hodl.tools import *
 from hodl.tools import FormatTool as FMT
 
 
-class TradeMixin(StoreBase, ABC):
+class TradeMixin(IsolatedStoreBase, ABC):
     __ORDER_DUMPS = ExpiringDict(max_len=1000, max_age_seconds=24 * 60 * 60)
 
     def _get_order(self, order: Order):
