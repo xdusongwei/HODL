@@ -296,9 +296,6 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
             self.logger.info(f'聊天消息发送成功')
         return buyback_price
 
-    def current_table(self):
-        return self.build_table(store_config=self.store_config, plan=self.state.plan)
-
     def set_up_rework(self):
         store_config = self.store_config
         plan = self.state.plan

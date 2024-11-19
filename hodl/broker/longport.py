@@ -8,6 +8,7 @@ import re
 import tomllib
 import threading
 from datetime import datetime
+from decimal import Decimal
 import tomlkit
 from hodl.broker.base import *
 from hodl.exception_tools import *
@@ -268,7 +269,7 @@ class LongPortApi(BrokerApiBase):
                 if node.currency != 'USD':
                     continue
                 cash = float(node.total_cash)
-                return  cash
+                return cash
             raise PrepareError('找不到指定币种的可用资金')
         except Exception as e:
             raise PrepareError(f'长桥证券资金接口调用失败: {e}')
@@ -292,7 +293,6 @@ class LongPortApi(BrokerApiBase):
 
     @track_api
     def place_order(self, order: Order):
-        from decimal import Decimal
         from longport.openapi import OrderType, OrderSide, TimeInForceType, OutsideRTH
         symbol = self.broker_symbol()
         with self.ASSET_BUCKET:
@@ -302,7 +302,7 @@ class LongPortApi(BrokerApiBase):
                 order_type=OrderType.LO if order.limit_price else OrderType.MO,
                 side=OrderSide.Buy if order.is_buy else OrderSide.Sell,
                 outside_rth=OutsideRTH.RTHOnly,
-                submitted_quantity=order.qty,
+                submitted_quantity=Decimal(order.qty),
                 time_in_force=TimeInForceType.Day,
                 submitted_price=Decimal(order.limit_price) if order.limit_price else None,
             )
@@ -330,8 +330,8 @@ class LongPortApi(BrokerApiBase):
                 reason = '部分撤单'
             self.modify_order_fields(
                 order=order,
-                qty=resp.quantity,
-                filled_qty=resp.executed_quantity,
+                qty=int(resp.quantity),
+                filled_qty=int(resp.executed_quantity),
                 avg_fill_price=float(resp.executed_price) if resp.executed_price else 0.0,
                 trade_timestamp=None,
                 reason=reason,

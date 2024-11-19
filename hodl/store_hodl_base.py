@@ -24,6 +24,9 @@ class StoreHodlBase(IsolatedStore):
         )
         return profit_table
 
+    def current_table(self):
+        return self.build_table(store_config=self.store_config, plan=self.state.plan)
+
     def margin_amount(self) -> float:
         try:
             if self.broker_proxy:

@@ -182,10 +182,10 @@ class TigerApi(BrokerApiBase):
         with self.ASSET_BUCKET:
             # 传入symbol参数返回空列表，不设置symbol参数则返回数据没问题
             positions: list[Position] = self.trade_client.get_positions()
-        if positions:
-            for p in positions:
-                if p.contract.symbol == symbol:
-                    return p.quantity
+        for p in positions or list():
+            if p.contract.symbol != symbol:
+                continue
+            return int(p.quantity)
         return 0
 
     @track_api
