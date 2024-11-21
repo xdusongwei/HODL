@@ -157,7 +157,7 @@ class BrokerApiBase(BrokerApiMixin):
             broker_display: str,
             booting_check: bool = False,
             cash_currency: str = 'USD',
-            order_id_type: int | str = str,
+            order_id_type: Type[int] | Type[str] = str,
     ):
         assert issubclass(broker_type, BrokerApiBase)
         if broker_type in BrokerApiBase._ALL_BROKER_TYPES:
@@ -418,7 +418,7 @@ def broker_api(
         broker_display: str,
         booting_check: bool = False,
         cash_currency: str = 'USD',
-        order_id_type: int | str = str,
+        order_id_type: Type[int] | Type[str] = str,
 ):
     """
     用于标记所有种类的券商接口类的装饰器,
