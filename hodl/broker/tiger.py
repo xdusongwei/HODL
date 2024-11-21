@@ -25,14 +25,8 @@ from hodl.tools import *
 THREAD_LOCAL = threading.local()
 
 
-@broker_api
+@broker_api(broker_name='tiger', broker_display='老虎国际', booting_check=True, cash_currency='USD', order_id_type=int)
 class TigerApi(BrokerApiBase):
-    BROKER_NAME = 'tiger'
-    BROKER_DISPLAY = '老虎国际'
-    ENABLE_BOOTING_CHECK = True
-    ORDER_ID_TYPE = int
-    CASH_CURRENCY = 'USD'
-
     HAS_GRAB = False
     GRAB_LOCK = threading.Lock()
     # 老虎证券提供的文档限制频率，使用漏桶仍存在可能会触发超频，所以设定比其文档频率低一次

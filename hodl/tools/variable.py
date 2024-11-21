@@ -112,8 +112,8 @@ class VariableTools:
         broker: dict = self._config.get('broker')
         if not broker:
             return None
-        broker = broker.get(name, dict())
-        if not broker:
+        broker = broker.get(name, None)
+        if broker is None:
             return None
         return broker
 

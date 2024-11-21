@@ -79,8 +79,8 @@ class BrokerProxy:
     # proxy APIs end
 
     def __init__(
-        self,
-        runtime_state: StoreState,
+            self,
+            runtime_state: StoreState,
     ):
         store_config = runtime_state.store_config
         var = runtime_state.variable

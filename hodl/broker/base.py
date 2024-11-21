@@ -150,10 +150,23 @@ class BrokerApiBase(BrokerApiMixin):
         return BrokerApiBase._ALL_BROKER_TYPES.copy()
 
     @classmethod
-    def register_broker_type(cls, broker_type: Type['BrokerApiBase']):
+    def register_broker_type(
+            cls,
+            broker_type: Type['BrokerApiBase'],
+            broker_name: str,
+            broker_display: str,
+            booting_check: bool = False,
+            cash_currency: str = 'USD',
+            order_id_type: int | str = str,
+    ):
         assert issubclass(broker_type, BrokerApiBase)
         if broker_type in BrokerApiBase._ALL_BROKER_TYPES:
             return
+        broker_type.BROKER_NAME = broker_name
+        broker_type.BROKER_DISPLAY = broker_display
+        broker_type.ENABLE_BOOTING_CHECK = booting_check
+        broker_type.CASH_CURRENCY = cash_currency
+        broker_type.ORDER_ID_TYPE = order_id_type
         BrokerApiBase._ALL_BROKER_TYPES.append(broker_type)
         BrokerApiBase._ALL_BROKER_TYPES.sort(key=lambda t: t.BROKER_NAME)
 
@@ -400,13 +413,19 @@ def track_api(func):
     return wrapper
 
 
-def broker_api(cls: Type[BrokerApiBase]):
+def broker_api(
+        broker_name: str,
+        broker_display: str,
+        booting_check: bool = False,
+        cash_currency: str = 'USD',
+        order_id_type: int | str = str,
+):
     """
     用于标记所有种类的券商接口类的装饰器,
     功能类似 C# 的 Attribute, 记录相关的类型.
     这样可以自定义任何新的券商接口比如:
 
-    @broker_api
+    @broker_api(broker_name='myBroker', broker_display='XX证券')
     class CustomBrokerApi(BrokerApiBase):
         def __post_init__(self):
             self.quote_client = BrokerSdkQuoteApi()
@@ -418,8 +437,19 @@ def broker_api(cls: Type[BrokerApiBase]):
         def fetch_market_status(self) -> BrokerMarketStatusResult:
             return BrokerMarketStatusResult()
     """
-    BrokerApiBase.register_broker_type(cls)
-    return cls
+
+    def decorator(cls: Type[BrokerApiBase]):
+        BrokerApiBase.register_broker_type(
+            cls,
+            broker_name=broker_name,
+            broker_display=broker_display,
+            booting_check=booting_check,
+            cash_currency=cash_currency,
+            order_id_type=order_id_type,
+        )
+        return cls
+
+    return decorator
 
 
 def track_api_report():
@@ -449,7 +479,7 @@ def sort_brokers(
             var.broker_meta(name=broker.BROKER_NAME),
         )
         for broker in ordered_brokers
-        if var.broker_config_dict(name=broker.BROKER_NAME)
+        if var.broker_config_dict(name=broker.BROKER_NAME) is not None
     ]
     return ordered_brokers
 

@@ -141,4 +141,7 @@ class CurrencyTestCase(unittest.TestCase):
         ]
         with pytest.raises(RiskControlError):
             SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')
+
+    def tearDown(self):
+        CurrencyProxy._CURRENCY = set()
     

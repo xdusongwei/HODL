@@ -9,13 +9,8 @@ from hodl.state import *
 from hodl.tools import *
 
 
-@broker_api
+@broker_api(broker_name='alpaca', broker_display='alpaca')
 class AlpacaApi(BrokerApiBase):
-    BROKER_NAME = 'alpaca'
-    BROKER_DISPLAY = 'alpaca'
-    ENABLE_BOOTING_CHECK = True
-    CASH_CURRENCY = 'USD'
-
     MARKET_STATUS_BUCKET = LeakyBucket(12)
 
     LOCK = threading.RLock()

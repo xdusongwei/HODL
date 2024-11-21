@@ -14,13 +14,8 @@ from hodl.tools import *
 from hodl.proxy import *
 
 
-@broker_api
+@broker_api(broker_name='interactiveBrokers', broker_display='盈透证券', booting_check=False, cash_currency='USD')
 class InteractiveBrokersApi(BrokerApiBase):
-    BROKER_NAME = 'interactiveBrokers'
-    BROKER_DISPLAY = '盈透证券'
-    ENABLE_BOOTING_CHECK = False
-    CASH_CURRENCY = 'USD'
-
     LOCK = threading.RLock()
     GATEWAY_SOCKET: IB = None
     LOOP_STARTED: bool = False

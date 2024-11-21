@@ -75,13 +75,8 @@ class TokenKeeper:
             LocateTools.write_file(self.token_file, text)
 
 
-@broker_api
+@broker_api(broker_name='longport', broker_display='长桥证券', booting_check=False, cash_currency='USD')
 class LongPortApi(BrokerApiBase):
-    BROKER_NAME = 'longport'
-    BROKER_DISPLAY = '长桥证券'
-    ENABLE_BOOTING_CHECK = False
-    CASH_CURRENCY = 'USD'
-
     TOKEN_BUCKET = LeakyBucket(6)
     MARKET_STATUS_BUCKET = LeakyBucket(15)
     QUOTE_BUCKET = LeakyBucket(60)

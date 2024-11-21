@@ -31,6 +31,7 @@
     </p>
     {% set thread_mixin = store %}
     {% include 'thread_mixin.html' %}
+    {% if store_config.trade_strategy == 'hodl' %}
     <p>
         {% if row_tool.has_table %}
             {% set bp_items = state.bp_items %}
@@ -144,4 +145,5 @@
             </div>
         {% endif %}
     </p>
+    {% endif %}
 </div>

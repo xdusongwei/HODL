@@ -47,9 +47,9 @@ class MarketStatusProxy:
         MarketStatusProxy.MARKET_STATUS = all_status
         return all_status
 
-    def __init__(self):
+    def __init__(self, var: VariableTools = None):
         self.market_status_brokers: list[BrokerApiBase] = list()
-        var = HotReloadVariableTools.config()
+        var = var or HotReloadVariableTools.config()
         prefer_list = var.prefer_market_status_brokers
         broker_info = sort_brokers(var=var, prefer_list=prefer_list)
         brokers = [

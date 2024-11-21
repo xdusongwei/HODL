@@ -6,13 +6,8 @@ from hodl.state import *
 from hodl.tools import *
 
 
-@broker_api
+@broker_api(broker_name='citics', broker_display='中信证券', booting_check=False, cash_currency='CNY')
 class CiticsRestApi(BrokerApiBase):
-    BROKER_NAME = 'citics'
-    BROKER_DISPLAY = '中信证券'
-    ENABLE_BOOTING_CHECK = False
-    CASH_CURRENCY = 'CNY'
-
     FILE_LOCK = None
 
     def on_init(self):
