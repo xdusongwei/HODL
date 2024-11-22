@@ -17,8 +17,8 @@ class IsolatedStore(QuoteMixin, TradeMixin):
                 # 获取输入信息
                 broker_name, broker_display, market_status = self.current_market_status()
                 quote = self.current_quote()
-                cash_amount = self.current_cash()
-                chip_count = self.current_chip()
+                cash_amount: float = self.current_cash()
+                chip_count: int = self.current_chip()
 
                 # 订单执行
                 order = Order.new_config_order(
@@ -32,8 +32,8 @@ class IsolatedStore(QuoteMixin, TradeMixin):
                 self.refresh_order(order=order)
 
                 # 订单持久化
-                order_dumps = json.dumps(order.d)
-                order_loads = Order(json.loads(order_dumps))
+                order_dumps: str = Order.dumps()
+                order_loads: Order = Order.loads(order_dumps)
                 ...
 
         # 自定义关于这个策略的 html 输出

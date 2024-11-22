@@ -4,6 +4,7 @@ import pytest
 import unittest
 from datetime import datetime
 from hodl.broker.base import *
+from hodl.state import *
 from hodl.tools import *
 
 
@@ -216,3 +217,25 @@ class BasicTestCase(unittest.TestCase):
             LeakyBucket(leak_rate=leak_rate, used_tokens=-1)
         with pytest.raises(AssertionError):
             LeakyBucket(leak_rate=leak_rate, capacity=1, used_tokens=2)
+
+    def test_order_loads_dumps(self):
+        order = Order.new_order(
+            symbol='TEST',
+            region='US',
+            broker='broker',
+            currency='USD',
+            level=0,
+            direction='SELL',
+            qty=1,
+            limit_price=1.23,
+        )
+        dumps = order.dumps()
+        reload_order = Order.loads(dumps)
+        assert order.symbol == reload_order.symbol
+        assert order.region == reload_order.region
+        assert order.broker == reload_order.broker
+        assert order.currency == reload_order.currency
+        assert order.level == reload_order.level
+        assert order.direction == reload_order.direction
+        assert order.qty == reload_order.qty
+        assert order.limit_price == reload_order.limit_price

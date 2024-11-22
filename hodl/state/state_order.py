@@ -371,6 +371,13 @@ class Order(DictWrapper):
         """
         return self.is_today and not self.has_error and not self.is_canceled and not self.is_filled
 
+    def dumps(self, dumps=FormatTool.json_dumps) -> str | bytes:
+        return dumps(self.d)
+
+    @classmethod
+    def loads(cls, s: bytes | str, loads=FormatTool.json_loads) -> 'Order':
+        return Order(loads(s))
+
     @property
     def order_flags(self) -> list[str]:
         flags = list()
