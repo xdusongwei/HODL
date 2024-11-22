@@ -7,7 +7,7 @@ from hodl.broker import *
 
 class PreferBrokerTestCase(unittest.TestCase):
     """
-    验证市场状态\行情 proxy 机制可以找到到正确的比配顺序
+    验证市场状态、行情 proxy 机制可以找到到正确的匹配顺序
     """
 
     def test_market_status_empty(self):
