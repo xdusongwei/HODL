@@ -13,13 +13,13 @@ class Order(DictWrapper):
     def new_config_order(
             cls,
             store_config: StoreConfig,
-            level: int,
             direction: str,
             qty: int,
             limit_price: float | None,
             create_timestamp: float = None,
             order_day: str = None,
             protect_price: float = None,
+            level: int = 0,
     ):
         if direction == 'BUY':
             config_spread = store_config.buy_spread

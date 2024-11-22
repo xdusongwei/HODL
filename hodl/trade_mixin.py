@@ -321,11 +321,11 @@ class TradeMixin(IsolatedStoreBase, ABC):
             )
         order = Order.new_config_order(
             store_config=self.store_config,
-            level=fire_state.new_sell_level,
             direction='SELL',
             qty=qty,
             limit_price=limit_price,
             protect_price=protect_price,
+            level=fire_state.new_sell_level,
         )
         self.submit_order(
             order=order,
@@ -453,11 +453,11 @@ class TradeMixin(IsolatedStoreBase, ABC):
         self.logger.info(f'买单下单数量{volume}')
         order = Order.new_config_order(
             store_config=self.store_config,
-            level=fire_state.new_buy_level,
             direction='BUY',
             qty=volume,
             limit_price=limit_price,
             protect_price=protect_price,
+            level=fire_state.new_buy_level,
         )
         self.submit_order(
             order=order,

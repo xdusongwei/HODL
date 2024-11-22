@@ -14,12 +14,28 @@ class IsolatedStore(QuoteMixin, TradeMixin):
             super().run()
             while True:
                 TimeTools.sleep(6.0)
+                # 获取输入信息
                 broker_name, broker_display, market_status = self.current_market_status()
                 quote = self.current_quote()
                 cash_amount = self.current_cash()
                 chip_count = self.current_chip()
+
+                # 订单执行
+                order = Order.new_config_order(
+                    store_config=self.store_config,
+                    direction='BUY',
+                    qty=volume,
+                    limit_price=None,
+                )
+                self.submit_order(order=order)
+                self.cancel_order(order=order)
+                self.refresh_order(order=order)
+
+                # 订单持久化
+                order_dumps = json.dumps(order.d)
+                order_loads = Order(json.loads(order_dumps))
                 ...
-                
+
         def extra_html(self):
             return '<div>my strategy html report</div>'
     """

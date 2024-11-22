@@ -238,10 +238,10 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
         if volume:
             order = Order.new_config_order(
                 store_config=self.store_config,
-                level=0,
                 direction='BUY',
                 qty=volume,
                 limit_price=None,
+                level=0,
             )
             self.submit_order(
                 order=order,

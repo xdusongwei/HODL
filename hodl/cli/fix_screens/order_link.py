@@ -104,12 +104,12 @@ class OrderLinkScreen(Screen):
 
         order = Order.new_config_order(
             store_config=config,
-            level=level,
             direction=direction,
             qty=qty,
             limit_price=limit_price,
             create_timestamp=FormatTool.adjust_precision(TimeTools.us_time_now().timestamp(), precision=3),
             order_day=order_day,
+            level=level,
         )
         if order.is_buy:
             order.config_spread_rate = config.buy_spread_rate
