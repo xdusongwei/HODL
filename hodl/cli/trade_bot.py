@@ -41,10 +41,11 @@ class Manager(ThreadMixin):
             if thread.is_alive():
                 continue
             text = f'💀线程[{thread.name}]已崩溃。\n'
-            if detail := store.state.risk_control_detail:
-                text += f'风控错误:{detail}\n'
-            if e := store.exception:
-                text += f'异常原因:{e}\n'
+            if isinstance(store, StoreHodl):
+                if detail := store.state.risk_control_detail:
+                    text += f'风控错误:{detail}\n'
+                if e := store.exception:
+                    text += f'异常原因:{e}\n'
             store.bot.set_alarm(AlertBot.K_THREAD_DEAD, text=text)
 
     @classmethod
