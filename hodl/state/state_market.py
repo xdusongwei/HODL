@@ -11,11 +11,24 @@ class MarketStatusResult(dict):
 
     @property
     def region(self) -> str:
+        """
+        当前市场状态项的国家标识
+        """
         return self.get('region', '--')
 
     @property
     def status(self) -> str:
+        """
+        经过状态重新映射的状态, 也就是统一了各个平台的交易中和收盘两个状态的结果
+        """
         return self.get('status', '--')
+
+    @property
+    def display(self) -> str:
+        """
+        未经状态重新映射的状态, 是各个平台提供的国家市场状态的原始值, 作为 HTML 展示使用
+        """
+        return self.get('display', '--')
 
 
 class BrokerMarketStatusResult(dict):

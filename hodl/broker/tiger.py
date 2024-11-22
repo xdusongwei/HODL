@@ -25,7 +25,7 @@ from hodl.tools import *
 THREAD_LOCAL = threading.local()
 
 
-@broker_api(broker_name='tiger', broker_display='老虎国际', booting_check=True, cash_currency='USD', order_id_type=int)
+@broker_api(name='tiger', display='老虎国际', booting_check=True, cash_currency='USD', order_id_type=int)
 class TigerApi(BrokerApiBase):
     HAS_GRAB = False
     GRAB_LOCK = threading.Lock()

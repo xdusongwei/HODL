@@ -12,7 +12,7 @@ from hodl.exception_tools import *
 from hodl.state import *
 
 
-@broker_api(broker_name='futu', broker_display='富途证券', booting_check=True, cash_currency='USD')
+@broker_api(name='futu', display='富途证券', booting_check=True, cash_currency='USD')
 class FutuApi(BrokerApiBase):
     ENABLE_BOOTING_CHECK = True
     CASH_CURRENCY = 'USD'

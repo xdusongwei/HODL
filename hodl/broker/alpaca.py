@@ -9,7 +9,7 @@ from hodl.state import *
 from hodl.tools import *
 
 
-@broker_api(broker_name='alpaca', broker_display='alpaca')
+@broker_api(name='alpaca', display='alpaca')
 class AlpacaApi(BrokerApiBase):
     MARKET_STATUS_BUCKET = LeakyBucket(12)
 

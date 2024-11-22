@@ -5,7 +5,7 @@ from hodl.quote import *
 from hodl.tools import *
 
 
-@broker_api(broker_name='myquant', broker_display='掘金量化')
+@broker_api(name='myquant', display='掘金量化')
 class MyQuantApi(BrokerApiBase):
     QUOTE_BUCKET = LeakyBucket(120)
 

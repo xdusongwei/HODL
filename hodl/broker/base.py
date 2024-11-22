@@ -414,8 +414,8 @@ def track_api(func):
 
 
 def broker_api(
-        broker_name: str,
-        broker_display: str,
+        name: str,
+        display: str,
         booting_check: bool = False,
         cash_currency: str = 'USD',
         order_id_type: Type[int] | Type[str] = str,
@@ -425,7 +425,7 @@ def broker_api(
     功能类似 C# 的 Attribute, 记录相关的类型.
     这样可以自定义任何新的券商接口比如:
 
-    @broker_api(broker_name='myBroker', broker_display='XX证券')
+    @broker_api(name='myBroker', display='XX证券')
     class CustomBrokerApi(BrokerApiBase):
         def __post_init__(self):
             self.quote_client = BrokerSdkQuoteApi()
@@ -441,8 +441,8 @@ def broker_api(
     def decorator(cls: Type[BrokerApiBase]):
         BrokerApiBase.register_broker_type(
             cls,
-            broker_name=broker_name,
-            broker_display=broker_display,
+            broker_name=name,
+            broker_display=display,
             booting_check=booting_check,
             cash_currency=cash_currency,
             order_id_type=order_id_type,

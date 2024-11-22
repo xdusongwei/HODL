@@ -12,7 +12,7 @@ from hodl.exception_tools import *
 from hodl.tools import FormatTool as FMT
 
 
-@trade_strategy(strategy_name=TradeStrategyEnum.HODL)
+@trade_strategy(name=TradeStrategyEnum.HODL)
 class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
     def booting_check(self):
         trade_broker = self.broker_proxy.trade_broker

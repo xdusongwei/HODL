@@ -231,3 +231,6 @@ class Manager(ThreadMixin):
 if __name__ == '__main__':
     instance = Manager()
     instance.run()
+
+
+__all__ = ['Manager', ]

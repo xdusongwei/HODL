@@ -14,7 +14,7 @@ from hodl.state import *
 from hodl.tools import *
 
 
-@broker_api(broker_name='okx', broker_display='OKX', booting_check=True, cash_currency='USDT')
+@broker_api(name='okx', display='OKX', booting_check=True, cash_currency='USDT')
 class OkxRestApi(BrokerApiBase):
     MARKET_STATUS_BUCKET = LeakyBucket(12)
     QUOTE_BUCKET = LeakyBucket(600)

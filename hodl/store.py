@@ -131,9 +131,9 @@ class IsolatedStoreBase(Store):
         self.broker_proxy.on_init()
 
 
-def trade_strategy(strategy_name: str):
+def trade_strategy(name: str):
     def decorator(cls: Type[Store]):
-        Store.register_strategy(strategy_name, cls)
+        Store.register_strategy(name, cls)
         return cls
     return decorator
 

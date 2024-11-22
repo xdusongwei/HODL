@@ -9,7 +9,7 @@ from hodl.state import *
 from hodl.tools import *
 
 
-@broker_api(broker_name='binance', broker_display='币安', booting_check=True, cash_currency='USDT')
+@broker_api(name='binance', display='币安', booting_check=True, cash_currency='USDT')
 class BinanceApi(BrokerApiBase):
     MARKET_STATUS_BUCKET = LeakyBucket(12)
     QUOTE_BUCKET = LeakyBucket(600)
