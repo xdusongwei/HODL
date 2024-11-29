@@ -109,6 +109,8 @@ class CurrencyProxy(ThreadMixin):
             currency_list = d.get('currencyList', list())
             currency_nodes = [CurrencyNode.from_dict(item) for item in currency_list]
             for node in currency_nodes:
+                if node in CurrencyProxy._CURRENCY:
+                    CurrencyProxy._CURRENCY.remove(node)
                 CurrencyProxy._CURRENCY.add(node)
             return currency_nodes
         except requests.JSONDecodeError:
