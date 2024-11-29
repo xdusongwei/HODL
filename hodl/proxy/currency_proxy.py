@@ -92,6 +92,7 @@ class CurrencyProxy(ThreadMixin):
         if not currency_config or not currency_config.url:
             return currency_nodes
 
+        new_set = CurrencyProxy._CURRENCY.copy()
         args = dict(
             method='GET',
             url=currency_config.url,
@@ -109,12 +110,14 @@ class CurrencyProxy(ThreadMixin):
             currency_list = d.get('currencyList', list())
             currency_nodes = [CurrencyNode.from_dict(item) for item in currency_list]
             for node in currency_nodes:
-                if node in CurrencyProxy._CURRENCY:
-                    CurrencyProxy._CURRENCY.remove(node)
-                CurrencyProxy._CURRENCY.add(node)
+                if node in new_set:
+                    new_set.remove(node)
+                new_set.add(node)
             return currency_nodes
         except requests.JSONDecodeError:
             return currency_nodes
+        finally:
+            CurrencyProxy._CURRENCY = new_set
 
     def prepare(self):
         self.pull_currency()
