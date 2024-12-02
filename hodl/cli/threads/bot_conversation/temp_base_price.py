@@ -35,7 +35,11 @@ class TempBasePrice(TelegramBotBase):
         position = self._symbol_list()[idx]
         user_id = update.message.from_user.id
         self._create_session(user_id=user_id, position=position)
-        base_price_row = TempBasePriceRow.query_by_symbol(con=self.DB.conn, symbol=position.symbol)
+        base_price_row = TempBasePriceRow.query_by_symbol(
+            con=self.DB.conn,
+            broker=position.config.broker,
+            symbol=position.symbol,
+        )
         current_price = '当前没有有效值。'
         if base_price_row and base_price_row.price > 0:
             price = base_price_row.price
@@ -82,6 +86,7 @@ class TempBasePrice(TelegramBotBase):
                     symbol = session.position.symbol
                     ts = int(TimeTools.us_time_now().timestamp())
                     row = TempBasePriceRow(
+                        broker=session.position.config.broker,
                         symbol=symbol,
                         price=session.value,
                         expiry_time=ts + 300,

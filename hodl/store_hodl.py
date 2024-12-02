@@ -463,7 +463,7 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
                         raise e
                     except Exception as e:
                         if self.ENABLE_LOG_ALIVE:
-                            self.alive_logger.exception(f'更新状态字典/计划/市场状态/交易系统测试/订单时出现错误:{e}')
+                            self.alive_logger.exception(f'更新状态字典/计划/市场状态/交易通道连通/订单时出现错误:{e}')
                         raise PrepareError
                     finally:
                         self.risk_control = RiskControl(

@@ -59,6 +59,7 @@ class BasePriceMixin(StoreHodlBase, ABC):
 
     def _calc_hodl_price_list(self) -> list[BasePriceItem]:
         store_config, state, _ = self.args()
+        broker = store_config.broker
         symbol = store_config.symbol
         db = self.db
         quote_pre_close = state.quote_pre_close
@@ -68,7 +69,7 @@ class BasePriceMixin(StoreHodlBase, ABC):
 
         if db:
             con = db.conn
-            base_price_row = TempBasePriceRow.query_by_symbol(con=con, symbol=symbol)
+            base_price_row = TempBasePriceRow.query_by_symbol(con=con, broker=broker, symbol=symbol)
             if base_price_row and base_price_row.price > 0:
                 items.append(BasePriceItem(v=base_price_row.price, desc='TempPrice', name='临时基准价'))
                 return items

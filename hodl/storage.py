@@ -232,6 +232,7 @@ class StateRow:
 
 @dataclass
 class TempBasePriceRow:
+    broker: str
     symbol: str
     price: float
     expiry_time: int
@@ -239,13 +240,13 @@ class TempBasePriceRow:
     id: int = None
 
     @classmethod
-    def query_by_symbol(cls, con: sqlite3.Connection, symbol: str):
+    def query_by_symbol(cls, con: sqlite3.Connection, broker: str, symbol: str):
         ts = int(TimeTools.us_time_now().timestamp())
         with con:
             cur = con.cursor()
             cur.execute(
-                "SELECT * FROM `temp_base_price` WHERE symbol = ? AND expiry_time > ? LIMIT 1;",
-                (symbol, ts,)
+                "SELECT * FROM `temp_base_price` WHERE broker = ? AND symbol = ? AND expiry_time > ? ORDER BY `expiry_time` DESC LIMIT 1;",
+                (broker, symbol, ts,)
             )
             row = cur.fetchone()
         if row:
@@ -256,9 +257,10 @@ class TempBasePriceRow:
     def save(self, con: sqlite3.Connection):
         with con:
             con.execute(
-                "REPLACE INTO `temp_base_price`(`symbol`, `price`, `expiry_time`, `update_time`) "
-                "VALUES (?, ?, ?, ?);",
+                "REPLACE INTO `temp_base_price`(`broker`, `symbol`, `price`, `expiry_time`, `update_time`) "
+                "VALUES (?, ?, ?, ?, ?);",
                 (
+                    self.broker,
                     self.symbol,
                     self.price,
                     self.expiry_time,
@@ -465,12 +467,13 @@ class LocalDb:
 
         cur.execute('''CREATE TABLE IF NOT EXISTS `temp_base_price` (
                                         id INTEGER PRIMARY KEY, 
+                                        `broker` TEXT NOT NULL,
                                         `symbol` TEXT NOT NULL,
                                         `price` REAL NOT NULL,
                                         `expiry_time` INTEGER NOT NULL,
                                         `update_time` INTEGER NOT NULL
                                         );''')
-        cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_temp_base_price_main ON `temp_base_price` (`symbol`);')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_temp_base_price_main ON `temp_base_price` (`broker`, `symbol`, `expiry_time`);')
 
         cur.execute('''CREATE TABLE IF NOT EXISTS `quote_low_history` (
                                                 id INTEGER PRIMARY KEY,

@@ -15,7 +15,7 @@ class Settings(TelegramBotBase):
                 row = EarningRow.latest_earning_by_symbol(con=db.conn, symbol=item.symbol, days=days)
                 if row and row.buyback_price:
                     last_buyback_price = FormatTool.pretty_price(row.buyback_price, config=item.config)
-                row = TempBasePriceRow.query_by_symbol(con=db.conn, symbol=item.symbol)
+                row = TempBasePriceRow.query_by_symbol(con=db.conn, broker=item.config.broker, symbol=item.symbol)
                 if row and row.price:
                     temp_base_price = FormatTool.pretty_price(row.price, config=item.config)
             part = \
