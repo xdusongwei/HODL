@@ -426,7 +426,7 @@ class LocalDb:
         `state_version` TEXT,
         `create_time` INTEGER NOT NULL
         );''')
-        cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_create_time_symbol ON `earning` (`create_time`, `symbol`);')
+        cur.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_create_time_symbol ON `earning` (`create_time`, `broker`, `symbol`);')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_earning_symbol_day ON `earning` (`symbol`, `day`);')
 
         cur.execute('''CREATE TABLE IF NOT EXISTS `state_archive` (
