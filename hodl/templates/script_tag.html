@@ -71,15 +71,18 @@
         },
         color: {
             type: "linear",
-            scheme: "blues"
+            scheme: "greens"
         },
         marks: [
             Plot.cell(orderTimesYtd, {
                 x: d => d3.utcWeek.count(d3.utcYear(new Date(d.date)), new Date(d.date)),
                 y: d => (new Date(d.date)).getUTCDay(),
                 fill: (d, i) => d.v ? -d.v : NaN,
+                stroke: 'black',
+                strokeOpacity: 0.2,
+                strokeWidth: 1,
                 title: (d, i) => `${d.date}: ${d.v}单`,
-                inset: 0.75
+                inset: 0.75,
             })
         ]
     })
