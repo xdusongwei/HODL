@@ -1,12 +1,9 @@
 import os
-import unittest
-from hodl.plan_calc import *
 from hodl.unit_test import *
-from hodl.state import *
 from hodl.tools import *
 
 
-class FullDataTestCase(unittest.TestCase):
+class FullDataTestCase(HodlTestCase):
     STORE: SimulationStore = None
 
     def setUp(self):
@@ -36,7 +33,7 @@ class FullDataTestCase(unittest.TestCase):
         print('running tearDown')
         if self.full_mode() == 'skip':
             return
-        var = VariableTools()
+        var = self.config()
         store_config = var.store_configs['TIGR']
         print(
             'total earning: ', self.STORE.earning,

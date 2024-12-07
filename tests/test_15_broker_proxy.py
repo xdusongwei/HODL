@@ -1,11 +1,10 @@
-import unittest
 from hodl.proxy import *
-from hodl.state import StoreState
-from hodl.tools import *
+from hodl.state import *
 from hodl.broker import *
+from hodl.unit_test import *
 
 
-class PreferBrokerTestCase(unittest.TestCase):
+class PreferBrokerTestCase(HodlTestCase):
     """
     验证市场状态、行情 proxy 机制可以找到到正确的匹配顺序
     """
@@ -18,7 +17,7 @@ class PreferBrokerTestCase(unittest.TestCase):
         class _A_Broker(BrokerApiBase):
             pass
 
-        var = VariableTools()
+        var = self.config()
         var._config['broker'] = {
             'a': {},
         }
@@ -43,7 +42,7 @@ class PreferBrokerTestCase(unittest.TestCase):
         class _A_Broker(BrokerApiBase):
             pass
 
-        var = VariableTools()
+        var = self.config()
         var._config['broker'] = {
             'a': {},
         }
@@ -68,7 +67,7 @@ class PreferBrokerTestCase(unittest.TestCase):
         class _A_Broker(BrokerApiBase):
             pass
 
-        var = VariableTools()
+        var = self.config()
         var._config['broker'] = {
             'a': {},
         }
@@ -102,7 +101,7 @@ class PreferBrokerTestCase(unittest.TestCase):
         class _C_Broker(BrokerApiBase):
             pass
 
-        var = VariableTools()
+        var = self.config()
         var._config['broker'] = {
             'a': {},
             'b': {},
@@ -147,7 +146,7 @@ class PreferBrokerTestCase(unittest.TestCase):
         class _A_Broker(BrokerApiBase):
             pass
 
-        var = VariableTools()
+        var = self.config()
         var._config['broker'] = {
             'a': {},
         }
@@ -177,7 +176,7 @@ class PreferBrokerTestCase(unittest.TestCase):
         class _A_Broker(BrokerApiBase):
             pass
 
-        var = VariableTools()
+        var = self.config()
         var._config['broker'] = {
             'a': {},
         }
@@ -207,7 +206,7 @@ class PreferBrokerTestCase(unittest.TestCase):
         class _A_Broker(BrokerApiBase):
             pass
 
-        var = VariableTools()
+        var = self.config()
         var._config['broker'] = {
             'a': {},
         }
@@ -246,7 +245,7 @@ class PreferBrokerTestCase(unittest.TestCase):
         class _C_Broker(BrokerApiBase):
             pass
 
-        var = VariableTools()
+        var = self.config()
         var._config['broker'] = {
             'a': {},
             'b': {},
@@ -305,7 +304,7 @@ class PreferBrokerTestCase(unittest.TestCase):
         class _C_Broker(BrokerApiBase):
             pass
 
-        var = VariableTools()
+        var = self.config()
         var._config['broker'] = {
             'a': {},
             'b': {},
