@@ -10,10 +10,12 @@ class StoreBase(ThreadMixin):
             self,
             store_config: StoreConfig,
             db: LocalDb = None,
+            variable: VariableTools = None,
     ):
         self.runtime_state: StoreState = StoreState(
             store_config=store_config,
             calendar=store_config.trading_calendar,
+            variable=variable,
         )
         self.thread_context = self.runtime_state
         self.state: State = State.new()

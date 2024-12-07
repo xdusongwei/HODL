@@ -98,8 +98,9 @@ class SimulationStore(StoreHodl):
             ticks: list[Tick] = None,
             db: LocalDb = None,
             quote_length: int = 0,
+            variable: VariableTools = None,
     ):
-        super().__init__(store_config=store_config, db=db)
+        super().__init__(store_config=store_config, db=db, variable=variable)
         self.mocks = list()
         self.history_quote: Generator[FakeQuote, Any, None] = \
             generate_quote(quote_csv, limit=quote_length) if quote_csv else generate_from_ticks(ticks)
@@ -283,8 +284,8 @@ class SimulationBuilder:
         if store is None:
             if not symbol and not store_config:
                 raise ValueError(f'创建持仓对象需要指定symbol')
+            var = SimulationStore.config()
             if store_config is None:
-                var = SimulationStore.config()
                 store_config = var.store_configs[symbol]
             store = store_type(
                 store_config=store_config,
@@ -292,6 +293,7 @@ class SimulationBuilder:
                 quote_csv=quote_csv,
                 quote_length=quote_length,
                 db=db,
+                variable=var,
             )
             mocks = [
                 sleep_mock(store.sleep_mock),

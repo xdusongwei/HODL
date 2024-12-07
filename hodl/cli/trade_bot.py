@@ -133,7 +133,7 @@ class Manager(ThreadMixin):
                 )
         try:
             print('启动持仓线程')
-            stores = [Store.factory(store_config=config, db=db) for config in store_configs.values()]
+            stores = [Store.factory(store_config=config, db=db, variable=var) for config in store_configs.values()]
             for store in stores:
                 store.prepare()
             threads = [

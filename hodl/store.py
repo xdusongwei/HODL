@@ -21,19 +21,20 @@ class Store(StoreBase):
         Store.STORE_MAP[strategy_name] = store_type
 
     @classmethod
-    def factory(cls, store_config: StoreConfig, db: LocalDb) -> 'Store':
+    def factory(cls, store_config: StoreConfig, db: LocalDb, variable: VariableTools = None) -> 'Store':
         strategy = store_config.trade_strategy
         if strategy not in Store.STORE_MAP:
             raise NotImplementedError(f'策略{strategy}找不到对应的类型映射')
         t = Store.STORE_MAP[strategy]
-        return t(store_config=store_config, db=db)
+        return t(store_config=store_config, db=db, variable=variable)
 
     def __init__(
             self,
             store_config: StoreConfig,
             db: LocalDb = None,
+            variable: VariableTools = None,
     ):
-        super().__init__(store_config=store_config, db=db)
+        super().__init__(store_config=store_config, db=db, variable=variable)
         variable = self.runtime_state.variable
         self.bot = AlertBot(
             broker=store_config.broker,
