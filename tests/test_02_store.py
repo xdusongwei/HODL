@@ -1,10 +1,9 @@
-import unittest
 from hodl.unit_test import *
 from hodl.storage import *
 from hodl.tools import *
 
 
-class StoreTestCase(unittest.TestCase):
+class StoreTestCase(HodlTestCase):
     """
     持仓测试验证持仓处理可以正确处理市场信号，计算正确的状态数据，
     下达预期的买卖指令等。
@@ -166,7 +165,7 @@ class StoreTestCase(unittest.TestCase):
 
     def test_enable(self):
         # 测试使能关闭, 不会开仓卖出
-        store_config = VariableTools().store_configs['TEST']
+        store_config = self.config().store_configs['TEST']
         store_config['enable'] = False
         pc = 10.0
         p0 = pc
@@ -185,7 +184,7 @@ class StoreTestCase(unittest.TestCase):
 
     def test_state_file(self):
         # 验证开盘后，模拟状态文件写盘动作被触发。
-        store_config = VariableTools().store_configs['TEST']
+        store_config = self.config().store_configs['TEST']
         store_config['state_file_path'] = '/a/b/c.json'
         pc = 10.0
         p0 = pc

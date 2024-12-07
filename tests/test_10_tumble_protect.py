@@ -1,17 +1,16 @@
-import unittest
 from hodl.quote import *
 from hodl.unit_test import *
 from hodl.storage import *
 from hodl.tools import *
 
 
-class TumbleProtectTestCase(unittest.TestCase):
+class TumbleProtectTestCase(HodlTestCase):
     """
     验证各种暴跌保护机制可以按照预期设定抑制交易行为。
     """
 
     def test_tp_ma(self):
-        config = VariableTools().store_configs['TEST']
+        config = self.config().store_configs['TEST']
         config['base_price_tumble_protect'] = True
         tickets = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=10.0, open=10.0, latest=10.0, low=10.0, high=10.0, ),
@@ -52,7 +51,7 @@ class TumbleProtectTestCase(unittest.TestCase):
                     day_low=20.0,
                     time=TimeTools.us_time_now(),
                 )
-        config = VariableTools().store_configs['TEST']
+        config = self.config().store_configs['TEST']
         config['vix_tumble_protect'] = 30
         tickets = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=10.0, open=10.0, latest=10.0, low=10.0, ),
@@ -66,7 +65,7 @@ class TumbleProtectTestCase(unittest.TestCase):
         store.call_bars()
 
     def test_tp_rsi(self):
-        config = VariableTools().store_configs['TEST']
+        config = self.config().store_configs['TEST']
         config['tumble_protect_rsi'] = True
         tickets = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=10.0, open=10.0, latest=10.0, low=10.0, high=10.0),

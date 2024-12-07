@@ -1,10 +1,9 @@
-import unittest
 import pytest
 from hodl.exception_tools import *
 from hodl.unit_test import *
 
 
-class LsodTestCase(unittest.TestCase):
+class LsodTestCase(HodlTestCase):
     def test_lsod(self):
         # 第一天触发卖出, 并且运行到收盘时段, 第二天盘中再触发买入, 整个过程lsod检测符合正常预期，应通过。
         seal = 'ClosingChecked'

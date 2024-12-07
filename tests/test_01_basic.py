@@ -1,14 +1,14 @@
 import re
 import time
 import pytest
-import unittest
 from datetime import datetime
+from hodl.unit_test import *
 from hodl.broker.base import *
 from hodl.state import *
 from hodl.tools import *
 
 
-class BasicTestCase(unittest.TestCase):
+class BasicTestCase(HodlTestCase):
     """
     基本测试主要验证tools包下面的基础模块的工作情况，
     大多与配置读取、线程时区上下文，浮点精度，日期计算等有关。
@@ -20,7 +20,7 @@ class BasicTestCase(unittest.TestCase):
         一些关键数据应该被正确读取。
         """
         symbol = 'TEST'
-        var = VariableTools()
+        var = self.config()
         store_config = var.store_configs[symbol]
 
         assert store_config.broker == 'tiger'
@@ -128,7 +128,7 @@ class BasicTestCase(unittest.TestCase):
     def test_broker_meta(self):
         # 读取一个券商通道元数据项，验证读取的属性正确
         # 券商通道元数据项描述了通道服务可以做什么，处理那些交易品种等权限范围
-        var = VariableTools()
+        var = self.config()
         store_config = var.store_configs['TEST']
         meta_list = var.broker_meta('tiger')
         assert len(meta_list) == 1

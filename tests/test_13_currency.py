@@ -1,12 +1,10 @@
 import pytest
-import unittest
 from hodl.exception_tools import *
 from hodl.proxy import *
 from hodl.unit_test import *
-from hodl.tools import *
 
 
-class CurrencyTestCase(unittest.TestCase):
+class CurrencyTestCase(HodlTestCase):
     def test_currency_unique(self):
         """
         验证货币对对象在集合中具有特定的唯一性
@@ -73,7 +71,7 @@ class CurrencyTestCase(unittest.TestCase):
         """
         更改持仓的币种为 XYZ, USDXYZ 汇率为 1, 第一天卖出一档, 第二天买回, 应通过.
         """
-        var = VariableTools()
+        var = self.config()
         CurrencyProxy._CURRENCY = {CurrencyNode(base_currency='USD', target_currency='XYZ', rate=1.0), }
         store_config = var.store_configs['TEST']
         store_config['currency'] = 'XYZ'
@@ -98,7 +96,7 @@ class CurrencyTestCase(unittest.TestCase):
         更改持仓的币种为 XYZ, USDXYZ 汇率为 0.00455, 第一天卖出一档, 第二天买回, 应通过.
         第一档卖出 4545 股, 而模拟环境默认可用资金是 1千万 USD, 就是说, 如果汇率 USDXYZ 大于 0.004545, 其美元现金不影响第二天买入
         """
-        var = VariableTools()
+        var = self.config()
         CurrencyProxy._CURRENCY = {CurrencyNode(base_currency='USD', target_currency='XYZ', rate=0.00455), }
         store_config = var.store_configs['TEST']
         store_config['currency'] = 'XYZ'
@@ -123,7 +121,7 @@ class CurrencyTestCase(unittest.TestCase):
         更改持仓的币种为 XYZ, USDXYZ 汇率为 0.00454, 第一天卖出一档, 第二天买回, 不应通过.
         第一档卖出 4545 股, 而模拟环境默认可用资金是 1千万 USD, 就是说, 如果汇率 USDXYZ 小于 0.004545, 其美元现金会影响第二天买入
         """
-        var = VariableTools()
+        var = self.config()
         CurrencyProxy._CURRENCY = {CurrencyNode(base_currency='USD', target_currency='XYZ', rate=0.00454), }
         store_config = var.store_configs['TEST']
         store_config['currency'] = 'XYZ'

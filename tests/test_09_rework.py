@@ -1,12 +1,10 @@
-import unittest
-from hodl.tools import *
 from hodl.unit_test import *
 
 
-class ReworkTestCase(unittest.TestCase):
+class ReworkTestCase(HodlTestCase):
     def test_rework(self):
         # 验证清除持仓状态功能计算了正确的目标价格
-        config = VariableTools().store_configs['TEST']
+        config = self.config().store_configs['TEST']
         config['rework_level'] = 1
         pc = 10.0
         p0 = pc

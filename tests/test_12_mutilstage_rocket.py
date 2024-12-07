@@ -1,16 +1,14 @@
-import unittest
 from hodl.unit_test import *
-from hodl.tools import *
 
 
-class MultistageRocketTestCase(unittest.TestCase):
+class MultistageRocketTestCase(HodlTestCase):
     def test_multistage_rocket(self):
         """
         首先卖出前6档的股票，
         之后验证使用剩余股票卖出3档，并买回，
         再测试还原状态后能否正常全部买回，
         """
-        var = VariableTools()
+        var = self.config()
         store_config = var.store_configs['TEST']
         store_config['state_file_path'] = '/path/to/state-{symbol}-stage{stage}.json'
 
