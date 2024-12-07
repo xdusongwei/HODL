@@ -89,7 +89,9 @@ class SimulationStore(StoreHodl):
     @classmethod
     def config(cls):
         config_path = cls.ci_config_path()
-        return VariableTools(config_path)
+        var = VariableTools(config_path)
+        HotReloadVariableTools.set_up_var(var)
+        return var
 
     def __init__(
             self,
