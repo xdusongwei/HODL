@@ -35,8 +35,8 @@ class SubmitOrderTestCase(unittest.TestCase):
         )
         p_buy = pc
         tickets = [
-            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p0, ),
-            Tick(day='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_not_sell, ),
+            Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p0, ),
+            Tick(time='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_not_sell, ),
         ]
         store = SimulationBuilder.from_symbol('TEST', ticks=tickets)
         state = store.state
@@ -45,7 +45,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         assert plan.sell_volume == 0
 
         tickets = [
-            Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_submit_sell, ),
+            Tick(time='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p_submit_sell, ),
         ]
         store = SimulationBuilder.resume(store=store, ticks=tickets)
         state = store.state
@@ -55,7 +55,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         assert order.is_sell and order.filled_qty == 0
 
         tickets = [
-            Tick(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
+            Tick(time='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
         ]
         store = SimulationBuilder.resume(store=store, ticks=tickets)
         state = store.state
@@ -64,7 +64,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         assert plan.orders[-1].is_filled
 
         tickets = [
-            Tick(day='23-04-10T09:34:00-04:00:00', pre_close=pc, open=pc, latest=p_not_buy, ),
+            Tick(time='23-04-10T09:34:00-04:00:00', pre_close=pc, open=pc, latest=p_not_buy, ),
         ]
         store = SimulationBuilder.resume(store=store, ticks=tickets)
         state = store.state
@@ -72,7 +72,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         assert len(plan.orders) == 1
 
         tickets = [
-            Tick(day='23-04-10T09:35:00-04:00:00', pre_close=pc, open=pc, latest=p_submit_buy, ),
+            Tick(time='23-04-10T09:35:00-04:00:00', pre_close=pc, open=pc, latest=p_submit_buy, ),
         ]
         store = SimulationBuilder.resume(store=store, ticks=tickets)
         state = store.state
@@ -82,7 +82,7 @@ class SubmitOrderTestCase(unittest.TestCase):
         assert order.is_buy and order.filled_qty == 0
 
         tickets = [
-            Tick(day='23-04-10T09:36:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
+            Tick(time='23-04-10T09:36:00-04:00:00', pre_close=pc, open=pc, latest=p_buy, ),
         ]
         store = SimulationBuilder.resume(store=store, ticks=tickets)
         state = store.state

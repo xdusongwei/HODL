@@ -37,7 +37,7 @@ def _build_item(
 
 @dataclass
 class Tick:
-    day: str = field()
+    time: str = field()
     pre_close: float = field()
     open: float = field()
     latest: float = field()
@@ -47,10 +47,10 @@ class Tick:
     high: float = field(default=None)
 
     def to_fake_quote(self) -> FakeQuote:
-        if re.match(r'^\d{2}-\d{2}-\d{2}', self.day):
-            day = f'20{self.day}'
+        if re.match(r'^\d{2}-\d{2}-\d{2}', self.time):
+            day = f'20{self.time}'
         else:
-            day = self.day
+            day = self.time
         time = datetime.fromisoformat(day)
         return _build_item(
             time=time,

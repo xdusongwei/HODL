@@ -19,8 +19,8 @@ class RiskControlTestCase(unittest.TestCase):
         pc = 10.0
         p = pc * 1.03
         tickets = [
-            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
-            Tick(day='23-04-10T09:30:01-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
+            Tick(time='23-04-10T09:30:01-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = SimulationBuilder.from_symbol(
             symbol='TEST',
@@ -70,8 +70,8 @@ class RiskControlTestCase(unittest.TestCase):
         p0 = pc * 1.00
         p3 = pc * 1.03
         tickets = [
-            Tick(day='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
-            Tick(day='23-04-10T09:30:01-04:00:00', pre_close=pc, open=p0, latest=p3, ),
+            Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+            Tick(time='23-04-10T09:30:01-04:00:00', pre_close=pc, open=p0, latest=p3, ),
         ]
         for store_type in [_BadChipDayStore, _BadCashDayStore, _BadQuoteDayStore]:
             with pytest.raises(RiskControlError):
