@@ -171,7 +171,7 @@ class VariableTools:
     @property
     def telegram_chat_id(self) -> int:
         """
-        Telegram群组id,通知消息
+        Telegram群组id, 用于发送通知消息
         """
         telegram: dict = self._config.get('telegram', dict())
         chat_id = telegram.get('chat_id')
@@ -236,6 +236,16 @@ class VariableTools:
         如果持仓数量多, 每个持仓线程都去遍历市场状态接口, 可能因为券商接口限速的原因, 处理时间非常长.
         """
         return self._config.get('async_market_status', False)
+
+    @property
+    def quote_cache_ttl(self) -> int | None:
+        """
+        拉取的行情数据可以保留为缓存的时效, 单位秒, 对于相同标的的多券商分散持仓, 以此来控制行情调用的频繁程度
+        """
+        ttl = self._config.get('quote_cache_ttl', None)
+        if ttl is not None and ttl < 0:
+            ttl = None
+        return ttl
 
     @property
     def html_file_path(self) -> str | None:

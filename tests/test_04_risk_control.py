@@ -25,7 +25,7 @@ class RiskControlTestCase(unittest.TestCase):
         store = SimulationBuilder.from_symbol(
             symbol='TEST',
             auto_run=False,
-            tickets=tickets,
+            ticks=tickets,
             store_type=_Store,
             output_state=False,
         )
@@ -39,14 +39,14 @@ class RiskControlTestCase(unittest.TestCase):
         # 通常本服务不应该设置为开机启动，崩溃自动重启，任何一次的进程启动动作都需要认真确认状态数据是正常的。
         _Store.USE_SUPER_CHIP_MOCK = True
         store.state.chip_day = ''
-        SimulationBuilder.resume(store=store, tickets=tickets, output_state=False)
+        SimulationBuilder.resume(store=store, ticks=tickets, output_state=False)
         assert len(store.state.plan.orders) == 0
 
         # 只有清空风控异常状态, 才可以正常运行
         store.state.risk_control_break = False
         store.state.risk_control_detail = ''
         _Store.USE_SUPER_CHIP_MOCK = True
-        SimulationBuilder.resume(store=store, tickets=tickets, output_state=False)
+        SimulationBuilder.resume(store=store, ticks=tickets, output_state=False)
         assert len(store.state.plan.orders) == 1
 
     def test_bad_day(self):
@@ -78,7 +78,7 @@ class RiskControlTestCase(unittest.TestCase):
                 SimulationBuilder.from_symbol(
                     symbol='TEST',
                     store_type=store_type,
-                    tickets=tickets,
+                    ticks=tickets,
                     auto_run=True,
                     output_state=False,
                 )

@@ -86,19 +86,19 @@ class SimulationStore(StoreHodl):
             self,
             store_config: StoreConfig,
             quote_csv: str,
-            tickets: list[Tick] = None,
+            ticks: list[Tick] = None,
             db: LocalDb = None,
             quote_length: int = 0,
     ):
         super().__init__(store_config=store_config, db=db)
         self.mocks = list()
         self.history_quote: Generator[FakeQuote, Any, None] = \
-            generate_quote(quote_csv, limit=quote_length) if quote_csv else generate_from_tickets(tickets)
+            generate_quote(quote_csv, limit=quote_length) if quote_csv else generate_from_ticks(ticks)
         self.tiger_order_pool: dict[int, TigerOrder] = dict()
         self.order_pool: dict[int, Order] = dict()
         self.current_fake_quote: FakeQuote | None = None
-        if tickets:
-            self.current_fake_quote = tickets[0].to_fake_quote()
+        if ticks:
+            self.current_fake_quote = ticks[0].to_fake_quote()
         self.order_seq = 1
         self.files: dict[str, str] = dict()
 
@@ -106,7 +106,7 @@ class SimulationStore(StoreHodl):
         self.times_per_level = defaultdict(int)
 
     def reset_tickets(self, tickets: list[Tick]):
-        self.history_quote = generate_from_tickets(tickets)
+        self.history_quote = generate_from_ticks(tickets)
 
     def cancel_fake_order(self, order: Order):
         order_id = order.order_id
@@ -254,7 +254,7 @@ class SimulationBuilder:
     def _build(
         cls,
         symbol: str = None,
-        tickets: list[Tick] = None,
+        ticks: list[Tick] = None,
         quote_csv: str = None,
         quote_length: int = 0,
         show_plan_table: bool = False,
@@ -268,7 +268,7 @@ class SimulationBuilder:
         cash_amount: float = 10_000_000.0,
         margin_amount: float = 0.0,
     ) -> SimulationStore:
-        if tickets is None and quote_csv is None:
+        if ticks is None and quote_csv is None:
             raise ValueError(f'测试报价数据来源需要指定')
 
         if store is None:
@@ -279,7 +279,7 @@ class SimulationBuilder:
                 store_config = var.store_configs[symbol]
             store = store_type(
                 store_config=store_config,
-                tickets=tickets,
+                ticks=ticks,
                 quote_csv=quote_csv,
                 quote_length=quote_length,
                 db=db,
@@ -307,8 +307,8 @@ class SimulationBuilder:
                     broker_cash_currency_mock(store.broker_cash_currency_mock),
                 )
             store.mocks = mocks
-        elif tickets:
-            store.reset_tickets(tickets)
+        elif ticks:
+            store.reset_tickets(ticks)
 
         if show_plan_table:
             store_config = store.store_config
@@ -329,7 +329,7 @@ class SimulationBuilder:
     def from_symbol(
         cls,
         symbol: str,
-        tickets: list[Tick],
+        ticks: list[Tick],
         auto_run: bool = True,
         output_state: bool = True,
         store_type: Type[SimulationStore] = SimulationStore,
@@ -340,7 +340,7 @@ class SimulationBuilder:
         """
         return cls._build(
             symbol=symbol,
-            tickets=tickets,
+            ticks=ticks,
             auto_run=auto_run,
             output_state=output_state,
             store_type=store_type,
@@ -367,7 +367,7 @@ class SimulationBuilder:
     def from_config(
         cls,
         store_config: StoreConfig,
-        tickets: list[Tick],
+        ticks: list[Tick],
         auto_run: bool = True,
         output_state: bool = True,
         store_type: Type[SimulationStore] = SimulationStore,
@@ -381,7 +381,7 @@ class SimulationBuilder:
         """
         return cls._build(
             store_config=store_config,
-            tickets=tickets,
+            ticks=ticks,
             auto_run=auto_run,
             output_state=output_state,
             store_type=store_type,
@@ -395,7 +395,7 @@ class SimulationBuilder:
     def resume(
         cls,
         store: SimulationStore,
-        tickets: list[Tick],
+        ticks: list[Tick],
         auto_run: bool = True,
         output_state: bool = True,
     ):
@@ -404,7 +404,7 @@ class SimulationBuilder:
         """
         return cls._build(
             store=store,
-            tickets=tickets,
+            ticks=ticks,
             auto_run=auto_run,
             output_state=output_state,
         )
@@ -424,7 +424,7 @@ __all__ = [
     'file_write_mock',
     'SimulationStore',
     'generate_quote',
-    'generate_from_tickets',
+    'generate_from_ticks',
     'FakeQuote',
     'Tick',
     'SimulationStore',

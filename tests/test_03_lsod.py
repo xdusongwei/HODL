@@ -17,7 +17,7 @@ class LsodTestCase(unittest.TestCase):
             Tick(day='23-04-10T09:32:00-04:00:00', pre_close=pc, open=pc, latest=p3, ),
             Tick(day='23-04-10T09:33:00-04:00:00', pre_close=pc, open=pc, latest=p3, ),
         ]
-        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets, auto_run=False)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state
@@ -27,7 +27,7 @@ class LsodTestCase(unittest.TestCase):
         tickets = [
             Tick(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=pc, latest=p3, ),
         ]
-        store = SimulationBuilder.resume(store=store, tickets=tickets, auto_run=False)
+        store = SimulationBuilder.resume(store=store, ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state
@@ -37,7 +37,7 @@ class LsodTestCase(unittest.TestCase):
         tickets = [
             Tick(day='23-04-11T09:00:00-04:00:00', ms='PRE_MARKET', pre_close=pc, open=pc, latest=p3, ),
         ]
-        store = SimulationBuilder.resume(store=store, tickets=tickets, auto_run=False)
+        store = SimulationBuilder.resume(store=store, ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state
@@ -48,7 +48,7 @@ class LsodTestCase(unittest.TestCase):
             Tick(day='23-04-11T09:30:00-04:00:00', pre_close=p3, open=p0, latest=p0, ),
             Tick(day='23-04-11T09:31:00-04:00:00', pre_close=p3, open=p0, latest=p0, ),
         ]
-        store = SimulationBuilder.resume(store=store, tickets=tickets, auto_run=False)
+        store = SimulationBuilder.resume(store=store, ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state
@@ -65,7 +65,7 @@ class LsodTestCase(unittest.TestCase):
             Tick(day='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(day='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
-        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets, auto_run=False)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state
@@ -75,7 +75,7 @@ class LsodTestCase(unittest.TestCase):
         tickets = [
             Tick(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
         ]
-        store = SimulationBuilder.resume(store=store, tickets=tickets, auto_run=False)
+        store = SimulationBuilder.resume(store=store, ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state
@@ -93,7 +93,7 @@ class LsodTestCase(unittest.TestCase):
             Tick(day='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(day='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
-        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets, auto_run=False)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state
@@ -103,7 +103,7 @@ class LsodTestCase(unittest.TestCase):
         tickets = [
             Tick(day='23-04-11T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
-        store = SimulationBuilder.resume(store=store, tickets=tickets, auto_run=False)
+        store = SimulationBuilder.resume(store=store, ticks=tickets, auto_run=False)
         with store:
             with pytest.raises(RiskControlError):
                 store.run(output_state=False)
@@ -120,7 +120,7 @@ class LsodTestCase(unittest.TestCase):
             Tick(day='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(day='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
-        store = SimulationBuilder.from_symbol(symbol='TEST', tickets=tickets, auto_run=False)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state
@@ -130,7 +130,7 @@ class LsodTestCase(unittest.TestCase):
         tickets = [
             Tick(day='23-04-11T20:00:00-04:00:00', ms='CLOSING', qs='NORMAL', pre_close=pc, open=p, latest=p, ),
         ]
-        store = SimulationBuilder.resume(store=store, tickets=tickets, auto_run=False)
+        store = SimulationBuilder.resume(store=store, ticks=tickets, auto_run=False)
         with store:
             with pytest.raises(RiskControlError):
                 store.run(output_state=False)
@@ -146,7 +146,7 @@ class LsodTestCase(unittest.TestCase):
             Tick(day='23-04-10T22:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(day='23-04-10T22:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
-        store = SimulationBuilder.from_symbol(symbol='BTC', tickets=tickets, auto_run=False)
+        store = SimulationBuilder.from_symbol(symbol='BTC', ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state
@@ -156,7 +156,7 @@ class LsodTestCase(unittest.TestCase):
         tickets = [
             Tick(day='23-04-10T23:00:00-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
-        store = SimulationBuilder.resume(store=store, tickets=tickets, auto_run=False)
+        store = SimulationBuilder.resume(store=store, ticks=tickets, auto_run=False)
         with store:
             store.run()
             state = store.state

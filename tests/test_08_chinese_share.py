@@ -18,7 +18,7 @@ class ChineseShareTestCase(unittest.TestCase):
             Tick(day='23-04-10T09:33:00+08:00:00', pre_close=pc, open=p0, latest=13.0, ),
             Tick(day='23-04-10T09:34:00+08:00:00', pre_close=pc, open=p0, latest=14.0, ),
         ]
-        store = SimulationBuilder.from_symbol(symbol='000001', tickets=tickets)
+        store = SimulationBuilder.from_symbol(symbol='000001', ticks=tickets)
         store_config, state, plan = store.args()
         orders = plan.orders
         table = store.build_table(store_config=store_config, plan=plan)

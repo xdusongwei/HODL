@@ -27,7 +27,7 @@ class MarginTestCase(unittest.TestCase):
         ]
         store = SimulationBuilder.from_config(
             store_config=store_config,
-            tickets=tickets,
+            ticks=tickets,
             cash_amount=0.0,
             margin_amount=45450.0,
         )
@@ -56,7 +56,7 @@ class MarginTestCase(unittest.TestCase):
         with pytest.raises(RiskControlError):
             SimulationBuilder.from_config(
                 store_config=store_config,
-                tickets=tickets,
+                ticks=tickets,
                 cash_amount=0.0,
                 margin_amount=45449.0,
             )

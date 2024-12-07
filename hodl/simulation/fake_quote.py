@@ -64,9 +64,9 @@ class Tick:
         )
 
 
-def generate_from_tickets(tickets: list[Tick]):
-    for ticket in tickets:
-        yield ticket.to_fake_quote()
+def generate_from_ticks(ticks: list[Tick]):
+    for tick in ticks:
+        yield tick.to_fake_quote()
 
 
 def generate_quote(csv_path, coin=None, limit: int = 0):
@@ -160,7 +160,7 @@ def generate_quote(csv_path, coin=None, limit: int = 0):
 
 __all__ = [
     'generate_quote',
-    'generate_from_tickets',
+    'generate_from_ticks',
     'FakeQuote',
     'Tick',
 ]

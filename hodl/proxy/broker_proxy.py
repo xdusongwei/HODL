@@ -1,9 +1,11 @@
+from expiringdict import ExpiringDict
 from hodl.broker import *
+from hodl.quote import *
 from hodl.state import *
 from hodl.exception_tools import *
 
 
-class BrokerProxy:
+class BrokerProxy(BrokerApiMixin):
     """
     Broker代理中介了BrokerApiBase接口调用
 
@@ -13,6 +15,7 @@ class BrokerProxy:
     市场状态需要定时统一一次性全部broker触发拉取，按Broker种类汇总保存到 MARKET_STATUS
     特定持仓需要市场状态时，根据broker顺序列表从 MARKET_STATUS 尝试取特定交易品种特定region的状态
     """
+    _QUOTE_CACHE = ExpiringDict(max_len=2024, max_age_seconds=2)
 
     def _query_quote(self):
         exc = None
@@ -25,6 +28,10 @@ class BrokerProxy:
                     continue
                 if store_config.region not in meta.quote_regions:
                     continue
+                cache_key = (store_config.broker, store_config.trade_type, store_config.symbol, )
+                if store_config.using_cached_quote:
+                    if cache_quote := BrokerProxy._QUOTE_CACHE.get(cache_key, None):
+                        return cache_quote
                 try:
                     quote = broker.fetch_quote()
                     assert isinstance(quote.pre_close, float)
@@ -36,12 +43,16 @@ class BrokerProxy:
                     quote = None
                     exc = e
                 if quote:
+                    BrokerProxy._QUOTE_CACHE[cache_key] = quote
                     return quote
         if exc:
             raise exc
         raise QuoteScheduleOver
 
     # proxy APIs begin
+    def fetch_market_status(self):
+        raise NotImplementedError
+
     def query_quote(self):
         return self._query_quote()
 
@@ -112,6 +123,8 @@ class BrokerProxy:
             if t.BROKER_NAME == store_config.broker
         ]
         self.trade_brokers = brokers
+        if var.quote_cache_ttl:
+            BrokerProxy._QUOTE_CACHE.max_age = var.quote_cache_ttl
 
     def _find_trade_broker(self):
         broker_name = self.store_config.broker

@@ -89,7 +89,7 @@ class CurrencyTestCase(unittest.TestCase):
             Tick(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
             Tick(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
         ]
-        store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')
+        store = SimulationBuilder.from_config(store_config=store_config, ticks=tickets, broker_currency='USD')
         plan = store.state.plan
         assert plan.earning
 
@@ -114,7 +114,7 @@ class CurrencyTestCase(unittest.TestCase):
             Tick(day='23-04-11T09:32:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
             Tick(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
         ]
-        store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')
+        store = SimulationBuilder.from_config(store_config=store_config, ticks=tickets, broker_currency='USD')
         plan = store.state.plan
         assert plan.earning
 
@@ -140,7 +140,7 @@ class CurrencyTestCase(unittest.TestCase):
             Tick(day='23-04-11T09:33:00-04:00:00', pre_close=p_sell, open=p_buy, latest=p_buy, ),
         ]
         with pytest.raises(RiskControlError):
-            SimulationBuilder.from_config(store_config=store_config, tickets=tickets, broker_currency='USD')
+            SimulationBuilder.from_config(store_config=store_config, ticks=tickets, broker_currency='USD')
 
     def tearDown(self):
         CurrencyProxy._CURRENCY = set()

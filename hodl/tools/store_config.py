@@ -511,6 +511,15 @@ class StoreConfig(dict):
         return self.get('prefer_quote_brokers', list())
 
     @property
+    def using_cached_quote(self) -> bool:
+        """
+        是否选择使用缓存过的行情,
+        如果在多家券商操作同一标的的持仓, 可以减少对相同标的行情的频繁获取
+        启用这个设定需要配合根配置的 quote_cache_ttl 设定
+        """
+        return self.get('using_cached_quote', False)
+
+    @property
     def stage(self) -> int:
         return len(self.multistage_rocket)
 

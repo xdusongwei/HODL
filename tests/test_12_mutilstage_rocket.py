@@ -30,7 +30,7 @@ class MultistageRocketTestCase(unittest.TestCase):
             Tick(day='23-04-10T09:32:06-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
             Tick(day='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
         ]
-        store = SimulationBuilder.from_config(store_config=store_config, tickets=tickets)
+        store = SimulationBuilder.from_config(store_config=store_config, ticks=tickets)
         plan = store.state.plan
         chips = plan.total_chips
         remain = chips + plan.buy_volume - plan.sell_volume
@@ -55,7 +55,7 @@ class MultistageRocketTestCase(unittest.TestCase):
             Tick(day='23-04-11T09:33:02-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
             Tick(day='23-04-11T20:00:00-04:00:00', ms='CLOSING', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
         ]
-        store = SimulationBuilder.resume(store=store, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, ticks=tickets)
         plan = store.state.plan
         chips = plan.total_chips
         remain = chips + plan.buy_volume - plan.sell_volume
@@ -73,7 +73,7 @@ class MultistageRocketTestCase(unittest.TestCase):
             Tick(day='23-04-12T09:32:02-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
             Tick(day='23-04-12T09:32:02-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
         ]
-        store = SimulationBuilder.resume(store=store, tickets=tickets)
+        store = SimulationBuilder.resume(store=store, ticks=tickets)
         plan = store.state.plan
         chips = plan.total_chips
         remain = chips + plan.buy_volume - plan.sell_volume

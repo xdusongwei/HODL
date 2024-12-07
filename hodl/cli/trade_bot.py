@@ -1,7 +1,7 @@
 import os
 import platform
 from threading import Thread
-from hodl.bot import AlertBot
+from hodl.bot import *
 from hodl.storage import *
 from hodl.store import *
 from hodl.quote_mixin import *
@@ -27,8 +27,8 @@ class Manager(ThreadMixin):
     CURRENCY_THREAD: Thread = None
     PSUTIL_THREAD: Thread = None
 
-    def __init__(self):
-        self.var = VariableTools()
+    def __init__(self, config_file: str = None):
+        self.var = VariableTools(config_file=config_file)
         env = self.var.jinja_env
         template = env.get_template("api_status.html")
         self.template = template
