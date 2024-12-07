@@ -82,6 +82,15 @@ class SimulationStore(StoreHodl):
     ENABLE_BROKER = False
     SHOW_EXCEPTION_DETAIL = True
 
+    @classmethod
+    def ci_config_path(cls):
+        return LocateTools.locate_file('tests/ci/config.toml')
+
+    @classmethod
+    def config(cls):
+        config_path = cls.ci_config_path()
+        return VariableTools(config_path)
+
     def __init__(
             self,
             store_config: StoreConfig,
@@ -275,7 +284,7 @@ class SimulationBuilder:
             if not symbol and not store_config:
                 raise ValueError(f'创建持仓对象需要指定symbol')
             if store_config is None:
-                var = VariableTools()
+                var = SimulationStore.config()
                 store_config = var.store_configs[symbol]
             store = store_type(
                 store_config=store_config,
