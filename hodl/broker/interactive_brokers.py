@@ -224,39 +224,38 @@ class InteractiveBrokersApi(BrokerApiBase):
 
     @track_api
     def refresh_order(self, order: Order):
-        with self.ORDER_BUCKET:
-            match self.connection_type:
-                case 'TWS':
+        match self.connection_type:
+            case 'TWS':
+                with self.ORDER_BUCKET:
                     socket = self.ib_socket()
                     self._try_fill_contract()
                     trades = socket.trades()
-                    for ib_trade in trades:
-                        ib_order = ib_trade.order
-                        if ib_order.permId != order.order_id:
-                            continue
-                        qty = int(self._total_fills(ib_trade) + ib_trade.remaining())
-                        filled_qty = self._total_fills(ib_trade)
-                        qty = qty or filled_qty
-                        assert qty >= filled_qty
-                        avg_fill_price = self._avg_price(ib_trade)
-                        reason = ''
-                        if ib_trade.orderStatus.status == ib_insync.OrderStatus.Inactive:
-                            reason = 'Inactive'
+                for ib_trade in trades:
+                    ib_order = ib_trade.order
+                    if ib_order.permId != order.order_id:
+                        continue
+                    qty = int(self._total_fills(ib_trade) + ib_trade.remaining())
+                    filled_qty = self._total_fills(ib_trade)
+                    qty = qty or filled_qty
+                    assert qty >= filled_qty
+                    avg_fill_price = self._avg_price(ib_trade)
+                    reason = ''
+                    if ib_trade.orderStatus.status == ib_insync.OrderStatus.Inactive:
+                        reason = 'Inactive'
 
-                        cancel_status = {ib_insync.OrderStatus.Cancelled, ib_insync.OrderStatus.ApiCancelled, }
-                        is_cancelled = ib_trade.orderStatus.status in cancel_status
-                        self.modify_order_fields(
-                            order=order,
-                            qty=qty,
-                            filled_qty=filled_qty,
-                            avg_fill_price=avg_fill_price,
-                            trade_timestamp=None,
-                            reason=reason,
-                            is_cancelled=is_cancelled,
-                        )
-                    return 0
-                case _:
-                    return 0
+                    cancel_status = {ib_insync.OrderStatus.Cancelled, ib_insync.OrderStatus.ApiCancelled, }
+                    is_cancelled = ib_trade.orderStatus.status in cancel_status
+                    self.modify_order_fields(
+                        order=order,
+                        qty=qty,
+                        filled_qty=filled_qty,
+                        avg_fill_price=avg_fill_price,
+                        trade_timestamp=None,
+                        reason=reason,
+                        is_cancelled=is_cancelled,
+                    )
+            case _:
+                pass
 
     @track_api
     def fetch_quote(self) -> Quote:

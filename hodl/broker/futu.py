@@ -85,6 +85,7 @@ class FutuApi(BrokerApiBase):
         }
         status_map = {
             'CLOSED': self.MS_CLOSED,
+            'AFTER_HOURS_BEGIN': self.MS_CLOSED,
             'AFTER_HOURS_END': self.MS_CLOSED,
             'MORNING': self.MS_TRADING,
             'AFTERNOON': self.MS_TRADING,

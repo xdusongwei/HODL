@@ -316,22 +316,22 @@ class LongPortApi(BrokerApiBase):
         with self.ASSET_BUCKET:
             self.try_refresh()
             resp = self.trade_client.order_detail(order_id=order.order_id)
-            reason = ''
-            if resp.status == OrderStatus.Rejected:
-                reason = '已拒绝'
-            if resp.status == OrderStatus.Expired:
-                reason = '已过期'
-            if resp.status == OrderStatus.PartialWithdrawal:
-                reason = '部分撤单'
-            self.modify_order_fields(
-                order=order,
-                qty=int(resp.quantity),
-                filled_qty=int(resp.executed_quantity),
-                avg_fill_price=float(resp.executed_price) if resp.executed_price else 0.0,
-                trade_timestamp=None,
-                reason=reason,
-                is_cancelled=resp.status == OrderStatus.Canceled,
-            )
+        reason = ''
+        if resp.status == OrderStatus.Rejected:
+            reason = '已拒绝'
+        if resp.status == OrderStatus.Expired:
+            reason = '已过期'
+        if resp.status == OrderStatus.PartialWithdrawal:
+            reason = '部分撤单'
+        self.modify_order_fields(
+            order=order,
+            qty=int(resp.quantity),
+            filled_qty=int(resp.executed_quantity),
+            avg_fill_price=float(resp.executed_price) if resp.executed_price else 0.0,
+            trade_timestamp=None,
+            reason=reason,
+            is_cancelled=resp.status == OrderStatus.Canceled,
+        )
 
 
 __all__ = ['LongPortApi', 'TokenKeeper', ]

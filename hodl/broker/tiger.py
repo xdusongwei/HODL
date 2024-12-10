@@ -132,6 +132,7 @@ class TigerApi(BrokerApiBase):
         }
         status_map = {
             'AFTER_HOURS_BEGIN': self.MS_CLOSED,
+            'POST_HOUR_TRADING': self.MS_CLOSED,
             'EARLY_CLOSED': self.MS_CLOSED,
             'MARKET_CLOSED': self.MS_CLOSED,
         }
