@@ -47,6 +47,16 @@ class CurrencyNode:
         return False
 
 
+@dataclasses.dataclass
+class DfsSearchState:
+    base_currency: str
+    target_currency: str
+    edges: list[CurrencyNode]
+    current_path: list[CurrencyNode] = dataclasses.field(default_factory=list)
+    tail_currency: str = None
+    best_distance: int = 100
+
+
 class CurrencyProxy(ThreadMixin):
     """
     汇率更新代理在使用之前需要配置一个 URL 地址,
@@ -71,7 +81,7 @@ class CurrencyProxy(ThreadMixin):
     }
 
     汇率信息不是必要配置的部分, 除非需要操作的持仓属于非券商默认现金币种以外的货币.
-    比如, 很多跨境券商, 默认币种是美元, 那么假如你需要控制的持仓是港股, 则这个持仓的运行依赖货币汇率,
+    比如, 很多跨境券商, 默认现金币种是美元, 那么假如你需要控制的持仓是港股, 则这个持仓的运行依赖货币汇率,
     以便把账户美元现金转换为港币价值来维持系统的计算任务.
     """
 
@@ -141,44 +151,60 @@ class CurrencyProxy(ThreadMixin):
         return html
 
     @classmethod
+    def _search_dfs(cls, state: DfsSearchState) -> list[CurrencyNode]:
+        current_path = state.current_path
+        edges = state.edges
+        base_currency = state.base_currency
+        target_currency = state.target_currency
+        tail_currency = state.tail_currency
+        if len(current_path) > len(edges):
+            raise ValueError(f'搜索货币对的路径栈大小超出了容量')
+        if len(current_path) >= state.best_distance:
+            return list()
+        best_result = list()
+        for edge in edges:
+            if edge.base_currency == edge.target_currency:
+                continue
+            if edge in current_path:
+                continue
+            if len(current_path) == 0:
+                if edge.base_currency != base_currency and edge.target_currency != base_currency:
+                    continue
+                tail_currency = base_currency
+            else:
+                if tail_currency not in {edge.base_currency, edge.target_currency, }:
+                    continue
+            new_tail_currency = edge.target_currency if edge.base_currency == tail_currency else edge.base_currency
+            state.current_path = new_current_path = current_path.copy()
+            state.tail_currency = new_tail_currency
+            new_current_path.append(edge)
+            if edge.target_currency == target_currency or edge.base_currency == target_currency:
+                if len(new_current_path) < state.best_distance:
+                    state.best_distance = len(new_current_path)
+                    return new_current_path
+            else:
+                result = cls._search_dfs(state)
+                if result:
+                    if not best_result:
+                        best_result = result
+                    elif len(result) < len(best_result):
+                        best_result = result
+        return best_result
+
+    @classmethod
     def search_rate(
         cls,
         base_currency: str,
         target_currency: str,
     ):
-        def _search_dfs(
-                edges: list[CurrencyNode],
-                current_path: list[CurrencyNode] = None,
-                tail_currency: str = None,
-        ) -> list[CurrencyNode]:
-            current_path = current_path or list()
-            if len(current_path) > len(edges):
-                raise ValueError(f'搜索货币对的路径栈大小超出了容量')
-            for edge in edges:
-                if edge.base_currency == edge.target_currency:
-                    continue
-                if edge in current_path:
-                    continue
-                if len(current_path) == 0:
-                    if edge.base_currency != base_currency and edge.target_currency != base_currency:
-                        continue
-                    tail_currency = base_currency
-                else:
-                    if tail_currency not in {edge.base_currency, edge.target_currency, }:
-                        continue
-                new_tail_currency = edge.target_currency if edge.base_currency == tail_currency else edge.base_currency
-                new_current_path = current_path.copy()
-                new_current_path.append(edge)
-                if edge.target_currency == target_currency or edge.base_currency == target_currency:
-                    return new_current_path
-                else:
-                    result = _search_dfs(edges, new_current_path, new_tail_currency)
-                    if result:
-                        return result
-            return list()
         currency_edges = list(CurrencyProxy._CURRENCY)
         random.shuffle(currency_edges)
-        path = _search_dfs(edges=currency_edges)
+        state = DfsSearchState(
+            base_currency=base_currency,
+            target_currency=target_currency,
+            edges=currency_edges,
+        )
+        path = cls._search_dfs(state)
         if not path:
             raise ValueError(f'无法搜索到{base_currency}->{target_currency}货币兑换方式.')
         rate_link = list()

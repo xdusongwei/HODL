@@ -67,6 +67,17 @@ class CurrencyTestCase(HodlTestCase):
             for target_currency in ['A', 'B', 'C', 'D', 'E', ]:
                 assert CurrencyProxy.convert_currency(base_currency, target_currency, 100, 2)
 
+    def test_best_exchange_path(self):
+        """
+        验证汇率优先选择最短路径
+        """
+        CurrencyProxy._CURRENCY = {
+            CurrencyNode(base_currency='A', target_currency='B', rate=2),
+            CurrencyNode(base_currency='B', target_currency='C', rate=3),
+            CurrencyNode(base_currency='A', target_currency='C', rate=5),
+        }
+        assert CurrencyProxy.convert_currency('A', 'C', 100, 2) == 500
+
     def test_store_currency(self):
         """
         更改持仓的币种为 XYZ, USDXYZ 汇率为 1, 第一天卖出一档, 第二天买回, 应通过.
