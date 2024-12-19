@@ -102,13 +102,12 @@ class CurrencyProxy(ThreadMixin):
         if not currency_config or not currency_config.url:
             return currency_nodes
 
-        new_set = CurrencyProxy._CURRENCY.copy()
         args = dict(
             method='GET',
             url=currency_config.url,
             timeout=currency_config.timeout,
             headers={
-                'User-Agent': 'tradebot',
+                'User-Agent': 'tradebot(HODL)',
             },
         )
         try:
@@ -119,15 +118,12 @@ class CurrencyProxy(ThreadMixin):
             assert resp_type == 'currencyList'
             currency_list = d.get('currencyList', list())
             currency_nodes = [CurrencyNode.from_dict(item) for item in currency_list]
-            for node in currency_nodes:
-                if node in new_set:
-                    new_set.remove(node)
-                new_set.add(node)
+            new_set = set(currency_nodes)
+            CurrencyProxy._CURRENCY = new_set
             return currency_nodes
         except requests.JSONDecodeError:
             return currency_nodes
-        finally:
-            CurrencyProxy._CURRENCY = new_set
+
 
     def prepare(self):
         self.pull_currency()
@@ -151,7 +147,7 @@ class CurrencyProxy(ThreadMixin):
         return html
 
     @classmethod
-    def _search_dfs(cls, state: DfsSearchState) -> list[CurrencyNode]:
+    def _search_dfs(cls, state: DfsSearchState) -> list[CurrencyNode] | None:
         current_path = state.current_path
         edges = state.edges
         base_currency = state.base_currency
@@ -160,8 +156,8 @@ class CurrencyProxy(ThreadMixin):
         if len(current_path) > len(edges):
             raise ValueError(f'搜索货币对的路径栈大小超出了容量')
         if len(current_path) >= state.best_distance:
-            return list()
-        best_result = list()
+            return None
+        best_result = None
         for edge in edges:
             if edge.base_currency == edge.target_currency:
                 continue
