@@ -61,7 +61,7 @@ class BasicTestCase(HodlTestCase):
 
     def test_date_timezone_context(self):
         """
-        验证线程被注册为中国，香港，美国地区时，
+        验证线程被注册为中国，香港，美国，新加坡地区时，
         当前线程时区应分别对应正确的时区缩写，以及完整的时区描述。
         """
         TimeTools.THREAD_TZ.clear()
@@ -73,8 +73,13 @@ class BasicTestCase(HodlTestCase):
 
         TimeTools.thread_register('HK')
         date = TimeTools.us_time_now()
-        assert date.tzname() == 'CST'
-        assert TimeTools.current_tz() == 'Asia/Shanghai'
+        assert date.tzname() == 'HKT'
+        assert TimeTools.current_tz() == 'Asia/Hong_Kong'
+
+        TimeTools.thread_register('SG')
+        date = TimeTools.us_time_now()
+        assert date.tzname() == '+08'
+        assert TimeTools.current_tz() == 'Asia/Singapore'
 
         TimeTools.thread_register('US')
         date = TimeTools.us_time_now()

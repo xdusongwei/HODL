@@ -21,8 +21,12 @@ class TimeTools:
         match region:
             case 'US':
                 return 'US/Eastern'
-            case 'CN' | 'HK' | 'SG':
+            case 'CN':
                 return 'Asia/Shanghai'
+            case 'HK':
+                return 'Asia/Hong_Kong'
+            case 'SG':
+                return 'Asia/Singapore'
             case _:
                 raise ValueError(f'无法将Region:{region}转为特定时区')
 
