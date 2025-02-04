@@ -12,7 +12,7 @@ class TumbleProtectTestCase(HodlTestCase):
     def test_tp_ma(self):
         config = self.config().store_configs['TEST']
         config['base_price_tumble_protect'] = True
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=10.0, open=10.0, latest=10.0, low=10.0, high=10.0, ),
             Tick(time='23-04-11T09:30:00-04:00:00', pre_close=10.0, open=5.0, latest=5.0, low=5.0, high=5.0, ),
             Tick(time='23-04-12T09:30:00-04:00:00', pre_close=5.0, open=5.01, latest=5.01, low=5.01, high=5.01, ),
@@ -25,16 +25,16 @@ class TumbleProtectTestCase(HodlTestCase):
             Tick(time='23-04-19T09:30:00-04:00:00', pre_close=5.04, open=5.04, latest=5.04, low=5.04, high=5.04, ),
         ]
         db = LocalDb(':memory:')
-        store = SimulationBuilder.from_config(store_config=config, db=db, ticks=tickets)
+        store = SimulationBuilder.from_config(store_config=config, db=db, ticks=ticks)
         _, state, _ = store.args()
         assert not state.ta_tumble_protect_flag
         assert state.bp_function == 'min'
 
-        tickets = [
+        ticks = [
             Tick(time='23-04-20T09:30:00-04:00:00', pre_close=5.04, open=5.04, latest=5.04, low=5.04, high=5.04, ),
             Tick(time='23-04-20T09:31:00-04:00:00', pre_close=5.04, open=5.04, latest=5.04, low=5.04, high=5.04, ),
         ]
-        store = SimulationBuilder.resume(store=store, ticks=tickets)
+        store = SimulationBuilder.resume(store=store, ticks=ticks)
         _, state, _ = store.args()
         assert state.ta_tumble_protect_flag
         assert state.ta_tumble_protect_alert_price
@@ -53,11 +53,11 @@ class TumbleProtectTestCase(HodlTestCase):
                 )
         config = self.config().store_configs['TEST']
         config['vix_tumble_protect'] = 30
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=10.0, open=10.0, latest=10.0, low=10.0, ),
             Tick(time='23-04-10T09:31:00-04:00:00', pre_close=10.0, open=10.0, latest=20.0, low=10.0, ),
         ]
-        store = SimulationBuilder.from_config(store_config=config, store_type=_Store, ticks=tickets)
+        store = SimulationBuilder.from_config(store_config=config, store_type=_Store, ticks=ticks)
         _, state, plan = store.args()
         assert state.bp_function == 'max'
         assert state.ta_vix_high == 30.0
@@ -67,7 +67,7 @@ class TumbleProtectTestCase(HodlTestCase):
     def test_tp_rsi(self):
         config = self.config().store_configs['TEST']
         config['tumble_protect_rsi'] = True
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=10.0, open=10.0, latest=10.0, low=10.0, high=10.0),
             Tick(time='23-04-11T09:30:00-04:00:00', pre_close=10.0, open=9.0, latest=9.0, low=9.0, high=9.0),
             Tick(time='23-04-12T09:30:00-04:00:00', pre_close=9.0, open=8.0, latest=8.0, low=8.0, high=8.0),
@@ -84,19 +84,19 @@ class TumbleProtectTestCase(HodlTestCase):
             Tick(time='23-04-16T09:32:00-04:00:00', pre_close=7.0, open=6.0, latest=6.0, low=6.0, high=6.0),
         ]
         db = LocalDb(':memory:')
-        store = SimulationBuilder.from_config(store_config=config, db=db, ticks=tickets)
+        store = SimulationBuilder.from_config(store_config=config, db=db, ticks=ticks)
         _, state, _ = store.args()
         assert state.bp_function == 'max'
         assert state.ta_tumble_protect_rsi == config.tumble_protect_rsi_unlock_limit
         assert state.ta_tumble_protect_rsi_period == config.tumble_protect_rsi_period
         store.call_bars()
 
-        tickets = [
+        ticks = [
             Tick(time='23-04-17T09:30:00-04:00:00', pre_close=6.0, open=10.0, latest=10.0, low=10.0, high=10.0),
             Tick(time='23-04-18T09:30:00-04:00:00', pre_close=10.0, open=15.0, latest=15.0, low=15.0, high=15.0),
             Tick(time='23-04-19T09:30:00-04:00:00', pre_close=15.0, open=20.0, latest=20.0, low=20.0, high=20.0),
         ]
-        store = SimulationBuilder.resume(store=store, ticks=tickets)
+        store = SimulationBuilder.resume(store=store, ticks=ticks)
         _, state, _ = store.args()
         assert state.bp_function == 'min'
         assert state.ta_tumble_protect_rsi is None

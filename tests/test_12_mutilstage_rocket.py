@@ -18,7 +18,7 @@ class MultistageRocketTestCase(HodlTestCase):
         pc = 10.0
         p_sell = pc * 1.27
         p_buy = pc * 1.14
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:32:00-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
             Tick(time='23-04-10T09:32:01-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
             Tick(time='23-04-10T09:32:02-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
@@ -28,7 +28,7 @@ class MultistageRocketTestCase(HodlTestCase):
             Tick(time='23-04-10T09:32:06-04:00:00', pre_close=pc, open=p_sell, latest=p_sell, ),
             Tick(time='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
         ]
-        store = SimulationBuilder.from_config(store_config=store_config, ticks=tickets)
+        store = SimulationBuilder.from_config(store_config=store_config, ticks=ticks)
         plan = store.state.plan
         chips = plan.total_chips
         remain = chips + plan.buy_volume - plan.sell_volume
@@ -43,7 +43,7 @@ class MultistageRocketTestCase(HodlTestCase):
         pc_lv2 = p_sell
         p_sell_lv2 = pc_lv2 * 1.09
         p_buy_lv2 = pc_lv2 * 1.03
-        tickets = [
+        ticks = [
             Tick(time='23-04-11T09:32:00-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=pc_lv2, ),
             Tick(time='23-04-11T09:32:00-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_sell_lv2, ),
             Tick(time='23-04-11T09:32:01-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_sell_lv2, ),
@@ -53,7 +53,7 @@ class MultistageRocketTestCase(HodlTestCase):
             Tick(time='23-04-11T09:33:02-04:00:00', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
             Tick(time='23-04-11T20:00:00-04:00:00', ms='CLOSING', pre_close=pc_lv2, open=pc_lv2, latest=p_buy_lv2, ),
         ]
-        store = SimulationBuilder.resume(store=store, ticks=tickets)
+        store = SimulationBuilder.resume(store=store, ticks=ticks)
         plan = store.state.plan
         chips = plan.total_chips
         remain = chips + plan.buy_volume - plan.sell_volume
@@ -65,13 +65,13 @@ class MultistageRocketTestCase(HodlTestCase):
         store_config['multistage_rocket'] = [
             {'max_shares': 100_000, 'recover_price': 0.0, },
         ]
-        tickets = [
+        ticks = [
             Tick(time='23-04-12T09:32:00-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
             Tick(time='23-04-12T09:32:01-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
             Tick(time='23-04-12T09:32:02-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
             Tick(time='23-04-12T09:32:02-04:00:00', pre_close=p_buy_lv2, open=p_buy_lv2, latest=p_buy, ),
         ]
-        store = SimulationBuilder.resume(store=store, ticks=tickets)
+        store = SimulationBuilder.resume(store=store, ticks=ticks)
         plan = store.state.plan
         chips = plan.total_chips
         remain = chips + plan.buy_volume - plan.sell_volume

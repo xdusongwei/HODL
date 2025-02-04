@@ -11,14 +11,14 @@ class ChineseShareTestCase(unittest.TestCase):
         """
         pc = 10.0
         p0 = pc
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00+08:00:00', pre_close=pc, open=p0, latest=10.0, ),
             Tick(time='23-04-10T09:31:00+08:00:00', pre_close=pc, open=p0, latest=11.0, ),
             Tick(time='23-04-10T09:32:00+08:00:00', pre_close=pc, open=p0, latest=12.0, ),
             Tick(time='23-04-10T09:33:00+08:00:00', pre_close=pc, open=p0, latest=13.0, ),
             Tick(time='23-04-10T09:34:00+08:00:00', pre_close=pc, open=p0, latest=14.0, ),
         ]
-        store = SimulationBuilder.from_symbol(symbol='000001', ticks=tickets)
+        store = SimulationBuilder.from_symbol(symbol='000001', ticks=ticks)
         store_config, state, plan = store.args()
         orders = plan.orders
         table = store.build_table(store_config=store_config, plan=plan)

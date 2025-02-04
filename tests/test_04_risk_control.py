@@ -18,14 +18,14 @@ class RiskControlTestCase(unittest.TestCase):
 
         pc = 10.0
         p = pc * 1.03
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:01-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
         store = SimulationBuilder.from_symbol(
             symbol='TEST',
             auto_run=False,
-            ticks=tickets,
+            ticks=ticks,
             store_type=_Store,
             output_state=False,
         )
@@ -39,14 +39,14 @@ class RiskControlTestCase(unittest.TestCase):
         # 通常本服务不应该设置为开机启动，崩溃自动重启，任何一次的进程启动动作都需要认真确认状态数据是正常的。
         _Store.USE_SUPER_CHIP_MOCK = True
         store.state.chip_day = ''
-        SimulationBuilder.resume(store=store, ticks=tickets, output_state=False)
+        SimulationBuilder.resume(store=store, ticks=ticks, output_state=False)
         assert len(store.state.plan.orders) == 0
 
         # 只有清空风控异常状态, 才可以正常运行
         store.state.risk_control_break = False
         store.state.risk_control_detail = ''
         _Store.USE_SUPER_CHIP_MOCK = True
-        SimulationBuilder.resume(store=store, ticks=tickets, output_state=False)
+        SimulationBuilder.resume(store=store, ticks=ticks, output_state=False)
         assert len(store.state.plan.orders) == 1
 
     def test_bad_day(self):
@@ -69,7 +69,7 @@ class RiskControlTestCase(unittest.TestCase):
         pc = 10.0
         p0 = pc * 1.00
         p3 = pc * 1.03
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
             Tick(time='23-04-10T09:30:01-04:00:00', pre_close=pc, open=p0, latest=p3, ),
         ]
@@ -78,7 +78,7 @@ class RiskControlTestCase(unittest.TestCase):
                 SimulationBuilder.from_symbol(
                     symbol='TEST',
                     store_type=store_type,
-                    ticks=tickets,
+                    ticks=ticks,
                     auto_run=True,
                     output_state=False,
                 )

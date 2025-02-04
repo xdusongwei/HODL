@@ -14,14 +14,14 @@ class StoreTestCase(HodlTestCase):
         验证即便时间进入新的一天，但没有正确的开盘信号前，不应将当日持仓数量(chip_count)写入状态中，
         chip_count 是一个每日盘中初始时去更新的数据之一，盘前任何时段，系统都不应进行改动这些数据项。
         """
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:29:00-04:00:00', ms='-', qs='NORMAL', pre_close=1.0, open=10.0, latest=10.0, ),
             Tick(time='23-04-10T09:29:10-04:00:00', ms='-', qs='NORMAL', pre_close=1.0, open=10.0, latest=20.0, ),
             Tick(time='23-04-10T09:29:20-04:00:00', ms='-', qs='NORMAL', pre_close=1.0, open=10.0, latest=30.0, ),
             Tick(time='23-04-10T09:29:30-04:00:00', ms='-', qs='NORMAL', pre_close=1.0, open=10.0, latest=40.0, ),
         ]
 
-        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
         state = store.state
         assert state.chip_count is None
 
@@ -29,14 +29,14 @@ class StoreTestCase(HodlTestCase):
         """
         验证即便市场信号已经是盘中交易时段(TRADING)，但是行情状态并非正常(NORMAL)，即使股价非常高，系统不应下达卖出指令。
         """
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', ms='TRADING', qs='', pre_close=10.0, open=10.0, latest=10.0, ),
             Tick(time='23-04-10T09:30:10-04:00:00', ms='TRADING', qs='', pre_close=10.0, open=10.0, latest=20.0, ),
             Tick(time='23-04-10T09:30:20-04:00:00', ms='TRADING', qs='', pre_close=10.0, open=10.0, latest=30.0, ),
             Tick(time='23-04-10T09:30:30-04:00:00', ms='TRADING', qs='', pre_close=10.0, open=10.0, latest=40.0, ),
         ]
 
-        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
         state = store.state
         plan = state.plan
         assert plan.sell_volume == 0
@@ -46,14 +46,14 @@ class StoreTestCase(HodlTestCase):
         验证平盘开盘时，系统的一些关键持仓状态属性被正确更新，而且因为平盘，不应下达过任何买卖指令。
         """
         p = 10.0
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=p, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:10-04:00:00', pre_close=p, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:20-04:00:00', pre_close=p, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:30-04:00:00', pre_close=p, open=p, latest=p, ),
         ]
 
-        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
         state = store.state
         plan = state.plan
         max_shares = store.store_config.max_shares
@@ -71,14 +71,14 @@ class StoreTestCase(HodlTestCase):
         """
         pc = 20.0
         p = 10.0
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
 
-        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
         state = store.state
         plan = state.plan
         max_shares = store.store_config.max_shares
@@ -94,14 +94,14 @@ class StoreTestCase(HodlTestCase):
         """
         pc = 10.0
         p = pc * 1.03
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p, latest=p, ),
             Tick(time='23-04-10T09:30:30-04:00:00', pre_close=pc, open=p, latest=p, ),
         ]
 
-        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
         state = store.state
         plan = state.plan
         max_shares = store.store_config.max_shares
@@ -120,14 +120,14 @@ class StoreTestCase(HodlTestCase):
         pc = 10.0
         p0 = pc
         p3 = pc * 1.03
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:35:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
             Tick(time='23-04-10T09:36:10-04:00:00', pre_close=pc, open=p0, latest=p0, ),
             Tick(time='23-04-10T09:35:00-04:00:00', pre_close=pc, open=p0, latest=p3, ),
             Tick(time='23-04-10T09:37:30-04:00:00', pre_close=pc, open=p0, latest=p0, ),
         ]
 
-        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
         state = store.state
         plan = state.plan
         max_shares = store.store_config.max_shares
@@ -147,7 +147,7 @@ class StoreTestCase(HodlTestCase):
         pc = 10.0
         p0 = pc
         p3 = pc * 1.03
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
             Tick(time='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p0, latest=p3, ),
             Tick(time='23-04-10T09:30:20-04:00:00', pre_close=pc, open=p0, latest=p0, ),
@@ -155,7 +155,7 @@ class StoreTestCase(HodlTestCase):
             Tick(time='23-04-10T09:30:40-04:00:00', pre_close=pc, open=p0, latest=p0, ),
         ]
 
-        store = SimulationBuilder.from_symbol(symbol='TEST', db=db, ticks=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', db=db, ticks=ticks)
         state = store.state
         plan = state.plan
         assert plan.earning > 0
@@ -170,12 +170,12 @@ class StoreTestCase(HodlTestCase):
         pc = 10.0
         p0 = pc
         p100 = pc * 2
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
             Tick(time='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p0, latest=p100, ),
         ]
 
-        store = SimulationBuilder.from_config(store_config=store_config, ticks=tickets)
+        store = SimulationBuilder.from_config(store_config=store_config, ticks=ticks)
         state = store.state
         plan = state.plan
         orders = plan.orders
@@ -189,12 +189,12 @@ class StoreTestCase(HodlTestCase):
         pc = 10.0
         p0 = pc
         p100 = pc * 2
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
             Tick(time='23-04-10T09:30:10-04:00:00', pre_close=pc, open=p0, latest=p100, ),
         ]
 
-        store = SimulationBuilder.from_config(store_config=store_config, ticks=tickets)
+        store = SimulationBuilder.from_config(store_config=store_config, ticks=ticks)
         files = store.files
         assert files['/a/b/c.json']
 
@@ -202,9 +202,9 @@ class StoreTestCase(HodlTestCase):
         # 触发持仓线程的监控可视化状态更新动作，覆盖测试相关代码。
         pc = 10.0
         p0 = pc
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
         ]
 
-        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=tickets)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
         store.call_bars()

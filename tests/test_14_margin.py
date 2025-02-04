@@ -15,7 +15,7 @@ class MarginTestCase(HodlTestCase):
         pc = 10.0
         p_sell = pc * 1.03
         p_buy = pc * 1.0
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
             Tick(time='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
             Tick(time='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
@@ -25,7 +25,7 @@ class MarginTestCase(HodlTestCase):
         ]
         store = SimulationBuilder.from_config(
             store_config=store_config,
-            ticks=tickets,
+            ticks=ticks,
             cash_amount=0.0,
             margin_amount=45450.0,
         )
@@ -43,7 +43,7 @@ class MarginTestCase(HodlTestCase):
         pc = 10.0
         p_sell = pc * 1.03
         p_buy = pc * 1.0
-        tickets = [
+        ticks = [
             Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
             Tick(time='23-04-10T09:31:00-04:00:00', pre_close=pc, open=pc, latest=p_sell, ),
             Tick(time='23-04-10T20:00:00-04:00:00', ms='CLOSING', pre_close=pc, open=p_sell, latest=p_sell, ),
@@ -54,7 +54,7 @@ class MarginTestCase(HodlTestCase):
         with pytest.raises(RiskControlError):
             SimulationBuilder.from_config(
                 store_config=store_config,
-                ticks=tickets,
+                ticks=ticks,
                 cash_amount=0.0,
                 margin_amount=45449.0,
             )
