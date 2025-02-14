@@ -36,11 +36,11 @@
                     {% for order in orders %}
                     <tr>
                         <th scope="row" class="text-end">{{ order.order_emoji }}</th>
-                        <td class="font-monospace">
-                            <span class="badge bg-secondary">{{ FMT.pretty_dt(order.create_timestamp, region=order.region,
-                                with_year=True, with_tz=False)[2:10] }}</span>
-                            <span class="badge bg-secondary">{{ FMT.pretty_dt(order.create_timestamp, region=order.region,
-                                with_year=True, with_tz=False)[11:-10] }}</span>
+                        <td class="font-monospace" style="font-size: 0.75em">
+                            <span>{{ FMT.pretty_dt(order.create_timestamp, region=order.region,
+                                with_year=False, with_tz=False)[:5] }}</span>
+                            <span>{{ FMT.pretty_dt(order.create_timestamp, region=order.region,
+                                with_year=False, with_tz=False)[6:-10] }}</span>
                         </td>
                         <td>
                             {% for state in state_list %}
