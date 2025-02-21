@@ -29,8 +29,8 @@ class BrokerApiMixin(abc.ABC):
         返回此券商可以获得的市场状态，
         产生以region为键，市场状态为值的字典。
         市场状态有些值是重要的，如果券商的数据格式不一样，则它们需要做变换处理:
-        TRADING: 开盘时段；
-        CLOSING: 收盘时段，对于24小时全天可交易的交易所，closing_time配置项将可以自动把指定时段的TRADING状态变换为收盘，以便激活LSOD检查；
+        TRADING: 开盘(RTH)时段；
+        CLOSING: 收盘(非RTH)时段；
         其他值则按非活跃时段处理。
         如果该券商不支持市场状态，则返回空字典。
         """

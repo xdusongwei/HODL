@@ -22,32 +22,18 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         TelegramThreadBase.INSTANCE = self
         asyncio.set_event_loop(self.loop)
 
-        from hodl.cli.threads.bot_conversation.monthly_earning import MonthlyEarning
         from hodl.cli.threads.bot_conversation.today_orders import TodayOrders
-        from hodl.cli.threads.bot_conversation.settings import Settings
-        from hodl.cli.threads.bot_conversation.lock_position import LockPosition
-        from hodl.cli.threads.bot_conversation.enable_position import EnablePosition
-        from hodl.cli.threads.bot_conversation.base_price_last_buy import BasePriceLastBuy
-        from hodl.cli.threads.bot_conversation.max_shares import MaxShares
         from hodl.cli.threads.bot_conversation.temp_base_price import TempBasePrice
         from hodl.cli.threads.bot_conversation.report import Report
         from hodl.cli.threads.bot_conversation.delete_state import DeleteState
-        from hodl.cli.threads.bot_conversation.base_price_day_low import BasePriceDayLow
         from hodl.cli.threads.bot_conversation.revive_store import ReviveStore
         from hodl.cli.threads.bot_conversation.give_up_price import GiveUpPrice
 
         dispatcher = self.app
-        dispatcher.add_handler(MonthlyEarning.handler())
         dispatcher.add_handler(TodayOrders.handler())
-        dispatcher.add_handler(Settings.handler())
-        dispatcher.add_handler(LockPosition.handler())
-        dispatcher.add_handler(EnablePosition.handler())
-        dispatcher.add_handler(BasePriceLastBuy.handler())
-        dispatcher.add_handler(MaxShares.handler())
         dispatcher.add_handler(TempBasePrice.handler())
         dispatcher.add_handler(Report.handler())
         dispatcher.add_handler(DeleteState.handler())
-        dispatcher.add_handler(BasePriceDayLow.handler())
         dispatcher.add_handler(ReviveStore.handler())
         dispatcher.add_handler(GiveUpPrice.handler())
 

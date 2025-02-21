@@ -58,7 +58,7 @@ class HtmlWriterThread(ThreadMixin):
             case _:
                 setattr(earning, 'style', 'text-success')
         day = str(earning.day)
-        setattr(earning, 'date', f'{day[:4]}年{day[4:6]}月{day[6:]}日')
+        setattr(earning, 'date', f'{day[2:4]}年{day[4:6]}月{day[6:]}日')
         return earning
 
     def _order_times_ytd(self):
