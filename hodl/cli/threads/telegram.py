@@ -1,3 +1,14 @@
+"""
+有关电报机器人的线程
+
+电报命令列表可通过 BotFather 的 /setcommands 命令设置:
+todayorders - 24小时订单
+report - 持仓的执行计划
+tempbaseprice - 设置[临时基准价格]
+giveupprice - 设置[放弃价格]
+revivestore - 复活持仓线程
+deletestate - 清除[持仓状态]
+"""
 import asyncio
 import threading
 from telegram import Message, Update
