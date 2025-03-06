@@ -27,7 +27,7 @@ class SleepMixin(StoreHodlBase, ABC):
         if config.sleep_mode and calendar and state.market_status != 'TRADING':
             utc_now = TimeTools.utc_now()
             if not self.is_trading_minute(calendar=calendar, time=utc_now, forward_minutes=1):
-                secs *= 4
+                secs *= 8
                 sleep_mode_active = True
         if not config.visible:
             secs *= 4

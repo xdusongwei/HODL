@@ -67,6 +67,7 @@ class RiskControl:
         for order in state.plan.orders:
             RiskControl.ORDER_DICT[order.unique_id] = order
         self.market_order_check()
+        self.order_qty_check()
 
     @classmethod
     def _increase_times(cls, order: Order, state: State):
@@ -262,6 +263,14 @@ class RiskControl:
                 raise RiskControlError(f'风控检查到市价单买入成交价格{avg_price}于预期{protect_price}出现严重偏差')
             if order.is_sell and avg_price < protect_price:
                 raise RiskControlError(f'风控检查到市价单卖出成交价格{avg_price}于预期{protect_price}出现严重偏差')
+
+    def order_qty_check(self):
+        orders = self.state.plan.orders
+        for order in orders:
+            if not order.filled_qty:
+                continue
+            if order.filled_qty > order.qty:
+                raise RiskControlError(f'风控检查到订单{order}成交数量大于设定的数量')
 
 
 __all__ = ['RiskControl', ]

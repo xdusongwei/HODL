@@ -1,4 +1,3 @@
-import unittest
 from hodl.unit_test import *
 from hodl.storage import *
 

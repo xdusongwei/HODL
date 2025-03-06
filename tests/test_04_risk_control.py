@@ -1,4 +1,3 @@
-import unittest
 import pytest
 from hodl.exception_tools import *
 from hodl.unit_test import *

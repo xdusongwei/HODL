@@ -1,12 +1,13 @@
 from hodl.unit_test import *
-from hodl.storage import *
-from hodl.tools import *
 
 
 class StoreTestCase(HodlTestCase):
     """
     持仓测试验证持仓处理可以正确处理市场信号，计算正确的状态数据，
     下达预期的买卖指令等。
+
+    模拟持仓默认使用的因子表是贪婪型, 每个档位涨幅参见 factor_mixin.py,
+    所以, 用例描述中的价格涨幅 3%, 5.5%, 0% 等是对因子项的实际表述.
     """
 
     def test_market_not_ready(self):
@@ -143,7 +144,6 @@ class StoreTestCase(HodlTestCase):
         """
         完成买卖完整一档, 即涨3%卖出一部分, 跌回0%买回卖出的部分，并得到收益，
         """
-        db = LocalDb(':memory:')
         pc = 10.0
         p0 = pc
         p3 = pc * 1.03
@@ -155,13 +155,11 @@ class StoreTestCase(HodlTestCase):
             Tick(time='23-04-10T09:30:40-04:00:00', pre_close=pc, open=p0, latest=p0, ),
         ]
 
-        store = SimulationBuilder.from_symbol(symbol='TEST', db=db, ticks=ticks)
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
         state = store.state
         plan = state.plan
         assert plan.earning > 0
         store.call_bars()
-
-        VariableTools.DEBUG_CONFIG.clear()
 
     def test_enable(self):
         # 测试使能关闭, 不会开仓卖出
@@ -208,3 +206,72 @@ class StoreTestCase(HodlTestCase):
 
         store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
         store.call_bars()
+
+    def test_cancel_outdated_buy(self):
+        # 模拟上涨3%, 然后下跌到‘接近’0%, 即触发买单下达且不成交,
+        # 但是立刻变为+5.5%, 成功卖出第二档,
+        # 接着下跌到+1.5%位置, 产生第二个订单
+        # 验证第一个买单被撤销, 第二个买单成功执行, 套利完成
+        pc = 10.0
+        p0 = pc
+        p3 = pc * 1.03
+        p001 = pc * 1.001
+        p55 = pc * 1.055
+        p15 = pc * 1.015
+
+        ticks = [
+            Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+            Tick(time='23-04-10T09:35:00-04:00:00', pre_close=pc, open=p0, latest=p3, ),
+            Tick(time='23-04-10T09:40:00-04:00:00', pre_close=pc, open=p0, latest=p001, ),
+            Tick(time='23-04-10T09:45:00-04:00:00', pre_close=pc, open=p0, latest=p55, ),
+            Tick(time='23-04-10T09:50:00-04:00:00', pre_close=pc, open=p0, latest=p15, ),
+            Tick(time='23-04-10T09:55:00-04:00:00', pre_close=pc, open=p0, latest=p15, ),
+            Tick(time='23-04-10T10:00:00-04:00:00', pre_close=pc, open=p0, latest=p15, ),
+        ]
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
+        plan = store.state.plan
+        orders = plan.orders
+
+        assert len(orders) == 4
+        buy_first_order = orders[1]
+        buy_last_order = orders[3]
+
+        assert buy_first_order.is_buy
+        assert buy_first_order.filled_qty == 0
+        assert buy_first_order.is_canceled
+
+        assert buy_last_order.is_buy
+        assert buy_last_order.is_filled
+        assert not buy_last_order.is_canceled
+
+        assert plan.earning > 0
+
+    def test_cancel_outdated_sell(self):
+        # 模拟上涨+3%, 产生卖出第一档订单, 然后上涨到‘接近’+5.5%, 即触发第二个卖出订单下达且不成交,
+        # 之后立刻变为0%, 成功买回,
+        # 验证第二个卖出订单被撤销, 套利完成
+        pc = 10.0
+        p0 = pc
+        p3 = pc * 1.03
+        p55 = pc * 1.054
+
+        ticks = [
+            Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+            Tick(time='23-04-10T09:35:00-04:00:00', pre_close=pc, open=p0, latest=p3, ),
+            Tick(time='23-04-10T09:40:00-04:00:00', pre_close=pc, open=p0, latest=p55, ),
+            Tick(time='23-04-10T09:45:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+            Tick(time='23-04-10T09:50:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+            Tick(time='23-04-10T09:55:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+        ]
+        store = SimulationBuilder.from_symbol(symbol='TEST', ticks=ticks)
+        plan = store.state.plan
+        orders = plan.orders
+
+        assert len(orders) == 3
+        last_sell_order = orders[1]
+
+        assert last_sell_order.is_sell
+        assert last_sell_order.filled_qty == 0
+        assert last_sell_order.is_canceled
+
+        assert plan.earning > 0

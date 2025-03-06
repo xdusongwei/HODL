@@ -1,6 +1,7 @@
 from typing import Generator, Any, Type, Self
 from datetime import datetime, UTC
 from collections import defaultdict
+from contextlib import contextmanager
 from pprint import pprint
 from unittest.mock import patch, MagicMock, Mock
 from tigeropen.common.consts import OrderStatus
@@ -117,6 +118,30 @@ class SimulationStore(StoreHodl):
         self.earning = 0.0
         self.times_per_level = defaultdict(int)
 
+        self._auto_fill_qty = None
+        self._freeze_fill_qty = False
+
+    @contextmanager
+    def order_behavior(self, filled_qty: int | None = None, freeze_qty: bool = False):
+        """
+        一种干预模拟成交订单的上下文, 通常模拟的待成交订单默认填充为完全成交,
+        这里可以通过上下文, 让订单实现部分成交
+        ----------
+        filled_qty 预期成交的数量
+        freeze_qty 给订单标记冻结成交的标志, 以便需要模拟持仓以默认的参数继续运行时, 不会按照默认的成交方式覆盖这个订单的成交量
+
+        Returns
+        -------
+
+        """
+        self._auto_fill_qty = filled_qty
+        self._freeze_fill_qty = freeze_qty
+        try:
+            yield
+        finally:
+            self._auto_fill_qty = None
+            self._freeze_fill_qty = False
+
     def reset_tickets(self, tickets: list[Tick]):
         self.history_quote = generate_from_ticks(tickets)
 
@@ -173,6 +198,19 @@ class SimulationStore(StoreHodl):
             day_high=fake_quote.day_high,
         )
 
+    def _fill_order(self, tiger_order: TigerOrder, pool_order: Order, quote: FakeQuote):
+        if quote.market_status != 'TRADING':
+            return
+        price = quote.price
+        qty = tiger_order.quantity if self._auto_fill_qty is None else self._auto_fill_qty
+        freeze_qty = self._freeze_fill_qty
+        tiger_order.avg_fill_price = price
+        tiger_order.filled = qty
+        pool_order.avg_price = price
+        pool_order.filled_qty = qty
+        if freeze_qty:
+            setattr(pool_order, 'freeze_qty', freeze_qty)
+
     def sleep_mock(self, secs):
         orders = self.state.plan.orders
         for order in orders:
@@ -181,23 +219,16 @@ class SimulationStore(StoreHodl):
             tiger_order = self.tiger_order_pool[order.order_id]
             tiger_order.trade_time = TimeTools.us_time_now().timestamp() * 1000
             pool_order = self.order_pool[order.order_id]
+            if getattr(pool_order, 'freeze_qty', False):
+                continue
             pool_order.trade_timestamp = TimeTools.us_time_now().timestamp()
             if order.limit_price:
                 if order.is_buy and order.limit_price >= self.current_fake_quote.price:
-                    tiger_order.avg_fill_price = self.current_fake_quote.price
-                    tiger_order.filled = tiger_order.quantity
-                    pool_order.avg_price = self.current_fake_quote.price
-                    pool_order.filled_qty = pool_order.qty
+                    self._fill_order(tiger_order, pool_order, self.current_fake_quote)
                 if order.is_sell and order.limit_price <= self.current_fake_quote.price:
-                    tiger_order.avg_fill_price = self.current_fake_quote.price
-                    tiger_order.filled = tiger_order.quantity
-                    pool_order.avg_price = self.current_fake_quote.price
-                    pool_order.filled_qty = pool_order.qty
+                    self._fill_order(tiger_order, pool_order, self.current_fake_quote)
             else:
-                tiger_order.avg_fill_price = self.current_fake_quote.price
-                tiger_order.filled = tiger_order.quantity
-                pool_order.avg_price = self.current_fake_quote.price
-                pool_order.filled_qty = pool_order.qty
+                self._fill_order(tiger_order, pool_order, self.current_fake_quote)
 
     def market_status_mock(self):
         return '--', '--', self.current_fake_quote.market_status

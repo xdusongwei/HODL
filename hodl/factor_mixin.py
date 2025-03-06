@@ -3,6 +3,7 @@ from hodl.store_hodl_base import *
 
 
 class FactorMixin(StoreHodlBase, ABC):
+    # 因子表的每一列分别是卖出量比重, 卖出的价格涨幅, 买回价格涨幅
     FACTORS_DICT = {
         'fear': [
             (1.0, 1.07, 1.04,),
