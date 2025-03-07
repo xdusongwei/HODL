@@ -81,3 +81,24 @@ class RiskControlTestCase(unittest.TestCase):
                     auto_run=True,
                     output_state=False,
                 )
+
+    def test_order_fill_overflow(self):
+        # 测试实际成交订单数量大于预设订单数量引发风控异常
+        pc = 10.0
+        p0 = pc * 1.00
+        p3 = pc * 1.03
+        ticks = [
+            Tick(time='23-04-10T09:30:00-04:00:00', pre_close=pc, open=p0, latest=p0, ),
+        ]
+        store = SimulationBuilder.from_symbol(
+            symbol='TEST',
+            ticks=ticks,
+        )
+
+        ticks = [
+            Tick(time='23-04-10T09:30:01-04:00:00', pre_close=pc, open=p0, latest=p3, ),
+            Tick(time='23-04-10T09:30:02-04:00:00', pre_close=pc, open=p0, latest=p3, ),
+        ]
+        with pytest.raises(RiskControlError):
+            with store.order_behavior(filled_qty=100_000, freeze_qty=True):
+                SimulationBuilder.resume(store, ticks)
