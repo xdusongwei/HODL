@@ -122,10 +122,6 @@ class SimulationStore(StoreHodl):
         self._freeze_fill_qty = False
 
     def order_behavior(self, filled_qty: int | None = None, freeze_qty: bool = False):
-        return self._order_behavior(filled_qty=filled_qty, freeze_qty=freeze_qty)
-
-    @contextmanager
-    def _order_behavior(self, filled_qty: int | None = None, freeze_qty: bool = False):
         """
         一种干预模拟成交订单的上下文, 通常模拟的待成交订单默认填充为完全成交,
         这里可以通过上下文, 让订单实现部分成交
@@ -137,6 +133,10 @@ class SimulationStore(StoreHodl):
         -------
 
         """
+        return self._order_behavior(filled_qty=filled_qty, freeze_qty=freeze_qty)
+
+    @contextmanager
+    def _order_behavior(self, filled_qty: int | None = None, freeze_qty: bool = False):
         self._auto_fill_qty = filled_qty
         self._freeze_fill_qty = freeze_qty
         try:

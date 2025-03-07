@@ -1,3 +1,6 @@
+"""
+可以通过命令启动这个管理模块, 来补录订单和收益.
+"""
 from textual.app import App, ComposeResult
 from textual.screen import Screen
 from textual.widgets import Header, Footer, ListView, ListItem, Label
@@ -39,10 +42,10 @@ class HodlFixTools(App):
     CSS_PATH = "../../hodl/css/fix_tools.css"
 
     SCREENS = {
-        "IndexScreen": IndexScreen(),
-        "OrderLinkScreen": OrderLinkScreen(),
-        "StoreConfigIndexScreen": StoreConfigIndexScreen(),
-        "StoreConfigScreen": StoreConfigScreen(),
+        "IndexScreen": IndexScreen,
+        "OrderLinkScreen": OrderLinkScreen,
+        "StoreConfigIndexScreen": StoreConfigIndexScreen,
+        "StoreConfigScreen": StoreConfigScreen,
     }
 
     BINDINGS = [

@@ -43,7 +43,7 @@ test = [
     "pytest>=7.4.0",
 ]
 tui = [
-    "textual==0.28.1",
+    "textual",
     "pywin32>=306; sys_platform == 'win32'",
     "win10toast>=0.9; sys_platform == 'win32'",
 ]
@@ -62,8 +62,8 @@ build-backend = "pdm.pep517.api"
 [tool.pdm.scripts]
 bot = {cmd = "python -m hodl.cli.trade_bot"}
 tui = {cmd = "python -m hodl.cli.tui"}
+fixtools = {cmd = "python -m hodl.cli.fix_tools"}
 test = {cmd = "coverage run --source=./hodl -m pytest --disable-pytest-warnings tests"}
 html = {cmd = "coverage html"}
 report = {cmd = "coverage report"}
 xml = {cmd = "coverage xml"}
-fixtools = {cmd = "python -m hodl.cli.fix_tools"}

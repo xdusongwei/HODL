@@ -68,18 +68,15 @@ class StoreScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield HodlHeader(name='HODL', show_clock=True)
-        store = Vertical(classes="hPanel", id='ssStore')
-        store.border_title = '持仓'
-        store.mount(StorePanel())
-        quote = Vertical(classes="hPanel", id='ssQuote')
-        quote.border_title = '状态'
-        quote.mount(StatusPanel())
-        plan = Vertical(classes="hPanel", id='ssPlan')
-        plan.border_title = '计划'
-        plan.mount(PlanPanel())
-        yield store
-        yield quote
-        yield plan
+        with Vertical(classes="hPanel", id='ssStore') as root:
+            root.border_title = '持仓'
+            yield StorePanel()
+        with Vertical(classes="hPanel", id='ssQuote') as root:
+            root.border_title = '状态'
+            yield StatusPanel()
+        with Vertical(classes="hPanel", id='ssPlan') as root:
+            root.border_title = '计划'
+            yield PlanPanel()
         yield Footer()
 
 
@@ -198,9 +195,9 @@ class EarningScreen(Screen):
 class HODL(App):
     CSS_PATH = "../../hodl/css/tui.css"
     SCREENS = {
-        "StoreScreen": StoreScreen(),
-        "OrderScreen": OrderScreen(),
-        "EarningScreen": EarningScreen(),
+        "StoreScreen": StoreScreen,
+        "OrderScreen": OrderScreen,
+        "EarningScreen": EarningScreen,
     }
     BINDINGS = [
         ("h", "home_page", "持仓"),

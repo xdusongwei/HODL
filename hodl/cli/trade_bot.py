@@ -1,3 +1,6 @@
+"""
+服务的主入口
+"""
 import os
 import platform
 from threading import Thread
