@@ -12,7 +12,6 @@ cache:
 variables:
   PROJECT: 'hodl'
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  TEST_FULL_DATA: 'brief'
 
 before_script:
   - mkdir -p ~/logs/hodl && mkdir -p ~/data/hodl

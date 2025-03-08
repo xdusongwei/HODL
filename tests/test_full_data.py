@@ -22,7 +22,7 @@ class FullDataTestCase(HodlTestCase):
             quote_length = 30
         elif full_test_mode == 'skip':
             return
-        quote_csv = LocateTools.locate_file('tests/data/tigr.csv')
+        quote_csv = LocateTools.locate_file('hodl/resources/tigr.csv')
         self.STORE = SimulationBuilder.from_symbol_csv(
             symbol='TIGR',
             quote_csv=quote_csv,

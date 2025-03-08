@@ -35,8 +35,8 @@ class HodlHeaderClock(HeaderClock):
             tz_name = 'CST'
             time = cst_time
         else:
-            tz_name = 'EDT'
             time = TimeTools.us_time_now()
+            tz_name = time.tzname()
         day_name = time.strftime('%A')
         time = time.isoformat(timespec='milliseconds')
         time = time[:-10]

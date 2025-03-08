@@ -1,8 +1,6 @@
 #
 #   单元测试专用配置
 #
-db_path = ":memory:"
-
 [store.TIGR]
 broker = 'tiger'
 symbol = 'TIGR'

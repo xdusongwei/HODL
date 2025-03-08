@@ -142,8 +142,8 @@ class PlanCalc:
             row = ProfitRow(
                 level=i+1,
                 value=FMT.adjust_precision(value, precision),
-                float_rate=FMT.adjust_precision(float_rate + 1, 4),
-                total_rate=FMT.adjust_precision(total_rate + 1, 4),
+                float_rate=FMT.adjust_precision(float_rate + 1, 6),
+                total_rate=FMT.adjust_precision(total_rate + 1, 6),
                 sell_at=FMT.adjust_precision(sell_at, precision),
                 buy_at=FMT.adjust_precision(buy_at, precision),
                 buy_spread=buy_spread_points,

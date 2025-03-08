@@ -52,6 +52,12 @@ $ pdm install
 命令
 ----
 
+启动模拟演示:
+```bash
+$ pdm install -G tui # 确保安装了TUI组件
+$ pdm demo
+```
+
 启动服务:
 ```bash
 $ pdm bot

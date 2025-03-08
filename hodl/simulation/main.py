@@ -85,7 +85,7 @@ class SimulationStore(StoreHodl):
 
     @classmethod
     def ci_config_path(cls):
-        return LocateTools.locate_file('tests/ci/config.toml')
+        return LocateTools.locate_file('hodl/resources/ci.toml')
 
     @classmethod
     def config(cls):
@@ -320,7 +320,7 @@ class SimulationBuilder:
         if store is None:
             if not symbol and not store_config:
                 raise ValueError(f'创建持仓对象需要指定symbol')
-            var = SimulationStore.config()
+            var = store_type.config()
             if store_config is None:
                 store_config = var.store_configs[symbol]
             store = store_type(
