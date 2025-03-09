@@ -10,3 +10,4 @@ enable = true
 max_shares = 110_000
 base_price_last_buy = true
 factor_fear_and_greed = 'greed'
+base_price_tumble_protect = true

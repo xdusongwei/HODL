@@ -347,7 +347,7 @@ class StoreConfig(dict):
         -------
 
         """
-        limit = self.get('tumble_protect_rsi_unlock_limit', 75)
+        limit = self.get('tumble_protect_rsi_unlock_limit', 72)
         assert 0 <= limit <= 100
         return limit
 

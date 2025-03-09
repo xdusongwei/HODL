@@ -1,0 +1,31 @@
+html_file_path = 'demo.html'
+
+[store.default]
+broker = 'fakeBroker'
+symbol = 'FAKE.A'
+name = '默认'
+trade_type = 'stock'
+currency = 'USD'
+enable = true
+max_shares = 110_000
+
+[store.ma]
+broker = 'fakeBroker'
+symbol = 'FAKE.B'
+name = '开启了MA暴跌保护'
+trade_type = 'stock'
+currency = 'USD'
+enable = true
+max_shares = 110_000
+base_price_tumble_protect = true
+tumble_protect_day_range = 4 #
+
+[store.rsi]
+broker = 'fakeBroker'
+symbol = 'FAKE.C'
+name = '开启了RSI暴跌保护'
+trade_type = 'stock'
+currency = 'USD'
+enable = true
+max_shares = 110_000
+tumble_protect_rsi = true

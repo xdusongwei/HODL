@@ -1,0 +1,57 @@
+html_file_path = 'demo.html'
+
+[store.greed]
+broker = 'fakeBroker'
+symbol = 'FAKE.A'
+name = '使用贪婪因子表'
+trade_type = 'stock'
+currency = 'USD'
+enable = true
+max_shares = 110_000
+factor_fear_and_greed = 'greed'
+
+[store.greed_half]
+broker = 'fakeBroker'
+symbol = 'FAKE.B'
+name = '贪婪因子表减一半幅度'
+trade_type = 'stock'
+currency = 'USD'
+enable = true
+max_shares = 110_000
+factor_fear_and_greed = 'greed'
+price_rate = 0.5
+
+[store.neutral]
+broker = 'fakeBroker'
+symbol = 'FAKE.C'
+name = '使用中性因子表'
+trade_type = 'stock'
+currency = 'USD'
+enable = true
+max_shares = 110_000
+factor_fear_and_greed = 'neutral'
+
+[store.fear]
+broker = 'fakeBroker'
+symbol = 'FAKE.D'
+name = '使用恐慌因子表'
+trade_type = 'stock'
+currency = 'USD'
+enable = true
+max_shares = 110_000
+factor_fear_and_greed = 'fear'
+
+[store.diy]
+broker = 'fakeBroker'
+symbol = 'FAKE.E'
+name = '自定义因子'
+trade_type = 'stock'
+currency = 'USD'
+enable = true
+max_shares = 110_000
+factors = [
+    [1.05, 1.00, 1.0, ],
+    [1.10, 1.05, 1.0, ],
+    [1.20, 1.08, 2.0, ],
+    [1.30, 1.10, 2.0, ],
+]

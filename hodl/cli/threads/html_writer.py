@@ -127,10 +127,11 @@ class HtmlWriterThread(ThreadMixin):
         return hodl_list, sell_list, earning_list
 
     @classmethod
-    def _sort_stores(cls, stores: list[Store]):
+    def sort_stores(cls, stores: list[Store]):
         def _key(store: Store):
+            sc = store.store_config
             state = store.state
-            return state.market_status != 'TRADING', state.full_name
+            return state.market_status != 'TRADING', sc.full_name
 
         stores.sort(key=_key)
 
@@ -147,7 +148,7 @@ class HtmlWriterThread(ThreadMixin):
             template = self.template
             db = self.db
             stores: list[Store] = self.find_by_type(Store)
-            self._sort_stores(stores)
+            self.sort_stores(stores)
 
             store_list: list[Store] = [store for store in stores if store.store_config.visible]
             new_hash = ','.join(f'{store.state.version}:{store.state.current}' for store in store_list)
