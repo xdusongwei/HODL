@@ -56,7 +56,6 @@ class Manager(ThreadMixin):
         for store in stores:
             if not store.store_config.enable:
                 continue
-            thread = store.current_thread
             with store.thread_lock():
                 state = store.state
                 plan = state.plan
@@ -78,11 +77,11 @@ class Manager(ThreadMixin):
                 try:
                     os.remove(state_path)
                     rework_price = FormatTool.pretty_price(plan.rework_price, config=store.store_config)
-                    store.bot.send_text(f'{thread.name}套利后价格达到{rework_price}, 持仓状态数据被重置')
+                    store.bot.send_text(f'{state.full_name}套利后价格达到{rework_price}, 持仓状态数据被重置')
                 except FileNotFoundError:
                     pass
                 except Exception as e:
-                    store.bot.send_text(f'{thread.name}套利后价格达到条件, 持仓状态数据被重置失败: {e}')
+                    store.bot.send_text(f'{state.full_name}套利后价格达到条件, 持仓状态数据被重置失败: {e}')
 
     def primary_bar(self) -> list[BarElementDesc]:
         bar = []

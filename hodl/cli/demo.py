@@ -125,7 +125,7 @@ class DemoScreen(Screen):
             'action': DemoStore.init_stores('hodl/resources/demo.toml'),
         },
         {
-            'file': 'hodl/resources/demo/ui.md',
+            'file': 'hodl/resources/demo/store.md',
         },
         {
             'file': 'hodl/resources/demo/firstsell.md',
