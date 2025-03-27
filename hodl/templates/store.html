@@ -35,6 +35,25 @@
     <p>
         {% if row_tool.has_table %}
             {% set bp_items = state.bp_items %}
+            <div class="text-secondary fs-6 mb-2">
+                {% if row_tool.buy_percent %}
+                    <span>
+                        距买回价 {{ FMT.factor_to_percent(row_tool.buy_percent, fmt="{:.1%}") }};
+                    </span>
+                {% endif %}
+                {% if row_tool.sell_percent %}
+                <span>
+                    距下次卖出 {{ FMT.factor_to_percent(row_tool.sell_percent, fmt="{:.1%}") }};
+                </span>
+                {% endif %}
+                {% set cog = state.plan.cog(precision=store_config.precision) %}
+                {% if cog is not none %}
+                <span>
+                    卖出部分均价 {{ FMT.pretty_price(cog, config=store_config) }};
+                </span>
+                {% endif %}
+            </div>
+
             <a class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse"
                    role="button" aria-expanded="false"
                    href="#report-{{ store_config.broker }}-{{ store_config.symbol }}"
@@ -48,6 +67,7 @@
                    aria-controls="baseprice-{{ store_config.broker }}-{{ store_config.symbol }}"
                 >基准价格({{ bp_items|length }})</a>
             {% endif %}
+
             {% if state.plan.cleanable %}
             <div class="collapse" id="baseprice-{{ store_config.broker }}-{{ store_config.symbol }}">
                 <div class="table-responsive-md">
@@ -78,24 +98,6 @@
             <div class="collapse" id="report-{{ store_config.broker }}-{{ store_config.symbol }}">
                 <div class="table-responsive-md">
                   <table class="table table-striped table-hover table-dark align-middle table-sm">
-                    <caption>
-                        {% if row_tool.buy_percent %}
-                        <span>
-                            距买回价 {{ FMT.factor_to_percent(row_tool.buy_percent, fmt="{:.1%}") }};
-                        </span>
-                        {% endif %}
-                        {% if row_tool.sell_percent %}
-                        <span>
-                            距下次卖出 {{ FMT.factor_to_percent(row_tool.sell_percent, fmt="{:.1%}") }};
-                        </span>
-                        {% endif %}
-                        {% set cog = state.plan.cog(precision=store_config.precision) %}
-                        {% if cog is not none %}
-                        <span>
-                            卖出部分均价 {{ FMT.pretty_price(cog, config=store_config) }};
-                        </span>
-                        {% endif %}
-                    </caption>
                     <thead>
                     <tr>
                         <th scope="col" class="text-end">#</th>
