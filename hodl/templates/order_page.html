@@ -20,7 +20,7 @@
                         <th scope="col">时间</th>
                         <th scope="col">通道</th>
                         <th scope="col">名称</th>
-                        <th scope="col">标的</th>
+                        <th scope="col" class=" d-none d-lg-table-cell">标的</th>
                         <th scope="col">方向</th>
                         <th scope="col" class="text-end">订单价</th>
                         <th scope="col" class="text-end">订单量</th>
@@ -56,7 +56,7 @@
                                 {% endif %}
                             {% endfor %}
                         </td>
-                        <td>[{{ order.region }}]{{ order.symbol }}</td>
+                        <td class=" d-none d-lg-table-cell">[{{ order.region }}]{{ order.symbol }}</td>
                         <td>{{ order.direction }}#{{ order.level }}</td>
                         <td class="text-end">{{ FMT.pretty_usd(order.limit_price, currency=order.currency, precision=order.precision) if order.order_type == 'limit' else '市价' }}</td>
                         <td class="text-end">{{ FMT.pretty_number(order.qty) }}</td>

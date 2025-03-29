@@ -8,6 +8,7 @@ tempbaseprice - 设置[临时基准价格]
 giveupprice - 设置[放弃价格]
 revivestore - 复活持仓线程
 deletestate - 清除[持仓状态]
+killstore - 杀死持仓线程
 """
 import asyncio
 import threading
@@ -39,6 +40,7 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         from hodl.cli.threads.bot_conversation.delete_state import DeleteState
         from hodl.cli.threads.bot_conversation.revive_store import ReviveStore
         from hodl.cli.threads.bot_conversation.give_up_price import GiveUpPrice
+        from hodl.cli.threads.bot_conversation.kill import KillStore
 
         dispatcher = self.app
         dispatcher.add_handler(TodayOrders.handler())
@@ -47,6 +49,7 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         dispatcher.add_handler(DeleteState.handler())
         dispatcher.add_handler(ReviveStore.handler())
         dispatcher.add_handler(GiveUpPrice.handler())
+        dispatcher.add_handler(KillStore.handler())
 
         self.app.run_polling(
             timeout=15,

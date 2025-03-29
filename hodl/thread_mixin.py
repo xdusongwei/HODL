@@ -75,6 +75,11 @@ class ThreadMixin:
             thread.start()
         return thread
 
+    def kill(self):
+        if thread := self.current_thread:
+            if thread.is_alive():
+                thread.join()
+
     def thread_lock(self) -> Optional[threading.RLock]:
         return None
 
