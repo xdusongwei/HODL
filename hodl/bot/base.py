@@ -1,15 +1,16 @@
 import abc
 from dataclasses import dataclass
-from typing import Self
+from typing import Self, Type
 from expiringdict import ExpiringDict
-from telegram import ReplyKeyboardRemove, Message
-from telegram.ext import Application, ConversationHandler, CommandHandler
+from telegram import ReplyKeyboardRemove, Message, ReplyKeyboardMarkup
+from telegram.ext import Application, ConversationHandler, CommandHandler, MessageHandler
+from telegram.ext.filters import Regex
 from hodl.tools import *
 from hodl.storage import *
 
 
 @dataclass
-class _Position:
+class TgSelectedPosition:
     idx: str
     symbol: str
     display: str
@@ -23,7 +24,7 @@ class _Position:
 
 @dataclass
 class _Session:
-    position: _Position
+    position: TgSelectedPosition
     value: bool = None
 
 
@@ -55,24 +56,64 @@ class TelegramBotBase:
     def db(self):
         return TelegramBotBase.DB
 
+
+class TelegramConversationBase(TelegramBotBase):
+    _ALL_CONVERSATION_TYPES = list()
+
+    TRADE_STRATEGY: TradeStrategyEnum | None = None
+    # 电报需要注册的命令, 例如 mycommand
+    COMMAND_NAME: str = ''
+    # 对电报命令的描述, 用于给 @botfather 提供每个命令菜单项的简单描述
+    COMMAND_TITLE: str = ''
+    # 命令是否涉及数据库的操作, 对于 SimpleTelegramConversation 编写的命令, 可以过滤掉不支持的功能.
+    DB_FUNCTION: bool = False
+
+    @classmethod
+    async def reply_text(cls, update, text: str):
+        await update.message.reply_text(
+            text,
+            reply_markup=ReplyKeyboardRemove(),
+        )
+
+    @classmethod
+    def all_conversation_type(cls) -> list[Type['TelegramConversationBase']]:
+        return TelegramConversationBase._ALL_CONVERSATION_TYPES.copy()
+
+    @classmethod
+    def register_conversation_type(
+            cls,
+            command_name: str,
+            command_title: str,
+            conversation_type: Type['TelegramConversationBase'],
+            trade_strategy: TradeStrategyEnum | None,
+            db_function: bool = False,
+    ):
+        assert issubclass(conversation_type, TelegramConversationBase)
+        if conversation_type in TelegramConversationBase._ALL_CONVERSATION_TYPES:
+            return
+        conversation_type.COMMAND_NAME = command_name
+        conversation_type.COMMAND_TITLE = command_title
+        conversation_type.TRADE_STRATEGY = trade_strategy
+        conversation_type.DB_FUNCTION = db_function
+        TelegramConversationBase._ALL_CONVERSATION_TYPES.append(conversation_type)
+
+    @classmethod
+    def handler(cls) -> ConversationHandler:
+        raise NotImplementedError
+
     @classmethod
     def _symbol_list(cls):
-        var = VariableTools()
+        var = HotReloadVariableTools.config()
         values = var.store_configs_by_group().values()
         values = sorted(values, key=lambda i: i.full_name)
         result = list()
         for idx, v in enumerate(values):
             result.append(
-                _Position(
+                TgSelectedPosition(
                     idx=str(idx + 1),
                     symbol=v.symbol,
                     display=f'{idx + 1}: {v.full_name}',
                     config=v,
-                    enable='开启' if v.enable else '关闭',
-                    lock_position='锁定' if v.lock_position else '解锁',
-                    base_price_last_buy='开启' if v.base_price_last_buy else '关闭',
-                    base_price_day_low='开启' if v.base_price_day_low else '关闭',
-                    max_shares=FormatTool.pretty_number(v.max_shares),
                 )
             )
         return result
@@ -114,7 +155,129 @@ class TelegramBotBase:
         return CommandHandler('cancel', self._cancel_handler)
 
 
+class SimpleTelegramConversation(TelegramConversationBase):
+    """
+    "选择持仓-确认-执行" 模式的简单对话控制
+    """
+    # 选择持仓时机器人回复的描述
+    SELECT_TEXT = ''
+
+    K_SIMPLE_END = ConversationHandler.END
+    K_SIMPLE_CONFIRM = 0
+    K_SIMPLE_EXECUTE = 1
+
+    async def _select(self, update, context):
+        if self.DB_FUNCTION and not self.DB:
+            await self.reply_text(update, '没有设置数据库，不能此命令。')
+            return self.K_SIMPLE_END
+
+        code = await self.select(update, context)
+        return code
+
+    async def _confirm(self, update, context):
+        idx = int(update.message.text) - 1
+
+        if idx < 0 or idx >= len(context.args):
+            return ConversationHandler.END
+
+        position = self._symbol_list()[idx]
+        user_id = update.message.from_user.id
+
+        if self.TRADE_STRATEGY and self.TRADE_STRATEGY != position.config.trade_strategy:
+            await update.message.reply_text(
+                f'非法选择，请重新选择命令',
+                reply_markup=ReplyKeyboardRemove(),
+            )
+            return ConversationHandler.END
+
+        self._create_session(user_id=user_id, position=position)
+        code = await self.confirm(update, context, position)
+        return code
+
+    async def _execute(self, update, context):
+        text = update.message.text
+        user_id = update.message.from_user.id
+        session = self._get_session(user_id=user_id)
+        position = session.position
+        match text:
+            case '/confirm':
+                try:
+                    await self.execute(update, context, position)
+                finally:
+                    self._clear_session(user_id=user_id)
+
+                return self.K_SIMPLE_END
+            case _:
+                await update.message.reply_text(
+                    f'非法选择，请重新选择命令',
+                    reply_markup=ReplyKeyboardRemove(),
+                )
+                return self.K_SIMPLE_EXECUTE
+
+    async def select(self, update, context):
+        lines = self._symbol_lines()
+        idx_list = self._symbol_choice()
+        await update.message.reply_text(
+            f'{self.SELECT_TEXT} '
+            f'选择需要操作的持仓序号\n'
+            f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
+            reply_markup=ReplyKeyboardMarkup(
+                idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓序号'
+            ),
+        )
+        return self.K_SIMPLE_CONFIRM
+
+    async def confirm(self, update, context, position: TgSelectedPosition) -> int:
+        raise NotImplementedError
+
+    async def execute(self, update, context, position: TgSelectedPosition):
+        raise NotImplementedError
+
+    @classmethod
+    def handler(cls):
+        o = cls()
+        handler = ConversationHandler(
+            entry_points=[CommandHandler(cls.COMMAND_NAME, o._select)],
+            states={
+                o.K_SIMPLE_CONFIRM: [MessageHandler(Regex(r'^(\d+)$'), o._confirm)],
+                o.K_SIMPLE_EXECUTE: [
+                    CommandHandler('confirm', o._execute),
+                ],
+            },
+            fallbacks=[o.cancel_handler()],
+            conversation_timeout=60.0,
+            block=False,
+        )
+        return handler
+
+
+def bot_cmd(
+        command: str,
+        menu_desc: str,
+        trade_strategy: TradeStrategyEnum | None = None,
+        db_function: bool = False,
+):
+    assert command not in {'cancel', 'confirm', }
+    assert command and menu_desc
+
+    def decorator(cls: Type[TelegramConversationBase]):
+        TelegramConversationBase.register_conversation_type(
+            command_name=command,
+            command_title=menu_desc,
+            conversation_type=cls,
+            trade_strategy=trade_strategy,
+            db_function=db_function,
+        )
+        return cls
+
+    return decorator
+
+
 __all__ = [
+    'TgSelectedPosition',
     'TelegramBotBase',
     'TelegramThreadBase',
+    'TelegramConversationBase',
+    'SimpleTelegramConversation',
+    'bot_cmd',
 ]

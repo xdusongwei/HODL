@@ -5,10 +5,12 @@ from textual.app import App, ComposeResult
 from textual.screen import Screen
 from textual.widgets import Header, Footer, ListView, ListItem, Label
 from textual.binding import Binding
+from hodl.bot import *
 from hodl.tools import *
 from hodl.cli.fix_screens.order_link import *
 from hodl.cli.fix_screens.store_config_detail import *
 from hodl.cli.fix_screens.earning_link import *
+from hodl.cli.threads.bot_conversation import *
 
 
 class IndexScreen(Screen):
@@ -17,6 +19,7 @@ class IndexScreen(Screen):
         menu = ListView(
             ListItem(Label("1.补录订单信息", classes='indexLabel'), id='indexMenuOrderLink'),
             ListItem(Label("2.补录收益信息", classes='indexLabel'), id='indexMenuEarningLink'),
+            ListItem(Label("3.生成电报机器人指令列表", classes='indexLabel'), id='indexPrintTgCmdList'),
             ListItem(Label("0.查看持仓设定", classes='indexLabel'), id='indexMenuStoreConfig'),
             initial_index=None,
             classes='indexListView',
@@ -34,8 +37,18 @@ class IndexScreen(Screen):
                     self.app.push_screen(StoreConfigIndexScreen())
                 case 'indexMenuEarningLink':
                     self.app.push_screen(EarningLinkScreen())
+                case 'indexPrintTgCmdList':
+                    self.print_tg_cmd_list()
                 case _:
                     pass
+
+    def print_tg_cmd_list(self):
+        conversation_types = TelegramConversationBase.all_conversation_type()
+        lines = list()
+        for t in conversation_types:
+            line = f'{t.COMMAND_NAME.lower()} - {t.COMMAND_TITLE}'
+            lines.append(line)
+        self.app.exit(message=f'在 @BotFather 中使用 /setcommands 回应命令菜单项:\n{"\n".join(lines)}')
 
 
 class HodlFixTools(App):

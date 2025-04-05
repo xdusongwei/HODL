@@ -1,39 +1,23 @@
-from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup, Update
-from telegram.ext import CommandHandler, ConversationHandler, MessageHandler
-from telegram.ext.filters import Regex
 from hodl.plan_calc import ProfitRow
 from hodl.state import *
-from hodl.storage import StateRow
+from hodl.storage import *
 from hodl.bot import *
 from hodl.store_hodl import *
 from hodl.tools import *
 
 
-class Report(TelegramBotBase):
-    K_RP_SELECT = 0
+@bot_cmd(
+    command='report',
+    menu_desc='持仓的执行计划',
+    trade_strategy=TradeStrategyEnum.HODL
+)
+class Report(SimpleTelegramConversation):
+    SELECT_TEXT = '此命令可以查看持仓的买卖计划。 '
 
-    async def report_start(self, update: Update, context):
-        lines = self._symbol_lines()
-        idx_list = self._symbol_choice()
-        if self.DB:
-            await update.message.reply_text(
-                f'此命令可以查看持仓的买卖计划。 '
-                f'选择需要操作的持仓序号\n'
-                f'{lines}\n\n流程的任意阶段都可以使用 /cancel 取消',
-                reply_markup=ReplyKeyboardMarkup(
-                    idx_list, one_time_keyboard=True, input_field_placeholder='选择持仓序号'
-                ),
-            )
-            return self.K_RP_SELECT
-        else:
-            await update.message.reply_text(
-                '没有设置数据库，不能查看此项。', reply_markup=ReplyKeyboardRemove()
-            )
-            return ConversationHandler.END
+    async def confirm(self, update, context, position: TgSelectedPosition):
+        return self.K_SIMPLE_EXECUTE
 
-    async def report_select(self, update: Update, context):
-        idx = int(update.message.text) - 1
-        position = self._symbol_list()[idx]
+    async def execute(self, update, context, position: TgSelectedPosition):
         store_config = position.config
 
         row = StateRow.query_by_symbol_latest(con=self.DB.conn, symbol=position.symbol)
@@ -70,28 +54,15 @@ class Report(TelegramBotBase):
                     rate = -round(table_row.total_rate * 100 - 100, 2)
                     hit = '[当前]' if max_level == level else ''
                     lines.append(f'{hit}{idx + 1} {buy_at}: {rate:+.2f}%(+{earning_forecast})')
-                await update.message.reply_text(
-                    '\n'.join(lines), reply_markup=ReplyKeyboardRemove()
+                await self.reply_text(
+                    update,
+                    '\n'.join(lines),
                 )
-                return ConversationHandler.END
-        await update.message.reply_text(
-            '该持仓目前没有任何执行计划。', reply_markup=ReplyKeyboardRemove()
+                return
+        await self.reply_text(
+            update,
+            '该持仓目前没有任何执行计划。'
         )
-        return ConversationHandler.END
-
-    @classmethod
-    def handler(cls):
-        o = cls()
-        handler = ConversationHandler(
-            entry_points=[CommandHandler('report', o.report_start)],
-            states={
-                o.K_RP_SELECT: [MessageHandler(Regex(r'^(\d+)$'), o.report_select)],
-            },
-            fallbacks=[o.cancel_handler()],
-            conversation_timeout=60.0,
-            block=False,
-        )
-        return handler
 
     @classmethod
     def build_table(cls, store_config: StoreConfig, plan: Plan):

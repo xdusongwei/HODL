@@ -22,6 +22,15 @@ class StoreBase(ThreadMixin):
         self.db = db
         self.lock = threading.RLock()
 
+        self.thread_version = 0
+
+    def prepare(self):
+        super().prepare()
+        self.thread_version += 1
+
+    def kill(self):
+        super().kill()
+
     def init_trade_service(self):
         raise NotImplementedError
 

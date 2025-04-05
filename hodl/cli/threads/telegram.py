@@ -1,22 +1,14 @@
 """
 有关电报机器人的线程
-
-电报命令列表可通过 BotFather 的 /setcommands 命令设置:
-todayorders - 24小时订单
-report - 持仓的执行计划
-tempbaseprice - 设置[临时基准价格]
-giveupprice - 设置[放弃价格]
-revivestore - 复活持仓线程
-deletestate - 清除[持仓状态]
-killstore - 杀死持仓线程
 """
 import asyncio
 import threading
 from telegram import Message, Update
 from telegram.ext import Application
-from hodl.bot.base import TelegramThreadBase
+from hodl.bot.base import *
 from hodl.thread_mixin import *
 from hodl.tools import *
+from hodl.cli.threads.bot_conversation import *
 
 
 class TelegramThread(ThreadMixin, TelegramThreadBase):
@@ -34,22 +26,11 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         TelegramThreadBase.INSTANCE = self
         asyncio.set_event_loop(self.loop)
 
-        from hodl.cli.threads.bot_conversation.today_orders import TodayOrders
-        from hodl.cli.threads.bot_conversation.temp_base_price import TempBasePrice
-        from hodl.cli.threads.bot_conversation.report import Report
-        from hodl.cli.threads.bot_conversation.delete_state import DeleteState
-        from hodl.cli.threads.bot_conversation.revive_store import ReviveStore
-        from hodl.cli.threads.bot_conversation.give_up_price import GiveUpPrice
-        from hodl.cli.threads.bot_conversation.kill import KillStore
+        conversation_types = TelegramConversationBase.all_conversation_type()
 
         dispatcher = self.app
-        dispatcher.add_handler(TodayOrders.handler())
-        dispatcher.add_handler(TempBasePrice.handler())
-        dispatcher.add_handler(Report.handler())
-        dispatcher.add_handler(DeleteState.handler())
-        dispatcher.add_handler(ReviveStore.handler())
-        dispatcher.add_handler(GiveUpPrice.handler())
-        dispatcher.add_handler(KillStore.handler())
+        for t in conversation_types:
+            dispatcher.add_handler(t.handler())
 
         self.app.run_polling(
             timeout=15,

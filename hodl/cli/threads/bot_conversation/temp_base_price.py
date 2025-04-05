@@ -1,12 +1,17 @@
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler
 from telegram.ext.filters import Regex
-from hodl.storage import TempBasePriceRow
-from hodl.bot import TelegramBotBase
+from hodl.storage import *
+from hodl.bot import *
 from hodl.tools import *
 
 
-class TempBasePrice(TelegramBotBase):
+@bot_cmd(
+    command='tempbaseprice',
+    menu_desc='设置[临时基准价格]',
+    trade_strategy=TradeStrategyEnum.HODL,
+)
+class TempBasePrice(TelegramConversationBase):
     K_TBP_SELECT = 0
     K_TBP_INPUT = 1
     K_TBP_CONFIRM = 2

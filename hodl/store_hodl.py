@@ -404,6 +404,7 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
 
     def run(self):
         super().run()
+        thread_version = self.thread_version
         is_checked = False
         logger = self.logger
         logger.info(f'启动线程')
@@ -423,7 +424,12 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
 
             self.sleep()
 
-            with self.thread_lock():
+            thread_lock = self.thread_lock()
+            with thread_lock:
+                # 设置了线程方式运行, 但是当前的线程已经是作废的状态
+                if thread_version and thread_version != self.thread_version:
+                    logger.info(f'当前线程被设置需要下线, 即将退出')
+                    return
                 try:
                     if not self.before_loop():
                         logger.info(f'循环开始前的检查要求退出')

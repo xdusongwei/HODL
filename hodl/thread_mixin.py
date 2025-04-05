@@ -16,7 +16,21 @@ class BarElementDesc:
         return f'data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{self.tooltip}"'
 
 
-class ThreadMixin:
+class ThreadUI:
+    def primary_bar(self) -> list[BarElementDesc]:
+        return list()
+
+    def secondary_bar(self) -> list[BarElementDesc]:
+        return list()
+
+    def extra_html(self) -> None | str:
+        return None
+
+    def warning_alert_bar(self) -> list[str]:
+        return list()
+
+
+class ThreadMixin(ThreadUI):
     """
     所有线程(包括 MainThread)级对象的基类
     这样可以在网页中观察到所有相关线程的存活
@@ -35,21 +49,9 @@ class ThreadMixin:
     def _register_thread(self):
         ThreadMixin._THREADS.add(self)
 
-    def primary_bar(self) -> list[BarElementDesc]:
-        return list()
-
-    def secondary_bar(self) -> list[BarElementDesc]:
-        return list()
-
-    def extra_html(self) -> None | str:
-        return None
-
-    def warning_alert_bar(self) -> list[str]:
-        return list()
-
     def prepare(self):
         """
-        这个方法不在线程管理的机制中被调用
+        这个方法不在线程管理的机制中被调用, 需要在创建该线程的线程中按需要显式调用
         """
         pass
 
@@ -78,7 +80,7 @@ class ThreadMixin:
     def kill(self):
         if thread := self.current_thread:
             if thread.is_alive():
-                thread.join()
+                thread.join(0)
 
     def thread_lock(self) -> Optional[threading.RLock]:
         return None
@@ -114,4 +116,7 @@ class ThreadMixin:
         return result
 
 
-__all__ = ['BarElementDesc', 'ThreadMixin', ]
+__all__ = [
+    'BarElementDesc',
+    'ThreadMixin',
+]

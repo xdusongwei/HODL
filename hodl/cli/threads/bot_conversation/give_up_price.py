@@ -1,13 +1,18 @@
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler
 from telegram.ext.filters import Regex
-from hodl.bot import TelegramBotBase
+from hodl.bot import *
 from hodl.state import *
 from hodl.tools import *
-from hodl.thread_mixin import ThreadMixin
+from hodl.thread_mixin import *
 
 
-class GiveUpPrice(TelegramBotBase):
+@bot_cmd(
+    command='giveupprice',
+    menu_desc='设置[放弃价格]',
+    trade_strategy=TradeStrategyEnum.HODL,
+)
+class GiveUpPrice(TelegramConversationBase):
     K_GUP_SELECT = 0
     K_GUP_INPUT = 1
     K_GUP_CONFIRM = 2
