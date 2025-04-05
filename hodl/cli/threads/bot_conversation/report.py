@@ -1,8 +1,9 @@
 from hodl.plan_calc import ProfitRow
 from hodl.state import *
-from hodl.storage import *
 from hodl.bot import *
+from hodl.store_base import *
 from hodl.store_hodl import *
+from hodl.thread_mixin import *
 from hodl.tools import *
 
 
@@ -15,15 +16,15 @@ class Report(SimpleTelegramConversation):
     SELECT_TEXT = '此命令可以查看持仓的买卖计划。 '
 
     async def confirm(self, update, context, position: TgSelectedPosition):
-        return self.K_SIMPLE_EXECUTE
-
-    async def execute(self, update, context, position: TgSelectedPosition):
         store_config = position.config
 
-        row = StateRow.query_by_symbol_latest(con=self.DB.conn, symbol=position.symbol)
-        if row and row.content:
-            d = FormatTool.json_loads(row.content)
-            state = State(d)
+        broker = position.config.broker
+        region = position.config.region
+        symbol = position.symbol
+        store: StoreBase = ThreadMixin.find_by_tags(tags=('Store', broker, region, symbol,))
+
+        with store.thread_lock():
+            state = store.state
             plan = state.plan
             if plan.table_ready:
                 base_value = (plan.total_chips or 0) * (plan.base_price or 0.0)
@@ -58,11 +59,12 @@ class Report(SimpleTelegramConversation):
                     update,
                     '\n'.join(lines),
                 )
-                return
+                return self.K_SIMPLE_END
         await self.reply_text(
             update,
             '该持仓目前没有任何执行计划。'
         )
+        return self.K_SIMPLE_END
 
     @classmethod
     def build_table(cls, store_config: StoreConfig, plan: Plan):

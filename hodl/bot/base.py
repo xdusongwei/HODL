@@ -41,7 +41,7 @@ class TelegramThreadBase(abc.ABC):
 class TelegramBotBase:
     APP: Application = None
     DB: LocalDb = None
-    SESSION = ExpiringDict(max_len=1024, max_age_seconds=3600)
+    SESSION = ExpiringDict(max_len=1024, max_age_seconds=600)
     STORES = list()
 
     def __init__(self, db: LocalDb = None):
@@ -60,7 +60,7 @@ class TelegramBotBase:
 class TelegramConversationBase(TelegramBotBase):
     _ALL_CONVERSATION_TYPES = list()
 
-    TRADE_STRATEGY: TradeStrategyEnum | None = None
+    TRADE_STRATEGY: str | None = None
     # 电报需要注册的命令, 例如 mycommand
     COMMAND_NAME: str = ''
     # 对电报命令的描述, 用于给 @botfather 提供每个命令菜单项的简单描述
@@ -85,7 +85,7 @@ class TelegramConversationBase(TelegramBotBase):
             command_name: str,
             command_title: str,
             conversation_type: Type['TelegramConversationBase'],
-            trade_strategy: TradeStrategyEnum | None,
+            trade_strategy: str | None,
             db_function: bool = False,
     ):
         assert issubclass(conversation_type, TelegramConversationBase)
@@ -177,18 +177,20 @@ class SimpleTelegramConversation(TelegramConversationBase):
     async def _confirm(self, update, context):
         idx = int(update.message.text) - 1
 
-        if idx < 0 or idx >= len(context.args):
-            return ConversationHandler.END
+        positions = self._symbol_list()
 
-        position = self._symbol_list()[idx]
+        if idx < 0 or idx >= len(positions):
+            return self.K_SIMPLE_END
+
+        position = positions[idx]
         user_id = update.message.from_user.id
 
         if self.TRADE_STRATEGY and self.TRADE_STRATEGY != position.config.trade_strategy:
-            await update.message.reply_text(
+            await self.reply_text(
+                update,
                 f'非法选择，请重新选择命令',
-                reply_markup=ReplyKeyboardRemove(),
             )
-            return ConversationHandler.END
+            return self.K_SIMPLE_END
 
         self._create_session(user_id=user_id, position=position)
         code = await self.confirm(update, context, position)
@@ -208,9 +210,9 @@ class SimpleTelegramConversation(TelegramConversationBase):
 
                 return self.K_SIMPLE_END
             case _:
-                await update.message.reply_text(
+                await self.reply_text(
+                    update,
                     f'非法选择，请重新选择命令',
-                    reply_markup=ReplyKeyboardRemove(),
                 )
                 return self.K_SIMPLE_EXECUTE
 
@@ -254,7 +256,7 @@ class SimpleTelegramConversation(TelegramConversationBase):
 def bot_cmd(
         command: str,
         menu_desc: str,
-        trade_strategy: TradeStrategyEnum | None = None,
+        trade_strategy: str | None = None,
         db_function: bool = False,
 ):
     assert command not in {'cancel', 'confirm', }

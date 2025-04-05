@@ -11,9 +11,9 @@ from hodl.tools import *
     trade_strategy=TradeStrategyEnum.HODL,
 )
 class ReviveStore(SimpleTelegramConversation):
-    SELECT_TEXT = f'你正在尝试重启死亡的持仓管理线程。 '
-    f'如果线程因为下单动作导致的崩溃，需要确认订单是否下达到券商，若下达成功，则应先通过命令，人工连接订单基本信息到持仓状态中。'
-    f'如果因为风控检查导致的崩溃，需首先人工确认持仓数量和现金额是否允许继续运行而不会引发混乱。'
+    SELECT_TEXT = f'你正在尝试重启死亡的持仓管理线程。 ' \
+        f'如果线程因为下单动作导致的崩溃，需要确认订单是否下达到券商，若下达成功，则应先通过命令，人工连接订单基本信息到持仓状态中。' \
+        f'如果因为风控检查导致的崩溃，需首先人工确认持仓数量和现金额是否允许继续运行而不会引发混乱。'
 
     async def confirm(self, update, context, position: TgSelectedPosition):
         await self.reply_text(

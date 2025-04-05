@@ -215,20 +215,6 @@ class StateRow:
                     self.update_time,
                 ))
 
-    @classmethod
-    def query_by_symbol_latest(cls, con: sqlite3.Connection, symbol: str):
-        with con:
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * FROM `state_archive` WHERE `symbol` = ? ORDER BY `version` DESC LIMIT 1;",
-                (symbol,)
-            )
-            row = cur.fetchone()
-        if row:
-            item = StateRow(**row)
-            return item
-        return None
-
 
 @dataclass
 class TempBasePriceRow:
