@@ -42,14 +42,16 @@ class Manager(ThreadMixin):
         for store in stores:
             thread = store.current_thread
             if thread.is_alive():
-                continue
-            text = f'💀线程[{thread.name}]已崩溃。\n'
-            if isinstance(store, StoreHodl):
-                if detail := store.state.risk_control_detail:
-                    text += f'风控错误:{detail}\n'
-                if e := store.exception:
-                    text += f'异常原因:{e}\n'
-            store.bot.set_alarm(AlertBot.K_THREAD_DEAD, text=text)
+                text = f'✅线程[{thread.name}]已恢复。'
+                store.bot.unset_alarm(AlertBot.K_THREAD_DEAD, text=text)
+            else:
+                text = f'💀线程[{thread.name}]已崩溃。\n'
+                if isinstance(store, StoreHodl):
+                    if detail := store.state.risk_control_detail:
+                        text += f'风控错误:{detail}\n'
+                    if e := store.exception:
+                        text += f'异常原因:{e}\n'
+                store.bot.set_alarm(AlertBot.K_THREAD_DEAD, text=text)
 
     @classmethod
     def rework_store(cls, stores: list[Store]):
