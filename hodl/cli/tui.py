@@ -193,7 +193,7 @@ class EarningScreen(Screen):
 
 
 class HODL(App):
-    CSS_PATH = "../../hodl/css/tui.css"
+    CSS_PATH = "../../hodl/resources/css/tui.css"
     SCREENS = {
         "StoreScreen": StoreScreen,
         "OrderScreen": OrderScreen,

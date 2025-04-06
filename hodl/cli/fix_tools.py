@@ -51,7 +51,7 @@ class IndexScreen(Screen):
 
 
 class HodlFixTools(App):
-    CSS_PATH = "../../hodl/css/fix_tools.css"
+    CSS_PATH = "../../hodl/resources/css/fix_tools.css"
 
     SCREENS = {
         "IndexScreen": IndexScreen,

@@ -184,7 +184,7 @@ class DemoScreen(Screen):
 
 
 class Demo(App):
-    CSS_PATH = "../../hodl/css/demo.css"
+    CSS_PATH = "../../hodl/resources/css/demo.css"
 
     SCREENS = {
         'DemoScreen': DemoScreen,

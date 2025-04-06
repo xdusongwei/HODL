@@ -77,7 +77,7 @@ class VariableTools:
     @property
     def jinja_env(self):
         env = Environment(
-            loader=PackageLoader("hodl"),
+            loader=PackageLoader('hodl', 'resources/templates'),
             autoescape=select_autoescape(),
         )
         return env
