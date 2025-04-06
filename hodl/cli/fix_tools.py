@@ -45,7 +45,7 @@ class IndexScreen(Screen):
         conversation_types = TelegramConversationBase.all_conversation_type()
         lines = list()
         for t in conversation_types:
-            line = f'{t.COMMAND_NAME.lower()} - {t.COMMAND_TITLE}'
+            line = f'{t.COMMAND.lower()} - {t.MENU_DESC}'
             lines.append(line)
         self.app.exit(message=f'在 @BotFather 中使用 /setcommands 回应命令菜单项:\n{"\n".join(lines)}')
 

@@ -7,6 +7,7 @@ __all__ = [
     'TelegramBotBase',
     'TelegramConversationBase',
     'SimpleTelegramConversation',
+    'SingleInputConversation',
     'AlertBot',
     'bot_cmd',
 ]
