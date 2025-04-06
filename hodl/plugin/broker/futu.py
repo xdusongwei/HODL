@@ -5,7 +5,7 @@ https://openapi.futunn.com/futu-api-doc/
 import re
 from datetime import datetime
 from futu import *
-from hodl.broker.base import *
+from hodl.broker import *
 from hodl.quote import *
 from hodl.tools import *
 from hodl.exception_tools import *

@@ -6,8 +6,8 @@ from textual.message import Message
 from textual.screen import Screen
 from textual.widgets import Header, Footer, Select, Input, Button
 from hodl.tools import *
-from hodl.broker import *
 from hodl.state import *
+from hodl.broker import *
 
 
 class Selected(Message):

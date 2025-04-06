@@ -9,7 +9,7 @@ from hodl.storage import *
 from hodl.store import *
 from hodl.quote_mixin import *
 from hodl.thread_mixin import *
-from hodl.broker.base import *
+from hodl.broker import *
 from hodl.proxy import *
 from hodl.tools import *
 from hodl.exception_tools import *

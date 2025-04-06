@@ -10,7 +10,7 @@ import threading
 from datetime import datetime
 from decimal import Decimal
 import tomlkit
-from hodl.broker.base import *
+from hodl.broker import *
 from hodl.exception_tools import *
 from hodl.quote import *
 from hodl.state import *

@@ -7,7 +7,7 @@ import datetime
 import hmac
 from urllib.parse import urljoin
 import requests
-from hodl.broker.base import *
+from hodl.broker import *
 from hodl.exception_tools import QuoteFieldError
 from hodl.quote import Quote
 from hodl.state import *

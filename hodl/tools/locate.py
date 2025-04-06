@@ -1,6 +1,8 @@
 import os
 import re
 import sys
+import pkgutil
+import importlib
 
 
 class LocateTools:
@@ -70,6 +72,14 @@ class LocateTools:
             args |= dict(encoding='utf8')
         with open(**args) as f:
             f.write(text)
+
+    @classmethod
+    def discover_plugins(cls, package_name):
+        package = importlib.import_module(package_name)
+        for _, module_name, ispkg in pkgutil.walk_packages(package.__path__, package.__name__ + '.'):
+            if ispkg:
+                continue
+            importlib.import_module(module_name)
 
 
 __all__ = ['LocateTools', ]

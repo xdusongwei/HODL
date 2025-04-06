@@ -4,7 +4,7 @@ https://docs.alpaca.markets/docs/getting-started
 """
 import threading
 from alpaca.trading.client import TradingClient
-from hodl.broker.base import *
+from hodl.broker import *
 from hodl.state import *
 from hodl.tools import *
 

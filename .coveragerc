@@ -1,6 +1,7 @@
 [run]
 relative_files = False
 omit =
+    hodl/plugin/*
     hodl/bot/*
     hodl/broker/*
     hodl/proxy/*

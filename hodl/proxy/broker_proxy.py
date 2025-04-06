@@ -1,6 +1,5 @@
 from expiringdict import ExpiringDict
 from hodl.broker import *
-from hodl.quote import *
 from hodl.state import *
 from hodl.exception_tools import *
 

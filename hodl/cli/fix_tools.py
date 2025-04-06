@@ -10,7 +10,6 @@ from hodl.tools import *
 from hodl.cli.fix_screens.order_link import *
 from hodl.cli.fix_screens.store_config_detail import *
 from hodl.cli.fix_screens.earning_link import *
-from hodl.cli.threads.bot_conversation import *
 
 
 class IndexScreen(Screen):

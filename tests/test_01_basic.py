@@ -3,7 +3,7 @@ import time
 import pytest
 from datetime import datetime
 from hodl.unit_test import *
-from hodl.broker.base import *
+from hodl.broker import *
 from hodl.state import *
 from hodl.tools import *
 

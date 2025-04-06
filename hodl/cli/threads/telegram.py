@@ -8,7 +8,6 @@ from telegram.ext import Application
 from hodl.bot.base import *
 from hodl.thread_mixin import *
 from hodl.tools import *
-from hodl.cli.threads.bot_conversation import *
 
 
 class TelegramThread(ThreadMixin, TelegramThreadBase):
