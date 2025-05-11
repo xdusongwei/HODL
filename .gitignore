@@ -42,3 +42,4 @@ cert/
 *.db
 
 coverage.xml
+demo.html

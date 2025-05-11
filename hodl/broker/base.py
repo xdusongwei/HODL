@@ -6,8 +6,6 @@ import functools
 import threading
 from collections import defaultdict
 from dataclasses import dataclass
-from tigeropen.common.consts import OrderStatus
-from tigeropen.trade.domain.order import Order as BrokerOrder
 from hodl.quote import Quote
 from hodl.tools import *
 from hodl.state import *
@@ -216,26 +214,20 @@ class BrokerApiBase(BrokerApiMixin):
             trade_timestamp: float = None,
             reason: str = '',
             is_cancelled: bool = False,
-            # tiger broker bypass，保留默认值
-            broker_order: BrokerOrder = None,
     ):
         """
         更新订单信息的通用方法
+        :param trade_timestamp: 毫秒单位的时间戳
         """
-        if not broker_order:
-            broker_order = BrokerOrder(
-                account=None,
-                contract=None,
-                action=None,
-                order_type=None,
-                quantity=qty,
-                trade_time=trade_timestamp,
-                filled=filled_qty,
-                avg_fill_price=avg_fill_price,
-            )
-        broker_order.reason = reason
-        broker_order.status = OrderStatus.CANCELLED if is_cancelled else OrderStatus.NEW
-        self._override_order_fields(order=order, broker_order=broker_order)
+        order_props = OrderProps(
+            qty=qty,
+            trade_time=trade_timestamp,
+            filled_qty=filled_qty,
+            avg_price=avg_fill_price,
+            reason=reason,
+            is_canceled=is_cancelled,
+        )
+        self._override_order_fields(order=order, order_props=order_props)
         return order
 
     def __post_init__(self):
@@ -244,32 +236,32 @@ class BrokerApiBase(BrokerApiMixin):
         """
         pass
 
-    def _override_order_fields(self, order: Order, broker_order: BrokerOrder):
+    def _override_order_fields(self, order: Order, order_props: OrderProps):
         logger = self.logger
         new_order = order.copy()
-        new_order.error_reason = broker_order.reason
-        trade_timestamp = FMT.adjust_precision(broker_order.trade_time / 1000.0, 3) if broker_order.trade_time else None
+        new_order.error_reason = order_props.reason
+        trade_timestamp = FMT.adjust_precision(order_props.trade_time / 1000.0, 3) if order_props.trade_time else None
         new_order.trade_timestamp = trade_timestamp
-        new_order.avg_price = broker_order.avg_fill_price
-        new_order.filled_qty = broker_order.filled
-        new_order.remain_qty = broker_order.remaining
-        if broker_order.status == OrderStatus.CANCELLED:
+        new_order.avg_price = order_props.avg_price
+        new_order.filled_qty = order_props.filled_qty
+        new_order.remain_qty = order_props.remaining
+        if order_props.is_canceled:
             new_order.is_canceled = True
 
         if logger:
-            if broker_order.reason and not order.error_reason:
-                logger.warning(f'订单{new_order} 返回了错误消息:{broker_order.reason}')
-            if broker_order.trade_time and order.trade_timestamp:
-                tiger_trade_time = broker_order.trade_time / 1000.0
+            if order_props.reason and not order.error_reason:
+                logger.warning(f'订单{new_order} 返回了错误消息:{order_props.reason}')
+            if order_props.trade_time and order.trade_timestamp:
+                tiger_trade_time = order_props.trade_time / 1000.0
                 if tiger_trade_time < order.trade_timestamp:
                     raise OrderOutdatedError(
                         f'新请求的订单交易时间({FMT.pretty_dt(tiger_trade_time)})'
                         f'早于保存过的({order})最新交易时间({FMT.pretty_dt(order.trade_timestamp)})')
-            if broker_order.filled > order.filled_qty:
+            if order_props.filled_qty > order.filled_qty:
                 logger.info(f'订单{new_order} 正在持续成交')
-            if broker_order.remaining == 0 and order.remain_qty:
+            if order_props.remaining == 0 and order.remain_qty:
                 logger.info(f'订单{new_order} 全部成交')
-            if broker_order.status == OrderStatus.CANCELLED and not order.is_canceled:
+            if order_props.is_canceled and not order.is_canceled:
                 logger.info(f'订单{new_order} 被取消')
 
         order.change_d(new_order)
@@ -488,7 +480,6 @@ def sort_brokers(
 __all__ = [
     'BrokerApiMixin',
     'BrokerApiBase',
-    'BrokerOrder',
     'track_api',
     'broker_api',
     'track_api_report',

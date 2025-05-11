@@ -185,7 +185,7 @@ class TradeMixin(IsolatedStoreBase, ABC):
                 return True
         return False
 
-    def _sell_conditions_orders(self, fire_state: StateFire):
+    def _sell_conditions_orders(self, fire_state: FireOrderProps):
         us_date = TimeTools.us_time_now()
         state = self.state
         config = self.store_config
@@ -213,7 +213,7 @@ class TradeMixin(IsolatedStoreBase, ABC):
         if fire_state.enable_sell and rsi_limit:
             fire_state.enable_sell = False
 
-    def _sell_conditions_check_qty(self, fire_state: StateFire):
+    def _sell_conditions_check_qty(self, fire_state: FireOrderProps):
         state = self.state
         plan = state.plan
         profit_table = fire_state.profit_table
@@ -241,7 +241,7 @@ class TradeMixin(IsolatedStoreBase, ABC):
             fire_state.new_sell_level = 1
 
     @classmethod
-    def _sell_conditions_skip_new_level_overflow(cls, fire_state: StateFire):
+    def _sell_conditions_skip_new_level_overflow(cls, fire_state: FireOrderProps):
         if not fire_state.enable_sell:
             return
 
@@ -251,7 +251,7 @@ class TradeMixin(IsolatedStoreBase, ABC):
         if fire_state.new_sell_level > profit_table.size:
             fire_state.enable_sell = False
 
-    def _sell_conditions_price_range(self, fire_state: StateFire):
+    def _sell_conditions_price_range(self, fire_state: FireOrderProps):
         if not fire_state.enable_sell:
             return
         state = self.state
@@ -291,7 +291,7 @@ class TradeMixin(IsolatedStoreBase, ABC):
         else:
             fire_state.sell_limit_price = limit_price
 
-    def _submit_sell_order(self, fire_state: StateFire):
+    def _submit_sell_order(self, fire_state: FireOrderProps):
         if not fire_state.enable_sell:
             return
         profit_table = fire_state.profit_table
@@ -332,14 +332,14 @@ class TradeMixin(IsolatedStoreBase, ABC):
         )
         self.logger.info(f'下新卖单成功,订单:{order}')
 
-    def try_fire_sell(self, fire_state: StateFire):
+    def try_fire_sell(self, fire_state: FireOrderProps):
         self._sell_conditions_orders(fire_state=fire_state)
         self._sell_conditions_check_qty(fire_state=fire_state)
         self._sell_conditions_skip_new_level_overflow(fire_state=fire_state)
         self._sell_conditions_price_range(fire_state=fire_state)
         self._submit_sell_order(fire_state=fire_state)
 
-    def _buy_conditions_level_and_orders(self, fire_state: StateFire):
+    def _buy_conditions_level_and_orders(self, fire_state: FireOrderProps):
         us_date = TimeTools.us_time_now()
         state = self.state
         plan = state.plan
@@ -383,7 +383,7 @@ class TradeMixin(IsolatedStoreBase, ABC):
             return give_up_price
         return buy_at
 
-    def _buy_conditions_price_range(self, fire_state: StateFire):
+    def _buy_conditions_price_range(self, fire_state: FireOrderProps):
         if not fire_state.enable_buy:
             return
         state = self.state
@@ -425,7 +425,7 @@ class TradeMixin(IsolatedStoreBase, ABC):
         else:
             fire_state.buy_limit_price = limit_price
 
-    def _submit_buy_order(self, fire_state: StateFire):
+    def _submit_buy_order(self, fire_state: FireOrderProps):
         if not fire_state.enable_buy:
             return
 
@@ -464,7 +464,7 @@ class TradeMixin(IsolatedStoreBase, ABC):
         )
         self.logger.info(f'买单指令完成，订单:{order}')
 
-    def try_fire_buy(self, fire_state: StateFire):
+    def try_fire_buy(self, fire_state: FireOrderProps):
         self._buy_conditions_level_and_orders(fire_state=fire_state)
         self._buy_conditions_check_orders()
         self._buy_conditions_price_range(fire_state=fire_state)

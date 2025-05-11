@@ -3,7 +3,7 @@ from hodl.plan_calc import ProfitTable
 
 
 @dataclass
-class StateFire:
+class FireOrderProps:
     profit_table: ProfitTable
     market_price_rate: float = None
     enable_buy: bool = False
@@ -22,4 +22,4 @@ class StateFire:
     want_price: float = None
 
 
-__all__ = ['StateFire', ]
+__all__ = ['FireOrderProps', ]

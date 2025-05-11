@@ -14,7 +14,7 @@ from tigeropen.push.push_client import PushClient
 from tigeropen.common.consts import Market
 from tigeropen.quote.domain.market_status import MarketStatus
 from tigeropen.trade.domain.prime_account import PortfolioAccount, Segment
-from tigeropen.trade.domain.order import Order as TigerOrder
+from tigeropen.trade.domain.order import Order as TigerOrder, OrderStatus
 from hodl.broker import *
 from hodl.exception_tools import *
 from hodl.quote import *
@@ -122,6 +122,7 @@ class TigerApi(BrokerApiBase):
                 broker_name=cls.BROKER_NAME,
                 broker_display=cls.BROKER_DISPLAY,
             )
+        raise QuoteFieldError(f'没有找到标的{symbol}的快照行情')
 
     @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
@@ -218,8 +219,16 @@ class TigerApi(BrokerApiBase):
         with self.ORDER_BUCKET:
             tiger_order: TigerOrder = self.trade_client.get_order(id=order.order_id)
         if tiger_order is None:
-            raise ValueError(f'订单{order}在tiger交易系统查询不到')
-        self._override_order_fields(order=order, broker_order=tiger_order)
+            raise ValueError(f'订单{order}在老虎国际交易接口查询不到')
+        self.modify_order_fields(
+            order=order,
+            qty=tiger_order.quantity or 0,
+            filled_qty=tiger_order.filled or 0,
+            avg_fill_price=tiger_order.avg_fill_price or 0.0,
+            trade_timestamp=tiger_order.trade_time,
+            reason=tiger_order.reason,
+            is_cancelled=tiger_order.status == OrderStatus.CANCELLED,
+        )
 
 
 TigerQuoteClient = QuoteClient

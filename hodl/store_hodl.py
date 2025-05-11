@@ -334,7 +334,7 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
             self.state.plan.base_price = price
 
         profit_table = self.current_table()
-        state_fire = StateFire(profit_table=profit_table, market_price_rate=self.store_config.market_price_rate)
+        state_fire = FireOrderProps(profit_table=profit_table, market_price_rate=self.store_config.market_price_rate)
         self.try_fire_sell(fire_state=state_fire)
         self.try_fire_buy(fire_state=state_fire)
 
