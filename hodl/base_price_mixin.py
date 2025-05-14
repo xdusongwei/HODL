@@ -112,11 +112,7 @@ class BasePriceMixin(StoreHodlBase, ABC):
         self._set_up_base_price_ta_info()
 
         store_config, state, _ = self.args()
-        match store_config.trade_strategy:
-            case TradeStrategyEnum.HODL:
-                items = self._calc_hodl_price_list()
-            case _:
-                raise NotImplementedError
+        items = self._calc_hodl_price_list()
 
         state.bp_items = [asdict(item) for item in items]
         func = self._get_bp_function()

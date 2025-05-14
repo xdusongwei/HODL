@@ -332,11 +332,15 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
         if plan.base_price is None:
             price = self.calc_base_price()
             self.state.plan.base_price = price
+            self.on_base_price_set()
 
         profit_table = self.current_table()
         state_fire = FireOrderProps(profit_table=profit_table, market_price_rate=self.store_config.market_price_rate)
         self.try_fire_sell(fire_state=state_fire)
         self.try_fire_buy(fire_state=state_fire)
+
+    def on_base_price_set(self):
+        pass
 
     def on_current_changed(self, current: str, new_current: str):
         if new_current == self.STATE_SLEEP and self.store_config.closing_time:

@@ -14,9 +14,9 @@ class Store(StoreBase):
     ENABLE_BROKER = True
 
     @classmethod
-    def register_strategy(cls, strategy_name: str, store_type: Type['Store']):
+    def register_strategy(cls, strategy_name: str, store_type: Type['Store'], force_replace=False):
         assert issubclass(store_type, Store)
-        if strategy_name in Store.STORE_MAP:
+        if not force_replace and strategy_name in Store.STORE_MAP:
             raise ValueError(f'注册{store_type} 使用的策略名: {strategy_name} 重复注册')
         Store.STORE_MAP[strategy_name] = store_type
 
@@ -132,9 +132,9 @@ class IsolatedStoreBase(Store):
         self.broker_proxy.on_init()
 
 
-def trade_strategy(name: str):
+def trade_strategy(name: str, force_replace = False):
     def decorator(cls: Type[Store]):
-        Store.register_strategy(name, cls)
+        Store.register_strategy(name, cls, force_replace=force_replace)
         return cls
     return decorator
 
