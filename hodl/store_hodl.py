@@ -305,22 +305,21 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
             return
         if not self.enable_rework:
             return
-        if level := store_config.rework_level:
-            self.logger.info(f'设定清除持仓状态的价格等级为{level}')
-            try:
-                rework_plan = Plan.new_plan(
-                    store_config=store_config,
-                )
-                rework_plan.base_price = self.calc_base_price()
-                row = self.current_table().row_by_level(level=level)
-                if row.sell_at > buyback_price:
-                    price = row.sell_at
-                    plan.rework_price = price
-                    self.logger.info(f'设定清除持仓状态的价格为{FMT.pretty_price(price, config=store_config)}')
-                else:
-                    self.logger.info(f'该等级价格低于买入价，不设定清除持仓状态功能')
-            except Exception as e:
-                self.logger.warning(f'设置reworkPrice出现错误: {e}')
+        self.logger.info(f'设定清除持仓状态的价格等级为{level}')
+        try:
+            rework_plan = Plan.new_plan(
+                store_config=store_config,
+            )
+            rework_plan.base_price = self.calc_base_price()
+            row = self.current_table().row_by_level(level=level)
+            if row.sell_at > buyback_price:
+                price = row.sell_at
+                plan.rework_price = price
+                self.logger.info(f'设定清除持仓状态的价格为{FMT.pretty_price(price, config=store_config)}')
+            else:
+                self.logger.info(f'该等级价格低于买入价，不设定清除持仓状态功能')
+        except Exception as e:
+            self.logger.warning(f'设置reworkPrice出现错误: {e}')
 
     def try_fire_orders(self):
         state = self.state
@@ -332,15 +331,11 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
         if plan.base_price is None:
             price = self.calc_base_price()
             self.state.plan.base_price = price
-            self.on_base_price_set()
 
         profit_table = self.current_table()
         state_fire = FireOrderProps(profit_table=profit_table, market_price_rate=self.store_config.market_price_rate)
         self.try_fire_sell(fire_state=state_fire)
         self.try_fire_buy(fire_state=state_fire)
-
-    def on_base_price_set(self):
-        pass
 
     def on_current_changed(self, current: str, new_current: str):
         if new_current == self.STATE_SLEEP and self.store_config.closing_time:
