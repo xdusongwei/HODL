@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Callable
 import os
 from hodl.bot import *
 from hodl.proxy import *
@@ -10,22 +10,32 @@ from hodl.storage import *
 
 
 class Store(StoreBase):
-    STORE_MAP: dict[str, Type['Store']] = dict()
+    STORE_TYPE_LIST: list[Callable[[StoreConfig, ], Type['Store']] | None] = list()
+    STORE_TYPE_MAP: dict[str, Type['Store']] = dict()
     ENABLE_BROKER = True
 
     @classmethod
-    def register_strategy(cls, strategy_name: str, store_type: Type['Store'], force_replace=False):
+    def register_strategy(
+            cls,
+            strategy_name: str,
+            store_type: Type['Store'],
+            force_replace=False,
+    ):
         assert issubclass(store_type, Store)
-        if not force_replace and strategy_name in Store.STORE_MAP:
+        if not force_replace and strategy_name in Store.STORE_TYPE_MAP:
             raise ValueError(f'注册{store_type} 使用的策略名: {strategy_name} 重复注册')
-        Store.STORE_MAP[strategy_name] = store_type
+        Store.STORE_TYPE_MAP[strategy_name] = store_type
 
     @classmethod
     def factory(cls, store_config: StoreConfig, db: LocalDb, variable: VariableTools = None) -> 'Store':
+        for cb in Store.STORE_TYPE_LIST:
+            t = cb(store_config)
+            if t is not None:
+                return t(store_config=store_config, db=db, variable=variable)
         strategy = store_config.trade_strategy
-        if strategy not in Store.STORE_MAP:
+        if strategy not in Store.STORE_TYPE_MAP:
             raise NotImplementedError(f'策略{strategy}找不到对应的类型映射')
-        t = Store.STORE_MAP[strategy]
+        t = Store.STORE_TYPE_MAP[strategy]
         return t(store_config=store_config, db=db, variable=variable)
 
     def __init__(
@@ -132,7 +142,7 @@ class IsolatedStoreBase(Store):
         self.broker_proxy.on_init()
 
 
-def trade_strategy(name: str, force_replace = False):
+def trade_strategy(name: str, force_replace=False):
     def decorator(cls: Type[Store]):
         Store.register_strategy(name, cls, force_replace=force_replace)
         return cls

@@ -165,16 +165,16 @@ files = [
 
 [[package]]
 name = "concurrent-log-handler"
-version = "0.9.25"
+version = "0.9.26"
 requires_python = ">=3.6"
-summary = "RotatingFileHandler replacement with concurrency, gzip and Windows support"
+summary = "RotatingFileHandler replacement with concurrency, gzip and Windows support. Size and time based rotation."
 groups = ["default"]
 dependencies = [
     "portalocker>=1.6.0",
 ]
 files = [
-    {file = "concurrent_log_handler-0.9.25-py3-none-any.whl", hash = "sha256:157bee12914aa2a72246d1d0641ce07c1aa7a55faa3322bed02f21e60395eb82"},
-    {file = "concurrent_log_handler-0.9.25.tar.gz", hash = "sha256:1e2c6f021414e214d3dac66107894827a3e78db63018304a4f29e55ba549ac22"},
+    {file = "concurrent_log_handler-0.9.26-py3-none-any.whl", hash = "sha256:0b03a8f1dcb1a03ad292647ee4930b3f9ba2bdb45e55bf2699d2c053f8e6531f"},
+    {file = "concurrent_log_handler-0.9.26.tar.gz", hash = "sha256:8f22bf79724a0152b9e97d9c2dcf4ecb339607c80bf312f68066070243006b49"},
 ]
 
 [[package]]
@@ -299,7 +299,7 @@ files = [
 
 [[package]]
 name = "exchange-calendars"
-version = "4.10"
+version = "4.10.1"
 requires_python = "~=3.10"
 summary = "Calendars for securities exchanges"
 groups = ["default"]
@@ -312,8 +312,8 @@ dependencies = [
     "tzdata",
 ]
 files = [
-    {file = "exchange_calendars-4.10-py3-none-any.whl", hash = "sha256:f2fbc3696b334db7bb5cc786dc77ae4d48b00dccfbb55fcb2ca3ea2a88b8886e"},
-    {file = "exchange_calendars-4.10.tar.gz", hash = "sha256:3f25007e934c7e8c6f0fd43f4fd7959e64505f8aa6b1eb4d6c5da71ab8af054b"},
+    {file = "exchange_calendars-4.10.1-py3-none-any.whl", hash = "sha256:efb5a1665b6c6bf09ea621f4f0be39ed961de69db6355d1e0e4ad3d1b584525b"},
+    {file = "exchange_calendars-4.10.1.tar.gz", hash = "sha256:32885a58557cee82359f8b54f396616fde1ee0df05911f67416934d58bcd13e1"},
 ]
 
 [[package]]
@@ -588,25 +588,25 @@ files = [
 
 [[package]]
 name = "longport"
-version = "2.1.12"
+version = "3.0.4"
 requires_python = ">=3.7"
 summary = "A Python library for LongPort Open API"
 groups = ["longport"]
 files = [
-    {file = "longport-2.1.12-cp312-cp312-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:93b284dbf40082ad0eddca7f1452dd8d60d6ca600463dda33fe1fcb2e9a3d46a"},
-    {file = "longport-2.1.12-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:1147e730406b611ab09aaf78dcef3781b25c47669595bb19774e08634c0e21f7"},
-    {file = "longport-2.1.12-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:8eef4d31370e5f9474fef6dc1256885078f6abcaafcbda6ff8aac225fe7f4243"},
-    {file = "longport-2.1.12-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c8cdc1b3f24540381fbe2e1a89f1cd72d4838ca32702d6f77430b85a8aad6f9b"},
-    {file = "longport-2.1.12-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:0118209a5efcf4439168e93e9a84e6b01a6426e027f67abcaa539bca3f3f77b7"},
-    {file = "longport-2.1.12-cp312-none-win32.whl", hash = "sha256:be491de9da083f5473e76a46bf56afb4156aefbed6f09d11942b9fdfe47a57e0"},
-    {file = "longport-2.1.12-cp312-none-win_amd64.whl", hash = "sha256:72f704037b027558e9f0593eeb9e38348d35dc272f8675210797589a7ee839e5"},
-    {file = "longport-2.1.12-cp313-cp313-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:93cb7a13de31aa73f1e9094cbea78dfdf8c8fbe6091a3e46fc92a47a76aec826"},
-    {file = "longport-2.1.12-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:4583af12fd0f4634132fa96882fd0603d485845f4e18e58567024fdc937679ac"},
-    {file = "longport-2.1.12-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d0317517567b6ed62d9852d4b9198c4efc56f5d672b0bae1e58ee836289108ec"},
-    {file = "longport-2.1.12-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3ac5277b4344d02b13f86fe63ba30e1df706c8d62ae8ec06f481d87e66bffc0f"},
-    {file = "longport-2.1.12-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:f57fa55f3c5b4a22f27daee414be0641df7a52328eb98e9f10087878661dc22c"},
-    {file = "longport-2.1.12-cp313-none-win32.whl", hash = "sha256:6a2ddd3ee2728d66fb7032dc4fb610c88f33bfd99889a52fd559d9cff66b6b76"},
-    {file = "longport-2.1.12-cp313-none-win_amd64.whl", hash = "sha256:1a8b9f66a95cb3afed4cdf13fb4a842a2954c03d7d641d53513378d91f16d38c"},
+    {file = "longport-3.0.4-cp312-cp312-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:ba4b6b172c8b308d8613d7df360d760293e5ec5140a4ad8efb5a8150693b7743"},
+    {file = "longport-3.0.4-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:683adc5f970380c951f1fbae0ac1fbb273a6795fa869ad008a3039c2fca17904"},
+    {file = "longport-3.0.4-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f6545186716e7d72734c0b1ac8af49a62ac1f56c018b4c026b626bf6fc66f2dd"},
+    {file = "longport-3.0.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5cdf48d69434eae6c628ff84b225a788ec78b5a112f696576172d0c6bb9054a2"},
+    {file = "longport-3.0.4-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:f1ac184a8373740ecb3af8d5c006d521842624711e0f7dfb883376333ab2450f"},
+    {file = "longport-3.0.4-cp312-none-win32.whl", hash = "sha256:a322d877a0ee72027c6f6ab8277c019485310822c80281e1a9acf7108a91492b"},
+    {file = "longport-3.0.4-cp312-none-win_amd64.whl", hash = "sha256:79465b6443af8c5397d850063d03c0a7325efda5121796bac4fa6f598e5e4e9f"},
+    {file = "longport-3.0.4-cp313-cp313-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:9535980fd90fdf3a4b65535e8b4f7660b6f4efd03ca07fbefe3c34ae349b4403"},
+    {file = "longport-3.0.4-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:3d8b1a98e7e7042b3cf6ad9525b27a675c2d100dc12c2c777d7224b1fc18359d"},
+    {file = "longport-3.0.4-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:cd9e6ff42a7afdb8b6c2ed3278cef5c0003b8d09464adb0c55262fa1664112b1"},
+    {file = "longport-3.0.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:69c06b4f9004849a36cadd237e307db0e4b7a074602ebbe91e9b261863ab3106"},
+    {file = "longport-3.0.4-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:d8df5b84dfb44e72b036086c53f3bf5b6d367b085a46887280e912fd0d6dad28"},
+    {file = "longport-3.0.4-cp313-none-win32.whl", hash = "sha256:0015b7c8789645bbfe11e89e47f226eda670388c921e646f2ce1794e07074837"},
+    {file = "longport-3.0.4-cp313-none-win_amd64.whl", hash = "sha256:3348cbc98302a7013a8a459eefc9eb501ac6d184341201765766de1283ab729e"},
 ]
 
 [[package]]

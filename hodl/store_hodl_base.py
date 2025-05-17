@@ -16,14 +16,6 @@ class StoreHodlBase(IsolatedStore):
         return self.store_config, self.state, self.state.plan,
 
     @property
-    def process_time(self) -> float | None:
-        return getattr(self, '_process_time', None)
-
-    @process_time.setter
-    def process_time(self, v: float):
-        setattr(self, '_process_time', v)
-
-    @property
     def exception(self) -> Exception | None:
         return getattr(self, '_exception', None)
 

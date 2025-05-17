@@ -63,5 +63,13 @@ class StoreBase(ThreadMixin):
         config = self.store_config
         return 'Store', config.broker, config.region, config.symbol,
 
+    @property
+    def process_time(self) -> float | None:
+        return getattr(self, '_process_time', None)
+
+    @process_time.setter
+    def process_time(self, v: float):
+        setattr(self, '_process_time', v)
+
 
 __all__ = ['StoreBase', ]
