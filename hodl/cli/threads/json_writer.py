@@ -55,6 +55,7 @@ class JsonWriterThread(ThreadMixin):
                                 'hasDb': bool(store.db),
                                 'hasAlertBot': store.bot.is_alive,
                                 'processTime': store.process_time,
+                                'cls': type(store).__name__,
                             },
                             'config': store.store_config.copy(),
                         })
