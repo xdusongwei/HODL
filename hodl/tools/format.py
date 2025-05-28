@@ -177,12 +177,5 @@ class FormatTool:
         else:
             return f'<image src="{broker_icon_path}/{broker_name}.png" style="height: 15px;" class="align-middle" alt="{broker_name}" >{broker_display}'
 
-    @classmethod
-    def dataframe_to_list(cls, df) -> list[dict]:
-        """
-        把 DataFrame 对象转为列表, 不必到处在模块上 import pandas
-        """
-        return df.to_dict(orient='records')
-
 
 __all__ = ['FormatTool', ]
