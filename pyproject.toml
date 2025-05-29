@@ -7,11 +7,8 @@ authors = [
 ]
 dependencies = [
     "pycryptodome>=3.19; sys_platform == 'win32'",
-    "PySocks>=1.7.1",
     "concurrent-log-handler>=0.9.20",
     "json-log-formatter==0.5.1",
-    "httpx>=0.22.0",
-    "h2>=4.1.0",
     "requests>=2.27.1",
     "expiringdict>=1.2.1",
     "tigeropen>=3.2.7",
@@ -44,9 +41,8 @@ tui = [
     "textual",
     "pywin32>=306; sys_platform == 'win32'",
     "win10toast>=0.9; sys_platform == 'win32'",
-]
-longport = [
-    "longport>=1.0.5",
+    "httpx>=0.28.1",
+    "h2>=4.2.0",
 ]
 
 [tool]
