@@ -6,12 +6,10 @@ authors = [
     {name = "xdusongwei", email = "github@songwei.name"},
 ]
 dependencies = [
-    "pycryptodome>=3.19; sys_platform == 'win32'",
     "concurrent-log-handler>=0.9.20",
     "json-log-formatter==0.5.1",
     "requests>=2.27.1",
     "expiringdict>=1.2.1",
-    "tigeropen>=3.2.7",
     "currency-symbols>=2.0.2",
     "Jinja2>=3.1.2",
     "base58>=2.1.1",
