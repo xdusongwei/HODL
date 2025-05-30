@@ -75,7 +75,7 @@ class HttpTradingBase(BrokerApiBase):
             raise e
 
     def _http_post(self, uri: str, d: dict, ex_type: Type[Exception] = TradingError) -> dict:
-        base_site = self.broker_config.get('url')
+        base_site = self.broker_config.get('base_site')
         instance_id = self.broker_config.get('instance_id')
         timeout = self.broker_config.get('timeout', 20)
         token = self.broker_config.get('token', '')
