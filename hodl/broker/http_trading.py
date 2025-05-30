@@ -47,7 +47,7 @@ class HttpTradingBase(BrokerApiBase):
             return dict()
 
     def _http_get(self, uri: str, timeout: int = None, ex_type: Type[Exception] = PrepareError) -> dict:
-        base_site = self.broker_config.get('url')
+        base_site = self.broker_config.get('base_site')
         instance_id = self.broker_config.get('instance_id')
         if timeout is None:
             timeout = self.broker_config.get('timeout', 20)
