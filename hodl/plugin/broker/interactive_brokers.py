@@ -11,11 +11,11 @@ class InteractiveBrokersApi(HttpTradingBase):
 
     @track_api
     def fetch_market_status(self) -> BrokerMarketStatusResult:
-        return super().fetch_market_status()
+        raise NotImplementedError
 
     @track_api
     def fetch_quote(self) -> Quote:
-        return super().fetch_quote()
+        raise NotImplementedError
 
     @track_api
     def query_cash(self):
