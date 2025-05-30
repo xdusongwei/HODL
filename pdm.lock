@@ -5,7 +5,7 @@
 groups = ["default", "test", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:aab34cc82503cd324e0402112d6310eedea71e3b3fef2d77270ea3534a8a2d71"
+content_hash = "sha256:625af7ef4e8c40da0fcc209f1f461420592015001c22ce78ca98a3993f18d11c"
 
 [[metadata.targets]]
 requires_python = ">=3.12"
@@ -167,19 +167,6 @@ files = [
 ]
 
 [[package]]
-name = "eventkit"
-version = "1.0.3"
-summary = "Event-driven data pipelines"
-groups = ["default"]
-dependencies = [
-    "numpy",
-]
-files = [
-    {file = "eventkit-1.0.3-py3-none-any.whl", hash = "sha256:0e199527a89aff9d195b9671ad45d2cc9f79ecda0900de8ecfb4c864d67ad6a2"},
-    {file = "eventkit-1.0.3.tar.gz", hash = "sha256:99497f6f3c638a50ff7616f2f8cd887b18bbff3765dc1bd8681554db1467c933"},
-]
-
-[[package]]
 name = "exchange-calendars"
 version = "4.10.1"
 requires_python = "~=3.10"
@@ -209,17 +196,6 @@ dependencies = [
 files = [
     {file = "expiringdict-1.2.2-py3-none-any.whl", hash = "sha256:09a5d20bc361163e6432a874edd3179676e935eb81b925eccef48d409a8a45e8"},
     {file = "expiringdict-1.2.2.tar.gz", hash = "sha256:300fb92a7e98f15b05cf9a856c1415b3bc4f2e132be07daa326da6414c23ee09"},
-]
-
-[[package]]
-name = "filelock"
-version = "3.18.0"
-requires_python = ">=3.9"
-summary = "A platform independent file lock."
-groups = ["default"]
-files = [
-    {file = "filelock-3.18.0-py3-none-any.whl", hash = "sha256:c401f4f8377c4464e6db25fff06205fd89bdd83b65eb0488ed1b160f780e21de"},
-    {file = "filelock-3.18.0.tar.gz", hash = "sha256:adbc88eabb99d2fec8c9c1b229b171f18afa655400173ddc653d5d01501fb9f2"},
 ]
 
 [[package]]
@@ -327,23 +303,6 @@ groups = ["tui"]
 files = [
     {file = "hyperframe-6.1.0-py3-none-any.whl", hash = "sha256:b03380493a519fce58ea5af42e4a42317bf9bd425596f7a0835ffce80f1a42e5"},
     {file = "hyperframe-6.1.0.tar.gz", hash = "sha256:f630908a00854a7adeabd6382b43923a4c4cd4b821fcb527e6ab9e15382a3b08"},
-]
-
-[[package]]
-name = "ib-insync"
-version = "0.9.86"
-requires_python = ">=3.6"
-summary = "Python sync/async framework for Interactive Brokers API"
-groups = ["default"]
-dependencies = [
-    "backports-zoneinfo; python_version < \"3.9\"",
-    "dataclasses; python_version < \"3.7\"",
-    "eventkit",
-    "nest-asyncio",
-]
-files = [
-    {file = "ib_insync-0.9.86-py3-none-any.whl", hash = "sha256:a61fbe56ff405d93d211dad8238d7300de76dd6399eafc04c320470edec9a4a4"},
-    {file = "ib_insync-0.9.86.tar.gz", hash = "sha256:73af602ca2463f260999970c5bd937b1c4325e383686eff301743a4de08d381e"},
 ]
 
 [[package]]
@@ -509,17 +468,6 @@ groups = ["tui"]
 files = [
     {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
     {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
-]
-
-[[package]]
-name = "nest-asyncio"
-version = "1.6.0"
-requires_python = ">=3.5"
-summary = "Patch asyncio to allow nested event loops"
-groups = ["default"]
-files = [
-    {file = "nest_asyncio-1.6.0-py3-none-any.whl", hash = "sha256:87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c"},
-    {file = "nest_asyncio-1.6.0.tar.gz", hash = "sha256:6f172d5449aca15afd6c646851f4e31e02c598d553a667e38cafa997cfec55fe"},
 ]
 
 [[package]]

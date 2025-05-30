@@ -9,7 +9,6 @@ from hodl.tools.store_state_base import StoreStateBase
 from hodl.tools.dict_wrapper import DictWrapper
 from hodl.tools.leaky_bucket import LeakyBucket
 from hodl.tools.broker_meta import BrokerTradeType, BrokerMeta
-from hodl.tools.locks import Filelock
 
 
 __all__ = [
@@ -29,5 +28,4 @@ __all__ = [
     'LeakyBucket',
     'BrokerTradeType',
     'BrokerMeta',
-    'Filelock',
 ]
