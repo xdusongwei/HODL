@@ -158,7 +158,7 @@ class HttpTradingBase(BrokerApiBase):
         cash_d: dict = d.get('cash', dict())
         currency = cash_d.get('currency')
         amount = cash_d.get('amount')
-        assert currency == 'USD'
+        assert currency == self.CASH_CURRENCY
         assert isinstance(amount, float)
         return amount
 
