@@ -176,7 +176,7 @@ class HttpTradingBase(BrokerApiBase):
             qty = position.get('qty')
             if trade_type != 'Securities':
                 continue
-            if contract_region == region:
+            if contract_region != region:
                 continue
             if ticker != symbol:
                 continue
