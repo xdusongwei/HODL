@@ -44,20 +44,21 @@ class ReviveStore(SimpleTelegramConversation):
                 raise ValueError(f'找不到持仓对应的线程')
 
             text = LocateTools.read_file(state_path)
-            state = FormatTool.json_loads(text)
-            state = State(state)
-            if state.risk_control_break:
-                state.risk_control_break = False
-                state.risk_control_detail = ''
-                state.lsod = ''
-                await self.reply_text(
-                    update,
-                    f'已清除风控错误',
-                )
-            state.cash_day = None
-            state.chip_day = None
-            text = FormatTool.json_dumps(state)
-            LocateTools.write_file(state_path, text)
+            if text:
+                state = FormatTool.json_loads(text)
+                state = State(state)
+                if state.risk_control_break:
+                    state.risk_control_break = False
+                    state.risk_control_detail = ''
+                    state.lsod = ''
+                    await self.reply_text(
+                        update,
+                        f'已清除风控错误',
+                    )
+                state.cash_day = None
+                state.chip_day = None
+                text = FormatTool.json_dumps(state)
+                LocateTools.write_file(state_path, text)
             store.thread_version += 1
             store.start(name=position.config.thread_name)
             await self.reply_text(
