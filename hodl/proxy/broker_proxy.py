@@ -81,7 +81,13 @@ class BrokerProxy(BrokerApiMixin):
 
     def detect_plug_in(self) -> bool:
         broker = self._find_trade_broker()
-        return broker.detect_plug_in()
+        max_times = max(1, broker.broker_config.get('pingMaxTimes', 1))
+        result = False
+        for _ in range(max_times):
+            result = broker.detect_plug_in()
+            if result:
+                break
+        return result
 
     def on_init(self):
         broker = self._find_trade_broker()

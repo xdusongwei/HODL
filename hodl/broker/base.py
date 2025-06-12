@@ -186,18 +186,26 @@ class BrokerApiBase(BrokerApiMixin):
             broker_meta: list[BrokerMeta] = None,
             logger: LoggerWrapper = None,
     ):
-        if broker_config is None:
-            broker_config = self.query_broker_config()
-        if broker_meta is None:
-            broker_meta = self.query_broker_meta()
-        self.broker_config = broker_config.copy()
-        self.broker_meta = broker_meta.copy()
+        self._broker_config = broker_config
+        self._broker_meta = broker_meta
         self.custom_client = None
         self.symbol = symbol
         self.name = name
         self.http_session = VariableTools.http_session()
         self.logger = logger
         self.__post_init__()
+
+    @property
+    def broker_config(self):
+        if self._broker_config:
+            return self._broker_config
+        return self.query_broker_config()
+
+    @property
+    def broker_meta(self):
+        if self._broker_meta:
+            return self._broker_meta
+        return self.query_broker_meta()
 
     def __repr__(self):
         return self.__str__()
