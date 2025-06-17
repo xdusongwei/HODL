@@ -1,5 +1,6 @@
-from typing import Type, Callable
+from typing import Type
 import os
+import abc
 from hodl.bot import *
 from hodl.proxy import *
 from hodl.risk_control import *
@@ -9,8 +10,14 @@ from hodl.tools import *
 from hodl.storage import *
 
 
+class StrategySelector(abc.ABC):
+    @classmethod
+    def config_filter(cls, config: StoreConfig) -> Type['Store'] | None:
+        return None
+
+
 class Store(StoreBase):
-    STORE_TYPE_LIST: list[Callable[[StoreConfig, ], Type['Store']] | None] = list()
+    STRATEGY_SELECTOR_SET: set[Type[StrategySelector]] = set()
     STORE_TYPE_MAP: dict[str, Type['Store']] = dict()
     ENABLE_BROKER = True
 
@@ -28,10 +35,10 @@ class Store(StoreBase):
 
     @classmethod
     def factory(cls, store_config: StoreConfig, db: LocalDb, variable: VariableTools = None) -> 'Store':
-        for cb in Store.STORE_TYPE_LIST:
-            t = cb(store_config)
-            if t is not None:
-                return t(store_config=store_config, db=db, variable=variable)
+        for t in Store.STRATEGY_SELECTOR_SET:
+            c = t.config_filter(store_config)
+            if c is not None:
+                return c(store_config=store_config, db=db, variable=variable)
         strategy = store_config.trade_strategy
         if strategy not in Store.STORE_TYPE_MAP:
             raise NotImplementedError(f'策略{strategy}找不到对应的类型映射')
@@ -153,4 +160,5 @@ __all__ = [
     'Store',
     'IsolatedStoreBase',
     'trade_strategy',
+    'StrategySelector',
 ]

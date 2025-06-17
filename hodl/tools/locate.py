@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import pkgutil
+import inspect
 import importlib
 
 
@@ -18,7 +19,7 @@ class LocateTools:
         path_list = list()
         python_path_list = list()
         if cls.ENVIRONMENT_KEY_PYTHON_PATH in os.environ:
-            python_path_list = os.environ[cls.ENVIRONMENT_KEY_PYTHON_PATH].split(":")
+            python_path_list = os.environ[cls.ENVIRONMENT_KEY_PYTHON_PATH].split(':')
         if cls.ENVIRONMENT_KEY_IDE_ROOTS in os.environ:
             path_list.append(os.environ[cls.ENVIRONMENT_KEY_IDE_ROOTS])
         path_list.extend(python_path_list)
@@ -75,11 +76,20 @@ class LocateTools:
 
     @classmethod
     def discover_plugins(cls, package_name):
+        cls_list = list()
         package = importlib.import_module(package_name)
         for _, module_name, ispkg in pkgutil.walk_packages(package.__path__, package.__name__ + '.'):
             if ispkg:
                 continue
-            importlib.import_module(module_name)
+            mod = importlib.import_module(module_name)
+            members = inspect.getmembers(mod)
+            for name, obj in members:
+                if not inspect.isclass(obj):
+                    continue
+                if obj.__module__ != module_name:
+                    continue
+                cls_list.append(obj)
+        return cls_list
 
 
 __all__ = ['LocateTools', ]
