@@ -21,6 +21,7 @@ class HttpTradingBase(BrokerApiBase):
             json=None,
             timeout=30,
             session: requests.Session = None,
+            header: str = 'HT-TOKEN',
             token: str = '',
             raise_for_status=False,
     ):
@@ -31,7 +32,7 @@ class HttpTradingBase(BrokerApiBase):
             json=json,
             headers={
                 'User-Agent': 'tradebot',
-                'HT-TOKEN': token,
+                header: token,
             },
         )
         if session:
@@ -51,6 +52,7 @@ class HttpTradingBase(BrokerApiBase):
         instance_id = self.broker_config.get('instance_id')
         if timeout is None:
             timeout = self.broker_config.get('timeout', 20)
+        header = self.broker_config.get('header', 'HT-TOKEN')
         token = self.broker_config.get('token', '')
         uri = uri.format(instance_id=instance_id)
         url = urljoin(base_site, uri)
@@ -62,6 +64,7 @@ class HttpTradingBase(BrokerApiBase):
                     url=url,
                     timeout=timeout,
                     session=session,
+                    header=header,
                     token=token,
                     raise_for_status=True,
                 )
@@ -78,6 +81,7 @@ class HttpTradingBase(BrokerApiBase):
         base_site = self.broker_config.get('base_site')
         instance_id = self.broker_config.get('instance_id')
         timeout = self.broker_config.get('timeout', 20)
+        header = self.broker_config.get('header', 'HT-TOKEN')
         token = self.broker_config.get('token', '')
         uri = uri.format(instance_id=instance_id)
         url = urljoin(base_site, uri)
@@ -89,6 +93,7 @@ class HttpTradingBase(BrokerApiBase):
                 json=d,
                 timeout=timeout,
                 session=session,
+                header=header,
                 token=token,
                 raise_for_status=True,
             )
