@@ -11,6 +11,14 @@ from hodl.storage import *
 
 
 class StrategySelector(abc.ABC):
+    """
+    这个抽象类提供了一种机制,
+    即不通过 @trade_strategy 装饰器而是分析持仓配置信息尝试去注册子类为一种策略.
+    主要用途通常是, 比如现有的 hodl 策略, 特定持仓可能根据特定需要, 使用一个微调的版本策略去管理,
+    哪些持仓需要特别管理, 则根据 config_filter 方法去尝试映射到自定义的策略类,
+    这样不需要定义一个新策略名, 从而总体保留使用 hodl 的各种功能的权利, 好比原策略同名但是是继承关系的意思.
+    """
+
     @classmethod
     def config_filter(cls, config: StoreConfig) -> Type['Store'] | None:
         return None

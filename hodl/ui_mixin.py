@@ -65,11 +65,11 @@ class UiMixin(StoreHodlBase, ABC):
         bar = list()
         plan = state.plan
 
+        bar.append(BarElementDesc(content=f'♟️', tooltip=f'策略类为{cls.__name__}'))
+
         if config.lock_position:
             lock_position = '🔒'
             bar.append(BarElementDesc(content=lock_position, tooltip='持仓量核对已纳入风控，不可随时加仓'))
-
-        bar.append(BarElementDesc(content=f'♟️{cls.__name__}', tooltip='策略类'))
 
         factor_content = '🎛️'
         tooltip = ''
