@@ -1,7 +1,7 @@
 import re
 from typing import Type
+from json import JSONDecodeError
 from urllib.parse import urljoin
-import requests
 from hodl.quote import *
 from hodl.tools import *
 from hodl.state import *
@@ -20,7 +20,6 @@ class HttpTradingBase(BrokerApiBase):
             url: str,
             json=None,
             timeout=30,
-            session: requests.Session = None,
             header: str = 'HT-TOKEN',
             token: str = '',
             raise_for_status=False,
@@ -35,16 +34,14 @@ class HttpTradingBase(BrokerApiBase):
                 header: token,
             },
         )
-        if session:
-            resp = session.request(**args)
-        else:
-            resp = requests.request(**args)
+        session = VariableTools.http_session()
+        resp = session.request(**args)
         if raise_for_status:
             resp.raise_for_status()
         try:
             d: dict = resp.json()
             return d
-        except requests.JSONDecodeError:
+        except JSONDecodeError:
             return dict()
 
     def _http_get(self, uri: str, timeout: int = None, ex_type: Type[Exception] = PrepareError) -> dict:
@@ -57,13 +54,11 @@ class HttpTradingBase(BrokerApiBase):
         uri = uri.format(instance_id=instance_id)
         url = urljoin(base_site, uri)
         try:
-            session = self.http_session
             try:
                 d = HttpTradingBase._http_request(
                     method='GET',
                     url=url,
                     timeout=timeout,
-                    session=session,
                     header=header,
                     token=token,
                     raise_for_status=True,
@@ -85,14 +80,12 @@ class HttpTradingBase(BrokerApiBase):
         token = self.broker_config.get('token', '')
         uri = uri.format(instance_id=instance_id)
         url = urljoin(base_site, uri)
-        session = self.http_session
         try:
             d = HttpTradingBase._http_request(
                 method='POST',
                 url=url,
                 json=d,
                 timeout=timeout,
-                session=session,
                 header=header,
                 token=token,
                 raise_for_status=True,

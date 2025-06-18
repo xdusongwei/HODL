@@ -1,8 +1,8 @@
 import random
 import dataclasses
-from functools import reduce
 from operator import mul
-import requests
+from functools import reduce
+from json import JSONDecodeError
 from hodl.tools import *
 from hodl.thread_mixin import *
 
@@ -96,6 +96,7 @@ class CurrencyProxy(ThreadMixin):
 
     @classmethod
     def pull_currency(cls):
+        session = VariableTools.http_session()
         currency_nodes: list[CurrencyNode] = list()
 
         currency_config = HotReloadVariableTools.config().currency_config
@@ -111,7 +112,7 @@ class CurrencyProxy(ThreadMixin):
             },
         )
         try:
-            resp = requests.request(**args)
+            resp = session.request(**args)
             resp.raise_for_status()
             d: dict = resp.json()
             resp_type: str = d.get('type', '')
@@ -121,7 +122,7 @@ class CurrencyProxy(ThreadMixin):
             new_set = set(currency_nodes)
             CurrencyProxy._CURRENCY = new_set
             return currency_nodes
-        except requests.JSONDecodeError:
+        except JSONDecodeError:
             return currency_nodes
 
 

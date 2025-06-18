@@ -191,7 +191,6 @@ class BrokerApiBase(BrokerApiMixin):
         self.custom_client = None
         self.symbol = symbol
         self.name = name
-        self.http_session = VariableTools.http_session()
         self.logger = logger
         self.__post_init__()
 

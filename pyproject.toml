@@ -8,7 +8,6 @@ authors = [
 dependencies = [
     "concurrent-log-handler>=0.9.20",
     "json-log-formatter==0.5.1",
-    "requests>=2.27.1",
     "expiringdict>=1.2.1",
     "currency-symbols>=2.0.2",
     "Jinja2>=3.1.2",
@@ -20,6 +19,8 @@ dependencies = [
     "exchange-calendars>=4.2.4",
     "tomlkit>=0.12.1",
     "python-telegram-bot[socks]>=21.1.1",
+    "httpx>=0.28.1",
+    "h2>=4.2.0",
 ]
 
 requires-python = ">=3.12"
@@ -37,8 +38,6 @@ tui = [
     "textual",
     "pywin32>=306; sys_platform == 'win32'",
     "win10toast>=0.9; sys_platform == 'win32'",
-    "httpx>=0.28.1",
-    "h2>=4.2.0",
 ]
 
 [tool]
