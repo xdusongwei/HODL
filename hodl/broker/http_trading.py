@@ -130,8 +130,8 @@ class HttpTradingBase(BrokerApiBase):
         region = self._get_region(symbol)
         tz = self._get_tz(symbol)
         uri = '/httptrading/api/{instance_id}/market/quote'
-        query = '?tradeType={trade_type}&region={region}&ticker={ticker}'
-        query = query.format(trade_type='Securities', region=region, ticker=symbol)
+        query = '?tradeType={trade_type}&region={region}&symbol={symbol}'
+        query = query.format(trade_type='Securities', region=region, symbol=symbol)
         d = self._http_get(uri + query)
         quote_d: dict = d.get('quote', dict())
         update_dt = TimeTools.from_timestamp(quote_d.get('timestamp') / 1000, tz=tz)
@@ -170,13 +170,13 @@ class HttpTradingBase(BrokerApiBase):
             contract_d: dict = position.get('contract', dict())
             trade_type: str = contract_d.get('tradeType', '')
             contract_region: str = contract_d.get('region', '')
-            ticker: str = contract_d.get('ticker', '')
+            contract_symbol: str = contract_d.get('symbol', '')
             qty = position.get('qty')
             if trade_type != 'Securities':
                 continue
             if contract_region != region:
                 continue
-            if ticker != symbol:
+            if contract_symbol != symbol:
                 continue
             return qty
         else:
@@ -185,11 +185,10 @@ class HttpTradingBase(BrokerApiBase):
     def place_order(self, order: Order):
         symbol = self.symbol
         region = self._get_region(symbol)
-        ticker = symbol
         uri = '/httptrading/api/{instance_id}/order/place'
         args = {
             'tradeType': 'Securities',
-            'ticker': ticker,
+            'symbol': symbol,
             'region': region,
             'price': order.limit_price,
             'qty': order.qty,
