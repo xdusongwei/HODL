@@ -41,16 +41,19 @@ class QuoteMixin(IsolatedStoreBase, ABC):
         quote = self._query_quote()
         if state.quote_time:
             if TimeTools.from_timestamp(state.quote_time) > quote.time:
-                raise QuoteOutdatedError(f'系统存储的行情({TimeTools.from_timestamp(state.quote_time)})'
-                                         f'比请求的行情({quote.time})新')
+                raise QuoteOutdatedError(
+                    f'系统存储的行情({TimeTools.from_timestamp(state.quote_time)})'
+                    f'比请求的行情({quote.time})新'
+                )
 
         return quote
 
     def assert_quote_time_diff(self):
+        quote_delay_secs = self.runtime_state.store_config.quote_delay_secs
         state = self.state
         quote_time = state.quote_time
         now = TimeTools.us_time_now()
-        if abs(quote_time - now.timestamp()) > 30:
+        if abs(quote_time - now.timestamp()) > quote_delay_secs:
             time = TimeTools.from_timestamp(quote_time)
             raise QuoteOutdatedError(
                 f'请求的行情时间{time}差距明显'

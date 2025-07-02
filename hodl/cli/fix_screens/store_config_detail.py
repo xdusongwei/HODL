@@ -295,6 +295,12 @@ class StoreConfigScreen(Screen):
                         Input(value=config.state_archive_folder, disabled=True),
                         desc='按天归档备份的状态文件目录',
                     )
+                with TabPane("其他"):
+                    yield FormItem(
+                        'quote_delay_secs',
+                        Input(value=f'{config.quote_delay_secs}秒', disabled=True),
+                        desc='可以接受的行情数据过时时长',
+                    )
 
 
 class StoreConfigIndexScreen(Screen):

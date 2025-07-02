@@ -48,10 +48,6 @@ class TradingError(BotError):
     pass
 
 
-class CiticsError(TradingError):
-    pass
-
-
 class RiskControlError(BotError):
     def __init__(self, *args):
         super(RiskControlError, self).__init__(*args)
@@ -61,6 +57,12 @@ class RiskControlError(BotError):
 class BrokerMismatchError(BotError):
     def __init__(self, *args):
         super(BrokerMismatchError, self).__init__(*args)
+        self.thread_killer = True
+
+
+class HttpTradingError(BotError):
+    def __init__(self, *args):
+        super(HttpTradingError, self).__init__(*args)
         self.thread_killer = True
 
 
@@ -75,7 +77,7 @@ __all__ = [
     'OrderOutdatedError',
     'OrderRefreshError',
     'TradingError',
-    'CiticsError',
     'RiskControlError',
     'BrokerMismatchError',
+    'HttpTradingError',
 ]

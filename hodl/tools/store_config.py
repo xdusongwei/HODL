@@ -520,6 +520,13 @@ class StoreConfig(dict):
         return self.get('using_cached_quote', False)
 
     @property
+    def quote_delay_secs(self):
+        """
+        可以接受的行情数据过时时长
+        """
+        return abs(self.get('quote_delay_secs', 30))
+
+    @property
     def stage(self) -> int:
         return len(self.multistage_rocket)
 
