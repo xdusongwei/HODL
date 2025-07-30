@@ -196,6 +196,7 @@ class HttpTradingBase(BrokerApiBase):
             'timeInForce': 'DAY',
             'lifecycle': 'RTH',
             'direction': order.direction,
+            'protectPrice': order.protect_price,
         }
         d = self._http_post(uri, args)
         order_id = d.get('orderId')
