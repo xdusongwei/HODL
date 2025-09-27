@@ -3,6 +3,7 @@ import datetime
 import dataclasses
 import traceback
 from hodl.storage import *
+from hodl.broker import *
 from hodl.store import *
 from hodl.store_hodl import *
 from hodl.thread_mixin import *
@@ -183,6 +184,7 @@ class HtmlWriterThread(ThreadMixin):
                 store_list=store_list,
                 FMT=FormatTool,
                 ProfitRowTool=StoreHodl.ProfitRowTool,
+                broker_types=BrokerApiBase.all_brokers_type(),
                 earning_list=self.earning_list,
                 earning_json=self.earning_json,
                 threads=ThreadMixin.threads(),

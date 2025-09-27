@@ -43,17 +43,21 @@
                                 with_year=False, with_tz=False)[6:-10] }}</span>
                         </td>
                         <td>
-                            {% for state in state_list %}
-                                {% if state.trade_broker == order.broker and state.quote_symbol == order.symbol %}
-                                    {{ state.trade_broker_display }}
+                            {% for bt in broker_types %}
+                                {% if bt.BROKER_NAME == order.broker %}
+                                    {{ bt.BROKER_DISPLAY }}
                                 {% endif %}
+                            {% else %}
+                            <span>--</span>
                             {% endfor %}
                         </td>
                         <td>
                             {% for state in state_list %}
-                                {% if state.trade_broker == order.broker and state.quote_symbol == order.symbol %}
+                            {% for iter_order in state.template_plan.orders %}
+                                {% if iter_order.unique_id == order.unique_id %}
                                     {{ state.name }}
                                 {% endif %}
+                            {% endfor %}
                             {% endfor %}
                         </td>
                         <td class=" d-none d-lg-table-cell">[{{ order.region }}]{{ order.symbol }}</td>
