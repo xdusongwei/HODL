@@ -113,6 +113,7 @@ class BrokerApiBase(BrokerApiMixin):
 
     BROKER_NAME = 'unknown'
     BROKER_DISPLAY = '未知'
+
     """
     是否在持仓进程启动后开始做broker联通性检查。
     通常建议每个持仓都需要执行检查，保证市场状态/行情/持仓/资金可正常访问， 否则持仓线程中止。
