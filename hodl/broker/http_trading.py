@@ -195,8 +195,9 @@ class HttpTradingBase(BrokerApiBase):
             'orderType': 'Market' if order.limit_price is None else 'Limit',
             'timeInForce': 'DAY',
             'lifecycle': 'RTH',
-            'direction': order.direction,
+            'side': order.direction,
             'protectPrice': order.protect_price,
+            'direction': order.direction, # 兼容旧的接口参数
         }
         d = self._http_post(uri, args)
         order_id = d.get('orderId')
