@@ -78,7 +78,7 @@ class BrokerApiMixin(abc.ABC):
         """
         raise NotImplementedError
 
-    def query_chips(self) -> int:
+    def query_chips(self, symbol=None) -> int:
         """
         返回 self.symbol 获取实际持仓数量。
         """

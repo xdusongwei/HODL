@@ -1,4 +1,5 @@
 from abc import ABC
+from hodl.plan_calc import *
 from hodl.state import *
 from hodl.store_hodl_base import *
 from hodl.thread_mixin import *
@@ -241,7 +242,7 @@ class UiMixin(StoreHodlBase, ABC):
             self.store_config = config
             self.plan = state.plan
             self.filled_level = 0
-            self.rows = list()
+            self.rows = ProfitTable()
             self.buy_percent = None
             self.sell_percent = None
             self.buy_at = None

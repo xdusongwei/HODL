@@ -44,8 +44,8 @@ class TigerApi(HttpTradingBase):
         return super().query_cash()
 
     @track_api
-    def query_chips(self):
-        return super().query_chips()
+    def query_chips(self, symbol=None):
+        return super().query_chips(symbol=symbol)
 
     @track_api
     def place_order(self, order: Order):

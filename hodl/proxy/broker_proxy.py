@@ -67,9 +67,9 @@ class BrokerProxy(BrokerApiMixin):
         broker = self._find_trade_broker()
         return broker.refresh_order(order=order)
 
-    def query_chips(self) -> int:
+    def query_chips(self, symbol=None) -> int:
         broker = self._find_trade_broker()
-        chips = broker.query_chips()
+        chips = broker.query_chips(symbol=symbol)
         assert isinstance(chips, int)
         return chips
 

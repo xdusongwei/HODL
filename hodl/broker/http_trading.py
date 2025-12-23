@@ -160,8 +160,8 @@ class HttpTradingBase(BrokerApiBase):
         assert isinstance(amount, float)
         return amount
 
-    def query_chips(self):
-        symbol = self.symbol
+    def query_chips(self, symbol=None):
+        symbol = symbol or self.symbol
         region = self._get_region(symbol)
         uri = '/httptrading/api/{instance_id}/position/state'
         d = self._http_get(uri)
