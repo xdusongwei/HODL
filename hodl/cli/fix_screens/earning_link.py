@@ -122,7 +122,7 @@ class EarningLinkScreen(Screen):
             return False
         if region.value is None:
             return False
-        if currency_input.value is None:
+        if currency_input.value is None or not re.match(r'^[A-Z]{3}[0-9A-Z]*$', currency_input.value):
             return False
         if not amount_input.value or not re.match(r'^\d+$', amount_input.value):
             return False
