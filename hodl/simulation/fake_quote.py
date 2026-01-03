@@ -37,14 +37,26 @@ def _build_item(
 
 @dataclass
 class Tick:
+    """
+    测试使用的行情时间片,
+    这是策略的唯一输入来源, 一些时间相关的股价模拟信息和市场标的状态信息.
+    """
     time: str = field()
+    "时间片的时间, 格式类似: 23-04-10T09:30:00-04:00:00"
     pre_close: float = field()
+    "昨日收盘价"
     open: float = field()
+    "开盘价"
     latest: float = field()
+    "最新价"
     ms: str = field(default='TRADING')
+    "此刻市场状态"
     qs: str = field(default='NORMAL')
+    "此刻标的状态"
     low: float = field(default=None)
+    "日最低价"
     high: float = field(default=None)
+    "日最高价"
 
     def to_fake_quote(self) -> FakeQuote:
         if re.match(r'^\d{2}-\d{2}-\d{2}', self.time):

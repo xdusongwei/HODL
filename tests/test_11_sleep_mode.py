@@ -14,18 +14,18 @@ class SleepModeTestCase(HodlTestCase):
         cn_calendar = cn_store_config.trading_calendar
         is_trading_minute = SleepMixin.is_trading_minute
 
-        us_tickets_table = [
+        us_ticks_table = [
             (Tick(time='23-04-10T09:29:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False,),
             (Tick(time='23-04-10T09:30:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), True,),  # 开市
             (Tick(time='23-04-10T15:59:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), True,),
             (Tick(time='23-04-10T16:00:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False,),  # 休市
             (Tick(time='23-04-07T09:30:00-04:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False,),  # 耶稣受难日
         ]
-        for ticket, result in us_tickets_table:
-            time = ticket.to_fake_quote().time
+        for tick, result in us_ticks_table:
+            time = tick.to_fake_quote().time
             assert is_trading_minute(calendar=us_calendar, time=time) is result
 
-        cn_tickets_table = [
+        cn_ticks_table = [
             (Tick(time='23-04-10T09:29:00+08:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False,),
             (Tick(time='23-04-10T09:30:00+08:00:00', pre_close=0.0, open=0.0, latest=0.0, ), True,),  # 开市
             (Tick(time='23-04-10T11:29:00+08:00:00', pre_close=0.0, open=0.0, latest=0.0, ), True,),
@@ -36,6 +36,6 @@ class SleepModeTestCase(HodlTestCase):
             (Tick(time='23-04-10T15:00:00+08:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False,),  # 休市
             (Tick(time='23-05-01T09:30:00+08:00:00', pre_close=0.0, open=0.0, latest=0.0, ), False,),  # 劳动节休市
         ]
-        for ticket, result in cn_tickets_table:
-            time = ticket.to_fake_quote().time
+        for tick, result in cn_ticks_table:
+            time = tick.to_fake_quote().time
             assert is_trading_minute(calendar=cn_calendar, time=time) is result

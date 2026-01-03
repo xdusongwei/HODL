@@ -143,8 +143,8 @@ class SimulationStore(StoreHodl):
             self._auto_fill_qty = None
             self._freeze_fill_qty = False
 
-    def reset_tickets(self, tickets: list[Tick]):
-        self.history_quote = generate_from_ticks(tickets)
+    def reset_ticks(self, ticks: list[Tick]):
+        self.history_quote = generate_from_ticks(ticks)
 
     def cancel_fake_order(self, order: Order):
         order_id = order.order_id
@@ -262,7 +262,7 @@ class SimulationStore(StoreHodl):
         self.warning_alert_bar()
 
     def loop_finally(self):
-        # 这里需要触发一次sleep，否则假如需要进行文件读写相关的测试，当前时间ticket的自动变动并未生效，写入文件的状态内容没有前进
+        # 这里需要触发一次sleep，否则假如需要进行文件读写相关的测试，当前时间 Tick 的自动变动并未生效，写入文件的状态内容没有前进
         self.sleep()
         super().loop_finally()
 
@@ -289,6 +289,11 @@ class SimulationStore(StoreHodl):
 
 
 class SimulationBuilder:
+    """
+    运行模拟器的实际方法集合,
+    通常对于持仓的测试, 是给出 StoreConfig 配置信息, 以及一段 Tick 序列, 来观察对状态的结果.
+    也可以使用方法返回的 SimulationBuilder 对象, 继续(resume方法)运行下一段测试 Tick 序列来验证多个阶段的结果.
+    """
     @classmethod
     def _build(
         cls,
@@ -348,7 +353,7 @@ class SimulationBuilder:
                 )
             store.mocks = mocks
         elif ticks:
-            store.reset_tickets(ticks)
+            store.reset_ticks(ticks)
 
         if show_plan_table:
             store_config = store.store_config
@@ -376,7 +381,7 @@ class SimulationBuilder:
         db: LocalDb = None,
     ):
         """
-        直接读取配置文件中的持仓设定来运行测试, 即不会临时改动持仓配置的细节而运行
+        直接读取配置文件中的持仓设定来运行测试, 方法使用者无需操作提取 StoreConfig 来运行模拟测试
         """
         return cls._build(
             symbol=symbol,
