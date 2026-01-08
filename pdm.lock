@@ -149,7 +149,7 @@ files = [
 
 [[package]]
 name = "exchange-calendars"
-version = "4.11.3"
+version = "4.12"
 requires_python = "<4,>=3.10"
 summary = "Calendars for securities exchanges"
 groups = ["default"]
@@ -162,8 +162,8 @@ dependencies = [
     "tzdata>=2025.2",
 ]
 files = [
-    {file = "exchange_calendars-4.11.3-py3-none-any.whl", hash = "sha256:c40d9f1b50238f578f9f8c772aa895533ab03db4910da43825ca59f7ebd9e82f"},
-    {file = "exchange_calendars-4.11.3.tar.gz", hash = "sha256:53a8f68f86edaf265b0b20cb3641ce34c4b9205b039b0a50f36fc99d114b77bd"},
+    {file = "exchange_calendars-4.12-py3-none-any.whl", hash = "sha256:133946b468d00401f7e622fc4e198ec3a26cba7524ec357bb8597be4ddaf584e"},
+    {file = "exchange_calendars-4.12.tar.gz", hash = "sha256:7d2049b624013eb67cb06feb4fd29825a8d53c0c03bf8e7f9d856c210f24eb8a"},
 ]
 
 [[package]]
@@ -853,7 +853,7 @@ files = [
 
 [[package]]
 name = "textual"
-version = "7.0.0"
+version = "7.0.1"
 requires_python = "<4.0,>=3.9"
 summary = "Modern Text User Interface framework"
 groups = ["tui"]
@@ -866,8 +866,8 @@ dependencies = [
     "typing-extensions<5.0.0,>=4.4.0",
 ]
 files = [
-    {file = "textual-7.0.0-py3-none-any.whl", hash = "sha256:190de0f65e5f4bc820fae46f32f591e509621d76688b36400ce01fa63dc6b623"},
-    {file = "textual-7.0.0.tar.gz", hash = "sha256:617638a2be74fb7507aff3ea6ec9374148be02e5a7bb1d02396d1d557b66c0a9"},
+    {file = "textual-7.0.1-py3-none-any.whl", hash = "sha256:f9b7d16fa9b640bfff2a2008bf31e3f2d4429dc85e07a9583be033840ed15174"},
+    {file = "textual-7.0.1.tar.gz", hash = "sha256:d61db446d22913c0fa6ca2a110c895732b40408e12b0eab1022b5d766924e1ed"},
 ]
 
 [[package]]
