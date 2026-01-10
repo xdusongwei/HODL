@@ -7,7 +7,6 @@
             更多
         </a>
     </p>
-
     <div class="row">
         {% for currency, amount in earning_value %}
         <div class="col-4">
@@ -19,6 +18,7 @@
         {% endfor %}
     </div>
     <div class="collapse" id="moreValue">
+        {% if (hodl_value or dict())|sum %}
         <p class="text-bg-dark fs-5">持有价值</p>
         <div class="row">
             {% for currency, amount in hodl_value %}
@@ -30,6 +30,8 @@
             </div>
             {% endfor %}
         </div>
+        {% endif %}
+        {% if (sell_value or dict())|sum %}
         <p class="text-bg-dark fs-5">卖出价值</p>
         <div class="row">
             {% for currency, amount in sell_value %}
@@ -41,5 +43,19 @@
             </div>
             {% endfor %}
         </div>
+        {% endif %}
+        {% if (loan_value or dict())|sum %}
+        <p class="text-bg-dark fs-5">借款</p>
+        <div class="row">
+            {% for currency, amount in loan_value %}
+            <div class="col-4">
+                <div>
+                    <p class="fs-6 text-bg-dark text-center fw-bold mb-0">{{currency}}</p>
+                    <p class="fs-6 text-bg-dark text-center text-warning fw-bold">{{ FMT.pretty_usd(amount, currency=currency, only_int=True) }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </div>

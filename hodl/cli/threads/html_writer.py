@@ -92,6 +92,15 @@ class HtmlWriterThread(ThreadMixin):
         hodl_dict = {currency: 0.0 for currency in currency_list}
         sell_dict = {currency: 0.0 for currency in currency_list}
         earning_dict = {currency: 0.0 for currency in currency_list}
+        loan_dict = {currency: 0.0 for currency in currency_list}
+        for store in {
+            store.store_config.broker: store for store in store_list
+            if store.store_config.currency in currency_list
+        }.values():
+            currency = store.store_config.currency
+            cash_amount = store.state.cash_amount or 0.0
+            loan_amount = abs(min(cash_amount, 0.0))
+            loan_dict[currency] += loan_amount
         for store in store_list:
             currency = store.store_config.currency
             price = store.state.quote_latest_price
@@ -125,7 +134,8 @@ class HtmlWriterThread(ThreadMixin):
         hodl_list = [(k, v,) for k, v in hodl_dict.items()]
         sell_list = [(k, v,) for k, v in sell_dict.items()]
         earning_list = [(k, v,) for k, v in earning_dict.items()]
-        return hodl_list, sell_list, earning_list
+        loan_list = [(k, v,) for k, v in loan_dict.items()]
+        return hodl_list, sell_list, earning_list, loan_list
 
     @classmethod
     def sort_stores(cls, stores: list[Store]):
@@ -174,7 +184,7 @@ class HtmlWriterThread(ThreadMixin):
                 ]
                 if db:
                     self.order_times_ytd_json = self._order_times_ytd()
-            hodl_list, sell_list, earning_list = self.store_value(
+            hodl_list, sell_list, earning_list, loan_list = self.store_value(
                 currency_list=html_asserts_currency,
                 store_list=store_list,
             )
@@ -192,6 +202,7 @@ class HtmlWriterThread(ThreadMixin):
                 hodl_value=hodl_list,
                 sell_value=sell_list,
                 earning_value=earning_list,
+                loan_value=loan_list,
                 html_manifest_path=html_manifest_path,
                 auto_refresh_time=variable.html_auto_refresh_time,
                 broker_icon_path=variable.broker_icon_path,
