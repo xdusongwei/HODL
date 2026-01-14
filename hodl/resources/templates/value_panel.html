@@ -18,7 +18,7 @@
         {% endfor %}
     </div>
     <div class="collapse" id="moreValue">
-        {% if (hodl_value or dict())|sum %}
+        {% if hodl_value|map(attribute=1)|list|sum %}
         <p class="text-bg-dark fs-5">持有价值</p>
         <div class="row">
             {% for currency, amount in hodl_value %}
@@ -31,7 +31,7 @@
             {% endfor %}
         </div>
         {% endif %}
-        {% if (sell_value or dict())|sum %}
+        {% if sell_value|map(attribute=1)|list|sum %}
         <p class="text-bg-dark fs-5">卖出价值</p>
         <div class="row">
             {% for currency, amount in sell_value %}
@@ -44,7 +44,7 @@
             {% endfor %}
         </div>
         {% endif %}
-        {% if (loan_value or dict())|sum %}
+        {% if loan_value|map(attribute=1)|list|sum %}
         <p class="text-bg-dark fs-5">借款</p>
         <div class="row">
             {% for currency, amount in loan_value %}
