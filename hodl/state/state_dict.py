@@ -101,6 +101,14 @@ class State(dict):
         self._set_snapshot('dailySnapshot', 'cashAmount', v)
 
     @property
+    def cash_currency(self) -> str:
+        return self._get_snapshot('dailySnapshot', 'cashCurrency')
+
+    @cash_currency.setter
+    def cash_currency(self, v: str):
+        self._set_snapshot('dailySnapshot', 'cashCurrency', v)
+
+    @property
     def quote_symbol(self):
         return self._get_snapshot('latestSnapshot', 'quoteSymbol')
 

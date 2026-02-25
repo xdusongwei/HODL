@@ -116,7 +116,7 @@ class BrokerProxy(BrokerApiMixin):
         ]
         self.quote_brokers = brokers
 
-        self.trade_brokers = list()
+        self.trade_brokers: list[BrokerApiBase] = list()
         broker_info = sort_brokers(var=var)
         brokers = [
             t(

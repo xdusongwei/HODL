@@ -78,6 +78,7 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
                 state.chip_count = None
                 state.cash_day = None
                 state.cash_amount = None
+                state.cash_currency = '--'
                 break
         self.runtime_state.enable = new_enable
 
@@ -172,6 +173,10 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
         cash_amount = self.current_cash()
         state.cash_amount = cash_amount
         state.cash_day = TimeTools.us_day_now()
+        if not self.ENABLE_BROKER:
+            return
+        cash_currency = self.broker_proxy.trade_broker.CASH_CURRENCY
+        state.cash_currency = cash_currency
 
     def prepare_plug_in(self):
         state = self.state
