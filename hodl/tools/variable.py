@@ -37,14 +37,12 @@ class VariableTools:
     """
     DEBUG_CONFIG = dict()
 
+    _HTTP_SESSION = httpx.Client(trust_env=False, http2=True, timeout=20)
+
+
     @classmethod
     def http_session(cls):
-        key = 'http_client'
-        tl = threading.local()
-        if not hasattr(tl, key):
-            setattr(tl, key, httpx.Client(trust_env=False))
-        client: httpx.Client = getattr(tl, key)
-        return client
+        return VariableTools._HTTP_SESSION
 
     @classmethod
     def _get_config_path(cls):
