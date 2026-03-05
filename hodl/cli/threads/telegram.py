@@ -76,7 +76,7 @@ class TelegramThread(ThreadMixin, TelegramThreadBase):
         task.add_done_callback(_done)
 
         if block:
-            evt.wait()
+            evt.wait(timeout=20)
             if e := task.exception():
                 raise e
             return task.result()

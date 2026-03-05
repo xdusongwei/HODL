@@ -351,16 +351,16 @@ files = [
 
 [[package]]
 name = "linkify-it-py"
-version = "2.0.3"
-requires_python = ">=3.7"
+version = "2.1.0"
+requires_python = ">=3.10"
 summary = "Links recognition library with FULL unicode support."
 groups = ["tui"]
 dependencies = [
     "uc-micro-py",
 ]
 files = [
-    {file = "linkify-it-py-2.0.3.tar.gz", hash = "sha256:68cda27e162e9215c17d786649d1da0021a451bdc436ef9e0fa0ba5234b9b048"},
-    {file = "linkify_it_py-2.0.3-py3-none-any.whl", hash = "sha256:6bcbc417b0ac14323382aef5c5192c0075bf8a9d6b41820a2b66371eac6b6d79"},
+    {file = "linkify_it_py-2.1.0-py3-none-any.whl", hash = "sha256:0d252c1594ecba2ecedc444053db5d3a9b7ec1b0dd929c8f1d74dce89f86c05e"},
+    {file = "linkify_it_py-2.1.0.tar.gz", hash = "sha256:43360231720999c10e9328dc3691160e27a718e280673d444c38d7d3aaa3b98b"},
 ]
 
 [[package]]
@@ -856,7 +856,7 @@ files = [
 
 [[package]]
 name = "textual"
-version = "8.0.0"
+version = "8.0.2"
 requires_python = "<4.0,>=3.9"
 summary = "Modern Text User Interface framework"
 groups = ["tui"]
@@ -869,8 +869,8 @@ dependencies = [
     "typing-extensions<5.0.0,>=4.4.0",
 ]
 files = [
-    {file = "textual-8.0.0-py3-none-any.whl", hash = "sha256:8908f4ebe93a6b4f77ca7262197784a52162bc88b05f4ecf50ac93a92d49bb8f"},
-    {file = "textual-8.0.0.tar.gz", hash = "sha256:ce48f83a3d686c0fac0e80bf9136e1f8851c653aa6a4502e43293a151df18809"},
+    {file = "textual-8.0.2-py3-none-any.whl", hash = "sha256:4ceadbe0e8a30eb80f9995000f4d031f711420a31b02da38f3482957b7c50ce4"},
+    {file = "textual-8.0.2.tar.gz", hash = "sha256:7b342f3ee9a5f2f1bd42d7b598cae00ff1275da68536769510db4b7fe8cabf5d"},
 ]
 
 [[package]]
@@ -919,13 +919,13 @@ files = [
 
 [[package]]
 name = "uc-micro-py"
-version = "1.0.3"
-requires_python = ">=3.7"
+version = "2.0.0"
+requires_python = ">=3.10"
 summary = "Micro subset of unicode data files for linkify-it-py projects."
 groups = ["tui"]
 files = [
-    {file = "uc-micro-py-1.0.3.tar.gz", hash = "sha256:d321b92cff673ec58027c04015fcaa8bb1e005478643ff4a500882eaab88c48a"},
-    {file = "uc_micro_py-1.0.3-py3-none-any.whl", hash = "sha256:db1dffff340817673d7b466ec86114a9dc0e9d4d9b5ba229d9d60e5c12600cd5"},
+    {file = "uc_micro_py-2.0.0-py3-none-any.whl", hash = "sha256:3603a3859af53e5a39bc7677713c78ea6589ff188d70f4fee165db88e22b242c"},
+    {file = "uc_micro_py-2.0.0.tar.gz", hash = "sha256:c53691e495c8db60e16ffc4861a35469b0ba0821fe409a8a7a0a71864d33a811"},
 ]
 
 [[package]]
