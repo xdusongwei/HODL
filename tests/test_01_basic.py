@@ -84,7 +84,7 @@ class BasicTestCase(HodlTestCase):
         TimeTools.thread_register('US')
         date = TimeTools.us_time_now()
         assert date.tzname() in {'EST', 'EDT', }
-        assert TimeTools.current_tz() == 'US/Eastern'
+        assert TimeTools.current_tz() == 'America/New_York'
 
         TimeTools.THREAD_TZ.clear()
 

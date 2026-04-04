@@ -20,7 +20,7 @@ class TimeTools:
     def region_to_tz(cls, region: str) -> str:
         match region:
             case 'US':
-                return 'US/Eastern'
+                return 'America/New_York'
             case 'CN':
                 return 'Asia/Shanghai'
             case 'HK':
@@ -37,7 +37,7 @@ class TimeTools:
         if runtime_state and runtime_state.tz_name:
             return runtime_state.tz_name
         thread_id = threading.current_thread().native_id
-        return TimeTools.THREAD_TZ.get(thread_id, 'US/Eastern')
+        return TimeTools.THREAD_TZ.get(thread_id, 'America/New_York')
 
     @classmethod
     def get_utc(cls):
