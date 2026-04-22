@@ -1,9 +1,8 @@
 import os
-import threading
 import tomllib
 import tomlkit
 import dataclasses
-import httpx
+import niquests
 from telegram.ext import Application
 from jinja2 import Environment, PackageLoader, select_autoescape
 from hodl.tools.currency_config import CurrencyConfig
@@ -36,12 +35,10 @@ class VariableTools:
     配置文件读写工具
     """
     DEBUG_CONFIG = dict()
-
-    _HTTP_SESSION = httpx.Client(trust_env=False, http2=True, timeout=20)
-
+    _HTTP_SESSION = niquests.Session(timeout=20)
 
     @classmethod
-    def http_session(cls):
+    def http_session(cls) -> niquests.Session:
         return VariableTools._HTTP_SESSION
 
     @classmethod

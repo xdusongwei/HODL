@@ -21,6 +21,7 @@ dependencies = [
     "python-telegram-bot[socks]>=21.1.1",
     "httpx>=0.28.1",
     "h2>=4.2.0",
+    "niquests>=3.18.6",
 ]
 
 requires-python = ">=3.13"
