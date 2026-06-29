@@ -186,14 +186,26 @@ class StoreHodl(BasePriceMixin, SleepMixin, FactorMixin, UiMixin):
             return
         state.trade_broker = self.broker_proxy.trade_broker.BROKER_NAME
         state.trade_broker_display = self.broker_proxy.trade_broker.BROKER_DISPLAY
+        config = self.store_config
+        send_text = not config.ignore_plugin_message
         if self.broker_proxy.detect_plug_in():
             text = f"""✅{state.full_name}连通已恢复"""
             state.is_plug_in = True
-            self.bot.unset_alarm(AlertBot.K_TRADE_SERVICE, text=text, disable_notification=True)
+            self.bot.unset_alarm(
+                AlertBot.K_TRADE_SERVICE,
+                text=text,
+                disable_notification=True,
+                send_text=send_text,
+            )
         else:
             text = f"""🔌{state.full_name}连通测试失败"""
             state.is_plug_in = False
-            self.bot.set_alarm(AlertBot.K_TRADE_SERVICE, text=text, disable_notification=True)
+            self.bot.set_alarm(
+                AlertBot.K_TRADE_SERVICE,
+                text=text,
+                disable_notification=True,
+                send_text=send_text,
+            )
             raise PlugInError()
 
     def try_get_off(self):

@@ -531,6 +531,13 @@ class StoreConfig(dict):
         return len(self.multistage_rocket)
 
     @property
+    def ignore_plugin_message(self):
+        """
+        是否忽略连通恢复/故障时发送消息
+        """
+        return self.get('ignore_plugin_message', False)
+
+    @property
     def full_name(self) -> str:
         return f'{{{self.broker}}}[{self.region}]{self.symbol}({self.name})'
 
