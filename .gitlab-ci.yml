@@ -15,6 +15,7 @@ variables:
 
 before_script:
   - mkdir -p ~/logs/hodl && mkdir -p ~/data/hodl
+  - pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
   - pip install -U pdm
   - pdm config python.use_venv false && pdm install --prod -G test --no-lock --no-editable && pdm sync -G test
 
